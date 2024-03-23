@@ -1,0 +1,1 @@
+module.exports.artistInfoService = require('./artist.service');
