@@ -8,9 +8,27 @@ const addArtistInfo = catchAsync(async (req, res) => {
   const artistInfo = await artistServices.artistInfoService.addArtistInfoService(artistId, req.body);
   res
     .status(httpStatus.CREATED)
-    .send({ status: true, message: 'Profile informations added successfully', entity: artistInfo });
+    .send({ status: true, message: 'Profile information added successfully', entity: artistInfo });
+});
+
+const getArtistInfo = catchAsync(async (req, res) => {
+  const artistId = req.params.artistId;
+  const artistInfo = await artistServices.artistInfoService.getArtistInfoService(artistId, req.body);
+  res
+    .status(httpStatus.OK)
+    .send({ status: true, message: 'Profile information fetched successfully', entity: artistInfo });
+});
+
+const editArtistInfo = catchAsync(async (req, res) => {
+  const artistId = req.params.artistId;
+  await artistServices.artistInfoService.editArtistInfoService(artistId, req.body);
+  res
+    .status(httpStatus.OK)
+    .send({ status: true, message: 'Profile information edited successfully', entity: req.body });
 });
 
 module.exports = {
   addArtistInfo,
+  getArtistInfo,
+  editArtistInfo,
 };

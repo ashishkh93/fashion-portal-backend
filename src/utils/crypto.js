@@ -1,9 +1,15 @@
 const crypto = require('crypto');
 const config = require('../config/config');
+const ApiError = require('./ApiError');
 
 // Encryption and decryption key. Should be 32 bytes for AES-256.
-const key = crypto.randomBytes(32);
+// const key = crypto.randomBytes(32);
+// key.toString('base64');
+
 const algo = config.encryptionAlgo;
+const encryptionKey = config.encryptionKey;
+
+const key = Buffer.from(encryptionKey, 'base64');
 
 const encrypt = (text) => {
   const iv = crypto.randomBytes(12); // Initialization vector.
@@ -19,18 +25,23 @@ const encrypt = (text) => {
 };
 
 const decrypt = (ciphertext) => {
-  const components = ciphertext.split(':');
-  const iv = Buffer.from(components.shift(), 'hex');
-  const authTag = Buffer.from(components.shift(), 'hex');
-  const encrypted = components.join(':');
+  try {
+    const components = ciphertext.split(':');
+    const iv = Buffer.from(components.shift(), 'hex');
+    const authTag = Buffer.from(components.shift(), 'hex');
+    const encrypted = components.join(':');
 
-  const decipher = crypto.createDecipheriv(algo, key, iv);
-  decipher.setAuthTag(authTag);
+    const decipher = crypto.createDecipheriv(algo, key, iv);
+    decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
 
-  return decrypted;
+    return decrypted;
+  } catch (error) {
+    console.log(error, 'decipherError');
+    throw new ApiError(error.statusCode, error.message || 'Internal Server Error');
+  }
 };
 
 module.exports = { encrypt, decrypt };

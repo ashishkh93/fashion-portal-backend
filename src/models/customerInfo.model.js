@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
+      customerId: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       fullName: {
@@ -75,7 +74,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   CustomerInfo.associate = function (models) {
-    CustomerInfo.belongsTo(models.User, { foreignKey: 'userId', as: 'customerInfos' });
+    CustomerInfo.belongsTo(models.User, { foreignKey: 'customerId', as: 'customerInfos' });
   };
 
   return CustomerInfo;

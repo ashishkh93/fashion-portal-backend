@@ -21,7 +21,7 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-// re-sync database ---- SHOULD ONLY USE FOR FIRST TIME
+// re-sync database ---- SHOULD ONLY USE FOR IN DEVELOPMENT
 // db.sequelize.sync({ alter: true }).then(() => {
 //   console.log('Drop and re-sync db.');
 // });

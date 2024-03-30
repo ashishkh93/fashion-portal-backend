@@ -3,6 +3,7 @@ const authRoutes = require('./auth.route');
 const serviceRoutes = require('./service.route');
 const categoryRoutes = require('./category.route');
 const infoRoutes = require('./getInfos.route');
+const verifyStatusRoutes = require('./verifyStatus.route');
 
 const router = express.Router();
 
@@ -22,6 +23,10 @@ const defaultUserRoutes = [
   {
     path: '/info',
     route: infoRoutes,
+  },
+  {
+    path: '/verify',
+    route: verifyStatusRoutes,
   },
 ];
 

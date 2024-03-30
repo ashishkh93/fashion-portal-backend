@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
         references: { model: 'ArtistInfo', key: 'id' }, // To join the Artist info table with Service
         onDelete: 'CASCADE',
       },
+      artistId: {
+        type: DataTypes.UUID,
+        allowNull: true
+      },
       serviceId: {
         type: DataTypes.UUID,
         references: { model: 'Service', key: 'id' }, // To join the Service table with ArtistInfo

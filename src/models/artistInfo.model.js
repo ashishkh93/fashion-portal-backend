@@ -8,13 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
+      artistId: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'suspended'),
         allowNull: false,
       },
       fullName: {
@@ -25,13 +24,41 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(50),
         allowNull: true,
       },
+      bankName: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      bankAccountHolderName: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
       bankAccountNumber: {
         type: DataTypes.STRING(1000),
-        allowNull: true,
+        allowNull: false,
+      },
+      bankIfscCode: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+      },
+      cancelChequeImage: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      aadharCardNumber: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      aadharCardFrontImage: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      aadharCardBackImage: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: false,
         unique: false,
       },
       dob: {
@@ -114,7 +141,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   ArtistInfo.associate = function (models) {
-    ArtistInfo.belongsTo(models.User, { foreignKey: 'userId' });
+    ArtistInfo.belongsTo(models.User, { foreignKey: 'artistId' });
     ArtistInfo.belongsToMany(models.Service, {
       through: 'ArtistInfoService', // Corrected join table name
       foreignKey: 'artistInfoId', // Corrected foreignKey to represent ArtistInfo's ID in join table

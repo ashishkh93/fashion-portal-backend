@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Service.associate = function (models) {
-    Service.belongsToMany(models.User, {
+    Service.belongsToMany(models.ArtistInfo, {
       through: 'ArtistInfoService', // Corrected join table name
       foreignKey: 'serviceId', // This should be the name used in the join table for Service's ID
       otherKey: 'artistInfoId', // This should be the name used in the join table for ArtistInfo's ID

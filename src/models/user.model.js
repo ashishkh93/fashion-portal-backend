@@ -71,9 +71,9 @@ module.exports = (sequelize, DataTypes) => {
    * The `models/index` file will call this method automatically.
    */
   User.associate = function (models) {
-    User.hasOne(models.SuperAdminInfo, { foreignKey: 'userId' });
-    User.hasOne(models.CustomerInfo, { foreignKey: 'userId' });
-    User.hasOne(models.ArtistInfo, { foreignKey: 'userId', as: 'artistInfos' });
+    User.hasOne(models.SuperAdminInfo, { foreignKey: 'superAdminId' });
+    User.hasOne(models.CustomerInfo, { foreignKey: 'customerId' });
+    User.hasOne(models.ArtistInfo, { foreignKey: 'artistId', as: 'artistInfos' });
   };
 
   return User;

@@ -31,16 +31,9 @@ const refreshTokens = catchAsync(async (req, res) => {
   res.send({ ...tokens });
 });
 
-const changeArtistStatus = catchAsync(async (req, res) => {
-  const artistId = req.params.artistId;
-  await artistServices.artistInfoService.updateArtistStatusService(req.body, artistId);
-  res.status(httpStatus.OK).send({ status: true, message: 'Status updated', entity: null });
-});
-
 module.exports = {
   login,
   verifyOtp,
   logout,
   refreshTokens,
-  changeArtistStatus,
 };

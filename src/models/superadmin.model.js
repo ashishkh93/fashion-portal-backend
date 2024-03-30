@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
+      superAdminId: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       fullName: {

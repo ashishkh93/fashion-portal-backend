@@ -13,14 +13,15 @@ const envVarsSchema = Joi.object()
     DB_PASSWORD: Joi.string().allow(''),
     DB_NAME: Joi.string().required().description('Database name is required'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
-    JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
-    JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
-    SMTP_HOST: Joi.string().description('server that will send the emails'),
-    SMTP_PORT: Joi.number().description('port to connect to the email server'),
-    SMTP_USERNAME: Joi.string().description('username for email server'),
-    SMTP_PASSWORD: Joi.string().description('password for email server'),
-    EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
-    ENCRYPTION_ALGO: Joi.string().description('Cipher encryption algo'),
+    JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire required'),
+    JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire required'),
+    SMTP_HOST: Joi.string().description('server that will send the emails required'),
+    SMTP_PORT: Joi.number().description('port to connect to the email server required'),
+    SMTP_USERNAME: Joi.string().description('username for email server required'),
+    SMTP_PASSWORD: Joi.string().description('password for email server required'),
+    EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app required'),
+    ENCRYPTION_ALGO: Joi.string().description('Cipher encryption algo required'),
+    ENCRYPTION_KEY: Joi.string().description('Cipher encryption key required'),
   })
   .unknown();
 
@@ -59,4 +60,5 @@ module.exports = {
     from: envVars.EMAIL_FROM,
   },
   encryptionAlgo: envVars.ENCRYPTION_ALGO,
+  encryptionKey: envVars.ENCRYPTION_KEY,
 };

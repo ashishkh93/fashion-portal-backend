@@ -1,29 +1,23 @@
 const httpStatus = require('http-status');
-const { User, ArtistInfo, ArtistInfoService } = require('../../models');
+const { User, ArtistInfo, ArtistInfoService, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { encrypt, decrypt } = require('../../utils/crypto');
-const logger = require('../../config/logger');
+const { encrypt } = require('../../utils/crypto');
+const { Op } = require('sequelize');
 
-/**
- * Edit Category
- * @param {string} artistId
- * @param {object} body
- * @returns {Category}
- */
-const updateArtistStatusService = async (body, artistId) => {
-  try {
-    const currentArtist = await User.findOne({ where: { id: artistId, role: 'artist' } });
-    if (currentArtist) {
-      const artistUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
-      const artistInfoUpdateBody = { status: !!body.isActive ? 'approved' : 'rejected' };
-
-      await User.update(artistUpdateBody, { where: { id: artistId } });
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { userId: artistId } });
+const checkArtistStatus = async (artist, mode) => {
+  if (artist.status === 'rejected') {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'Yout profile has been rejected by admin, please contact support team for further questions'
+    );
+  } else if (artist.status === 'approved') {
+    if (mode === 'edit') {
+      return true;
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
+      throw new ApiError(httpStatus.FORBIDDEN, 'You have already added your infos!');
     }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  } else if (artist.status === 'pending') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Your profile is being reviewd by our team, Please be patient!');
   }
 };
 
@@ -31,38 +25,131 @@ const updateArtistStatusService = async (body, artistId) => {
  * Add artist info
  * @param {string} artistId
  * @param {object} body
- * @returns {Category}
+ * @returns {object}
  */
 const addArtistInfoService = async (artistId, body) => {
   try {
-    const artist = await ArtistInfo.findOne({ where: { userId: artistId } });
+    const artist = await ArtistInfo.findOne({ where: { artistId } });
+
     if (artist) {
-      if (artist.status === 'rejected') {
-        throw new ApiError(
-          httpStatus.FORBIDDEN,
-          'Yout profile has been rejected by admin, please contact support team for further questions'
-        );
-      } else if (artist.status === 'approved') {
-        throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden!!');
-      } else if (artist.status === 'pending') {
-        throw new ApiError(httpStatus.FORBIDDEN, 'Your profile is being reviewd by our team, Please be patient!');
-      }
+      await checkArtistStatus(artist, 'add');
     } else {
       const accCipher = encrypt(body.bankAccountNumber);
-
-      const artistInfoEntries = { ...body, bankAccountNumber: accCipher, userId: artistId, status: 'pending' };
+      const artistInfoEntries = { ...body, artistId, bankAccountNumber: accCipher, status: 'pending' };
 
       let tmpArtistInfo = await ArtistInfo.create(artistInfoEntries);
 
       const artistInfoServiceEntries = body?.services?.map((serviceId) => ({
         artistInfoId: tmpArtistInfo.dataValues.id,
+        artistId,
         serviceId,
       }));
 
       await ArtistInfoService.bulkCreate(artistInfoServiceEntries);
 
-      const { userId, status, createdAt } = tmpArtistInfo.dataValues;
-      return { userId, status, createdAt };
+      const { status, createdAt } = tmpArtistInfo.dataValues;
+      return { artistId, status, createdAt };
+    }
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
+  }
+};
+
+/**
+ * Get artist info
+ * @param {string} artistId
+ * @returns {Promise<ArtistInfo>}
+ */
+const getArtistInfoService = async (artistId) => {
+  try {
+    const artistCondoition = { artistId, status: 'approved' };
+    const includeModel = [
+      {
+        model: Service,
+        as: 'artistServices', // Ensure this matches the alias we used in association
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+        through: {
+          attributes: [], // This excludes all attributes from the join table
+        },
+      },
+    ];
+
+    const artistInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'bankAccountNumber', 'services'] };
+
+    const artist = await ArtistInfo.findOne({
+      where: [artistCondoition],
+      attributes: artistInfoAttrs,
+      include: includeModel,
+    });
+
+    if (artist) {
+      return artist;
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
+    }
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
+  }
+};
+
+/**
+ * Edit artist info
+ * @param {string} artistId
+ * @param {object} body
+ * @returns {Promise}
+ */
+const editArtistInfoService = async (artistId, body) => {
+  try {
+    const artist = await ArtistInfo.findOne({ where: { artistId } });
+    if (artist) {
+      await checkArtistStatus(artist, 'edit');
+
+      if (!!body.deletedServices) {
+        // Need to think on this operation before deleting all entries from ArtistInfoService table
+        await ArtistInfoService.destroy({
+          where: {
+            serviceId: {
+              [Op.in]: body.deletedServices,
+            },
+            artistId: artistId,
+          },
+        });
+      }
+
+      if (!!body.newServices) {
+        const newServiceEntries = body?.newServices?.map((serviceId) => ({
+          artistInfoId: artist.id,
+          serviceId,
+          artistId,
+        }));
+        await ArtistInfoService.bulkCreate(newServiceEntries);
+      }
+
+      let updatedServicesArray = [...artist.services];
+
+      if (body.deletedServices) {
+        updatedServicesArray = updatedServicesArray.filter((id) => !body.deletedServices.includes(id));
+      }
+      if (body.newServices) {
+        body.newServices?.map((id) => {
+          if (!updatedServicesArray.includes(id)) {
+            updatedServicesArray.push(id);
+          }
+        });
+      }
+
+      if (!!body.bankAccountNumber) {
+        // this operation must be verified for security reason (avoid to do like this directly)
+        const accCipher = encrypt(body.bankAccountNumber);
+        const artistInfoUpdateBody = { ...body, services: updatedServicesArray, bankAccountNumber: accCipher };
+
+        await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      } else {
+        const artistInfoUpdateBody = { ...body, services: updatedServicesArray };
+        await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
     }
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
@@ -70,6 +157,7 @@ const addArtistInfoService = async (artistId, body) => {
 };
 
 module.exports = {
-  updateArtistStatusService,
   addArtistInfoService,
+  getArtistInfoService,
+  editArtistInfoService,
 };
