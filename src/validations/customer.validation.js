@@ -1,23 +1,11 @@
 const Joi = require('joi');
 
-const addArtistInfo = {
+const addCustomerInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    customerId: Joi.string().required(),
   }),
   body: Joi.object().keys({
     fullName: Joi.string().required(),
-    businessName: Joi.string(),
-    bankName: Joi.string().required(),
-    bankAccountHolderName: Joi.string().required(),
-    bankAccountNumber: Joi.string().required(),
-    bankIfscCode: Joi.string().required(),
-    cancelChequeImage: Joi.string().required(),
-    aadharCardNumber: Joi.string() // aadhar card number validation pattern
-      .length(12)
-      .pattern(/^[0-9]+$/)
-      .required(),
-    aadharCardFrontImage: Joi.string().required(),
-    aadharCardBackImage: Joi.string().required(),
     email: Joi.string().email().required(),
     dob: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
@@ -29,22 +17,17 @@ const addArtistInfo = {
       }),
     gender: Joi.string().required().valid('male', 'female'),
     profilePic: Joi.string(),
-    aboutInfo: Joi.string().required(),
-    workingTime: Joi.string().required(),
-    services: Joi.array().required(),
-    location: Joi.string().required(),
     city: Joi.string().required(),
     state: Joi.string().required(),
   }),
 };
 
-const editArtistInfo = {
+const editCustomerInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    customerId: Joi.string().required(),
   }),
   body: Joi.object().keys({
     fullName: Joi.string(),
-    businessName: Joi.string(),
     email: Joi.string().email(),
     dob: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
@@ -54,25 +37,19 @@ const editArtistInfo = {
       }),
     gender: Joi.string().valid('male', 'female'),
     profilePic: Joi.string(),
-    aboutInfo: Joi.string(),
-    workingTime: Joi.string(),
-    services: Joi.array(),
-    location: Joi.string(),
     city: Joi.string(),
     state: Joi.string(),
-    newServices: Joi.array().items(Joi.string()),
-    deletedServices: Joi.array().items(Joi.string()),
   }),
 };
 
-const getArtistInfo = {
+const getCustomerInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    customerId: Joi.string().required(),
   }),
 };
 
 module.exports = {
-  addArtistInfo,
-  getArtistInfo,
-  editArtistInfo,
+  addCustomerInfo,
+  editCustomerInfo,
+  getCustomerInfo,
 };

@@ -58,6 +58,14 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'serviceId', // This should be the name used in the join table for Service's ID
       otherKey: 'artistInfoId', // This should be the name used in the join table for ArtistInfo's ID
     });
+    Service.hasMany(models.Art, {
+      foreignKey: 'serviceId',
+      as: 'artServices',
+    });
+    Service.hasMany(models.Category, {
+      foreignKey: 'serviceId',
+      as: 'serviceCategories',
+    });
   };
 
   return Service;

@@ -9,12 +9,12 @@ const router = express.Router();
 router.post(
   '/login',
   validate(authValidation.phoneLogin),
-  addRoleToLoginRoute('user'),
+  addRoleToLoginRoute('customer'),
   commonControllers.authController.login
 );
 router.post(
   '/verify-otp',
-  addRoleToLoginRoute('user'),
+  addRoleToLoginRoute('customer'),
   validate(authValidation.phoneVerify),
   commonControllers.authController.verifyOtp
 );

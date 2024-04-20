@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: false,
       },
+      advanceAmount: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
       searchKeywords: {
         type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: true,
@@ -59,10 +63,6 @@ module.exports = (sequelize, DataTypes) => {
       coverImage: {
         type: DataTypes.STRING(),
         allowNull: false,
-      },
-      isActive: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
       },
       reasonToDeclineArt: {
         type: DataTypes.TEXT,
@@ -93,7 +93,21 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Art.associate = function (models) {};
+  Art.associate = function (models) {
+    Art.belongsTo(models.Service, {
+      foreignKey: 'serviceId',
+      as: 'service',
+    });
+    Art.belongsTo(models.Category, {
+      foreignKey: 'categoryId',
+      as: 'category',
+    });
+    Art.belongsToMany(models.Order, {
+      through: 'ArtOrder', // Corrected join table name
+      foreignKey: 'artId', // This should be the name used in the join table for Art's ID
+      otherKey: 'artOrderId', // This should be the name used in the join table for Order's ID
+    });
+  };
 
   return Art;
 };

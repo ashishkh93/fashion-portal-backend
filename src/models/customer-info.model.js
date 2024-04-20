@@ -12,26 +12,26 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
+      status: {
+        type: DataTypes.ENUM('approved', 'blocked'),
+        allowNull: false,
+      },
       fullName: {
         type: DataTypes.STRING(50),
-        allowNull: true,
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: false,
         unique: true,
       },
       dob: {
-        type: DataTypes.STRING(12),
-        allowNull: true,
+        type: DataTypes.STRING(14),
+        allowNull: false,
       },
       gender: {
         type: DataTypes.ENUM('male', 'female'),
-        allowNull: true,
-      },
-      age: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
       },
       profilePic: {
         type: DataTypes.STRING,
@@ -39,15 +39,16 @@ module.exports = (sequelize, DataTypes) => {
       },
       city: {
         type: DataTypes.STRING(20),
-        allowNull: true,
+        allowNull: false,
       },
       state: {
         type: DataTypes.STRING(20),
-        allowNull: true,
+        allowNull: false,
       },
       country: {
         type: DataTypes.ENUM('india'),
-        allowNull: true,
+        allowNull: false,
+        defaultValue: 'india',
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -74,7 +75,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   CustomerInfo.associate = function (models) {
-    CustomerInfo.belongsTo(models.User, { foreignKey: 'customerId', as: 'customerInfos' });
+    CustomerInfo.belongsTo(models.User, { foreignKey: 'customerId', as: 'customerInfo' });
   };
 
   return CustomerInfo;

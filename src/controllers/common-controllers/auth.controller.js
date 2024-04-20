@@ -1,8 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
-const { commonServices, artistServices } = require('../../services');
+const { commonServices } = require('../../services');
 const generateOtp = require('../../utils/common.util');
-const ApiError = require('../../utils/ApiError');
 
 const login = catchAsync(async (req, res) => {
   const { phone } = req.body;

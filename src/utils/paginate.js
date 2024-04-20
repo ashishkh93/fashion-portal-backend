@@ -31,7 +31,7 @@ const getPaginationDataFromModel = async (
     order: [[orderyKey, orderBy]],
     limit,
     offset,
-    distinct: true, // this will only count the number of rows from main model (which will not lead to get wring count)
+    distinct: true, // this will only count the number of rows from main model (which will not lead to get wrong count)
   });
 
   let data = getPagingData(responseFromModel, page, limit);

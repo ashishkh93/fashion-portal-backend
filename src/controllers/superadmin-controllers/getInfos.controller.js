@@ -21,8 +21,15 @@ const getAllArts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Arts fetched successfully', entity: artistInfo });
 });
 
+const getSingleArt = catchAsync(async (req, res) => {
+  const { artistId, artId } = req.params;
+  const singleArt = await artistServices.artService.getSingleArtService(artistId, artId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Art fetched successfully', entity: singleArt });
+});
+
 module.exports = {
   getAllArtist,
   getArtistInfo,
   getAllArts,
+  getSingleArt,
 };

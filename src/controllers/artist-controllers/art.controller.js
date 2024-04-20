@@ -7,7 +7,7 @@ const addArt = catchAsync(async (req, res) => {
   const art = await artistServices.artService.addArtService(artistId, req.body);
   res.status(httpStatus.CREATED).send({
     status: true,
-    message: 'Art added successfully! You and Users will be able to see this art, once it is verified by the team.',
+    message: 'Art added successfully! You and Users will be able to see this art, once it is verified by the team!',
     entity: art,
   });
 });
@@ -15,6 +15,7 @@ const addArt = catchAsync(async (req, res) => {
 const getAllArts = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
   const { page, size } = req.query;
+
   const allArts = await artistServices.artService.getAllArtsService(artistId, page, size);
   if (allArts?.items?.length > 0) {
     res.status(httpStatus.OK).send({ status: true, message: 'Arts fetched successfully', entity: allArts });
@@ -32,8 +33,9 @@ const getSingleArt = catchAsync(async (req, res) => {
 
 const editArt = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
-  await artistServices.artService.editArtService(artistId, req.body);
-  res.status(httpStatus.OK).send({ status: true, message: 'Profile information edited successfully', entity: req.body });
+  const artId = req.params.artId;
+  await artistServices.artService.editArtService(artistId, artId, req.body);
+  res.status(httpStatus.OK).send({ status: true, message: 'Art updated successfully!', entity: req.body });
 });
 
 module.exports = {

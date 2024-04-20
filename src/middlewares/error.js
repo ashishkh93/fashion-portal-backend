@@ -13,7 +13,7 @@ const errorConverter = (err, req, res, next) => {
     const message = error.message || httpStatus[statusCode];
     error = new ApiError(statusCode, message, false, err.stack);
   }
-  console.log(err, 'error88');
+
   next(error);
 };
 
@@ -28,8 +28,9 @@ const errorHandler = async (err, _req, res, _next) => {
   res.locals.errorMessage = err.message;
 
   const response = {
-    code: statusCode,
+    status: false,
     message,
+    code: err?.errorCode || 'Error',
     ...(config.env === 'development' && { stack: err.stack }),
   };
 

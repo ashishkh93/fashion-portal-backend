@@ -1,7 +1,11 @@
 const httpStatus = require('http-status');
-const { User, Art, ArtistInfo } = require('../../models');
+const _ = require('lodash');
+const { User, Art, Service, Category } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
+const config = require('../../config/config');
+
+const advanceAmountPT = config.pt.advanceAmountPT;
 
 const getArtist = async (artistId) => {
   const artist = await User.findOne({ where: { id: artistId } });
@@ -26,18 +30,10 @@ const getArtist = async (artistId) => {
  * @returns {Art}
  */
 const addArtService = async (artistId, body) => {
-  try {
-    const artist = await User.findOne({ where: { id: artistId } });
-    if (artist) {
-      const artBody = { ...body, artistId, status: 'pending', isActive: false };
-      const art = await Art.create(artBody);
-      return art;
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
-    }
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
-  }
+  // await getApprovedArtist(artistId);
+  const artBody = { ...body, artistId, status: 'pending', isActive: false };
+  const art = await Art.create(artBody);
+  return art;
 };
 
 /**
@@ -49,9 +45,19 @@ const addArtService = async (artistId, body) => {
  */
 const getAllArtsService = async (artistId, page, size) => {
   try {
-    await getArtist(artistId);
+    const includeModel = [
+      {
+        model: Service,
+        as: 'service',
+      },
+      {
+        model: Category,
+        as: 'category',
+      },
+    ];
+
     const artCondition = { artistId, status: 'approved', isActive: true };
-    const allArts = await getPaginationDataFromModel(Art, artCondition, page, size);
+    const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, includeModel);
     return allArts;
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
@@ -66,8 +72,17 @@ const getAllArtsService = async (artistId, page, size) => {
  */
 const getSingleArtService = async (artistId, artId) => {
   try {
-    await getArtist(artistId);
-    const curArt = await Art.findOne({ where: { id: artId, artistId } });
+    const include = [
+      {
+        model: Service,
+        as: 'service',
+      },
+      {
+        model: Category,
+        as: 'category',
+      },
+    ];
+    const curArt = await Art.findOne({ where: { id: artId, artistId }, include });
     if (curArt) {
       return curArt;
     } else {
@@ -78,18 +93,32 @@ const getSingleArtService = async (artistId, artId) => {
   }
 };
 
+const throwErrorForAdvanceAmount = (maxAdvanceAmount) => {
+  throw new ApiError(httpStatus.BAD_REQUEST, `advanceAmount cannot be more than ${maxAdvanceAmount}`);
+};
+
 /**
  * Edit art
  * @param {string} artistId
+ * @param {string} artId
  * @param {object} body
  * @returns {Promise}
  */
-
-const editArtService = async (artistId, body) => {
+const editArtService = async (artistId, artId, body) => {
   try {
-    const artId = body.artId;
     const curArt = await Art.findOne({ where: { id: artId, artistId } });
     if (curArt) {
+      /**
+       * check for advance amount, which must not be greater than 20% of price
+       */
+      if (_.has(body, 'price') && !_.has(body, 'advanceAmount')) {
+        const maxAdvanceAmount = body.price * advanceAmountPT;
+        if (curArt.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
+      } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
+        const maxAdvanceAmount = curArt.price * advanceAmountPT;
+        if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
+      }
+
       const updatedArtBody = { ...body };
       await Art.update(updatedArtBody, { where: { id: artId, artistId } });
     } else {

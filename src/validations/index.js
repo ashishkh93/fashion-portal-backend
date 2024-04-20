@@ -3,3 +3,6 @@ module.exports.userValidation = require('./user.validation');
 module.exports.customValidation = require('./custom.validation');
 module.exports.artistValidation = require('./artist.validation');
 module.exports.artValidation = require('./art.validation');
+module.exports.customerValidation = require('./customer.validation');
+module.exports.orderValidation = require('./order.validation');
+module.exports.paymentValidation = require('./payment.validation');

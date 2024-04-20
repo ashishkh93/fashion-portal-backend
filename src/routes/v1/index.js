@@ -1,7 +1,7 @@
 const express = require('express');
-const { userRoutes } = require('./userRoutes');
-const { adminRoutes } = require('./adminRoutes');
-const { artistRoutes } = require('./artistRoutes');
+const { customerRoutes } = require('./customer-routes');
+const { adminRoutes } = require('./admin-routes');
+const { artistRoutes } = require('./artist-routes');
 
 const router = express.Router();
 
@@ -15,8 +15,8 @@ const defaultRoutes = [
     route: artistRoutes,
   },
   {
-    path: '/user',
-    route: userRoutes,
+    path: '/customer',
+    route: customerRoutes,
   },
 ];
 

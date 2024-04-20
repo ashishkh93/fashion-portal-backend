@@ -1,5 +1,6 @@
 const express = require('express');
 const helmet = require('helmet');
+const moment = require('moment');
 const xss = require('xss-clean');
 const compression = require('compression');
 const cors = require('cors');
@@ -14,6 +15,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const db = require('./models');
 const transactionMiddleware = require('./middlewares/transaction');
+const logger = require('./config/logger');
 const app = express();
 
 if (config.env !== 'test') {
@@ -74,5 +76,18 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
+// let createdAt = moment('2024-04-15T22:24:55+05:30');
+// let createdAtUnix = createdAt.unix();
+// let expirationDate = createdAtUnix + 5;
+// // let expirationDate = createdAtUnix + 2 * 24 * 60 * 60 * 1000;
+
+// const now = moment().unix();
+// console.log(now, createdAtUnix, expirationDate);
+// if (now > expirationDate) {
+//   logger.info('The 2 days period has expired.');
+// } else {
+//   logger.info('The 2 days period has not yet expired.');
+// }
 
 module.exports = app;

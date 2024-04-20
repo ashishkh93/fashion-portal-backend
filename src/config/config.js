@@ -20,8 +20,13 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server required'),
     SMTP_PASSWORD: Joi.string().description('password for email server required'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app required'),
-    ENCRYPTION_ALGO: Joi.string().description('Cipher encryption algo required'),
-    ENCRYPTION_KEY: Joi.string().description('Cipher encryption key required'),
+    ENCRYPTION_ALGO: Joi.string().required().description('Cipher encryption algo required'),
+    ENCRYPTION_KEY: Joi.string().required().description('Cipher encryption key required'),
+    ADVANCE_AMOUNT_PT: Joi.number().required().description('Advance amount percentage for art'),
+    CASHFREE_CLIENT_ID: Joi.string().required().description('Cashfree client id'),
+    CASHFREE_CLIENT_SECRET: Joi.string().required().description('Cashfree client secret key'),
+    CASHFREE_ENV: Joi.string().required().description('Cashfree environment'),
+    CASHFREE_X_API_VERSION: Joi.string().required().description('Cashfree x api version'),
   })
   .unknown();
 
@@ -61,4 +66,21 @@ module.exports = {
   },
   encryptionAlgo: envVars.ENCRYPTION_ALGO,
   encryptionKey: envVars.ENCRYPTION_KEY,
+
+  /**
+   * Advance amount percentage
+   */
+  pt: {
+    advanceAmountPT: envVars.ADVANCE_AMOUNT_PT,
+  },
+
+  /**
+   * cashfree secrets
+   */
+  cashfree: {
+    clientId: envVars.CASHFREE_CLIENT_ID,
+    clientSecret: envVars.CASHFREE_CLIENT_SECRET,
+    env: envVars.CASHFREE_ENV, // cashfree environment
+    apiVersion: envVars.CASHFREE_X_API_VERSION, // cashfree x-api-version
+  },
 };

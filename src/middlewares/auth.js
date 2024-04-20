@@ -7,9 +7,9 @@ const logger = require('../config/logger');
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
   if (err || info || !user) {
     const logError =
-      err || info?.message === 'jwt expired' || info?.message === 'jwt malformed' ? 'Token expired' : info?.message;
+      err?.message || info?.message === 'jwt expired' || info?.message === 'jwt malformed' ? 'Token expired' : info?.message;
     logger.info('Error while autheticate: ' + logError);
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, logError || 'Access denied!!'));
+    return reject(new ApiError(httpStatus.UNAUTHORIZED, logError || 'Access denied!'));
   }
 
   req.user = user;
@@ -19,7 +19,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
 
     if (!hasRequiredRights) {
-      return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Access denied!'));
     }
   }
 

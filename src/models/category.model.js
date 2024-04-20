@@ -44,5 +44,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  Category.associate = function (models) {
+    Category.hasMany(models.Art, {
+      foreignKey: 'categoryId',
+      as: 'artCategories',
+    });
+    Category.belongsTo(models.Service, {
+      foreignKey: 'serviceId',
+      as: 'service',
+    });
+  };
+
   return Category;
 };

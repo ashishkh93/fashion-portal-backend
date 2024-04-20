@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('superAdmin', 'artist', 'user'),
+        type: DataTypes.ENUM('superAdmin', 'artist', 'customer'),
         allowNull: false,
       },
       phone: {
@@ -72,8 +72,9 @@ module.exports = (sequelize, DataTypes) => {
    */
   User.associate = function (models) {
     User.hasOne(models.SuperAdminInfo, { foreignKey: 'superAdminId' });
-    User.hasOne(models.CustomerInfo, { foreignKey: 'customerId' });
+    User.hasOne(models.CustomerInfo, { foreignKey: 'customerId', as: 'customerInfo' });
     User.hasOne(models.ArtistInfo, { foreignKey: 'artistId', as: 'artistInfos' });
+    User.hasMany(models.Order, { foreignKey: 'customerId' });
   };
 
   return User;
