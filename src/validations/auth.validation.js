@@ -67,10 +67,12 @@ const resetPassword = {
 
 const changeArtistStatus = {
   params: Joi.object().keys({
+    adminId: Joi.string().required(),
     artistId: Joi.string().required(),
   }),
   body: Joi.object().keys({
     isActive: Joi.boolean().required(),
+    status: Joi.string().required().valid('pending', 'approved', 'rejected', 'blocked', 'suspended'),
     reasonToDecline: Joi.string().when('isActive', {
       is: false, // The condition where 'isActive' is false
       then: Joi.required(), // Make 'reason' field required if condition is met

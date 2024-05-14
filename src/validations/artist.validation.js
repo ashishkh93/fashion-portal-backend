@@ -71,8 +71,20 @@ const getArtistInfo = {
   }),
 };
 
+const updateLatLong = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+    artistId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    latitude: Joi.number().required(),
+    longitude: Joi.number().required(),
+  }),
+};
+
 module.exports = {
   addArtistInfo,
   getArtistInfo,
   editArtistInfo,
+  updateLatLong,
 };

@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
+      beneficiaryId: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+      },
       status: {
         type: DataTypes.ENUM('pending', 'approved', 'rejected', 'blocked', 'suspended'),
         allowNull: false,
@@ -102,6 +106,14 @@ module.exports = (sequelize, DataTypes) => {
       location: {
         type: DataTypes.STRING(200),
         allowNull: false,
+      },
+      latitude: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      longitude: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
       },
       city: {
         type: DataTypes.STRING(20),

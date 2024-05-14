@@ -1,12 +1,12 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { commonServices } = require('../../services');
-const generateOtp = require('../../utils/common.util');
+const { generateOtp } = require('../../utils/common.util');
 
 const login = catchAsync(async (req, res) => {
   const { phone } = req.body;
 
-  const { otp, otpExpire } = await generateOtp(10, phone, 91);
+  const { otp, otpExpire } = await generateOtp();
   const isActive = req.role === 'artist' ? false : true;
 
   const userBody = { phone, otp, otpExpire, role: req.role, isActive };

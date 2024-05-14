@@ -79,6 +79,7 @@ const getSingleArt = {
 
 const udpateArtStatus = {
   params: Joi.object().keys({
+    adminId: Joi.string().required(),
     artistId: Joi.string().required(),
     artId: Joi.string().required(),
   }),

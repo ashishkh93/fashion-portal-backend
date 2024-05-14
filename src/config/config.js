@@ -27,6 +27,8 @@ const envVarsSchema = Joi.object()
     CASHFREE_CLIENT_SECRET: Joi.string().required().description('Cashfree client secret key'),
     CASHFREE_ENV: Joi.string().required().description('Cashfree environment'),
     CASHFREE_X_API_VERSION: Joi.string().required().description('Cashfree x api version'),
+    OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
+    MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
   })
   .unknown();
 
@@ -39,6 +41,9 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  otp: {
+    expiry: envVars.OTP_EXPIRATION_MINUTES,
+  },
   mysql: {
     host: envVars.DB_HOST,
     db_port: envVars.DB_PORT,
@@ -82,5 +87,8 @@ module.exports = {
     clientSecret: envVars.CASHFREE_CLIENT_SECRET,
     env: envVars.CASHFREE_ENV, // cashfree environment
     apiVersion: envVars.CASHFREE_X_API_VERSION, // cashfree x-api-version
+  },
+  order: {
+    minTimeToOrder: envVars.MIN_TIME_TO_ORDER,
   },
 };

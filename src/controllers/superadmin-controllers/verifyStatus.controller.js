@@ -14,7 +14,14 @@ const approveArt = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Art status updated', entity: null });
 });
 
+const updateLatLong = catchAsync(async (req, res) => {
+  const { artistId } = req.params;
+  await superAdminServices.infoService.updateLatLongService(req.body, artistId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Lat Long updated', entity: null });
+});
+
 module.exports = {
   approveArt,
   changeArtistStatus,
+  updateLatLong,
 };

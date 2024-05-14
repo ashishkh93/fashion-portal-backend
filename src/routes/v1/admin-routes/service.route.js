@@ -11,32 +11,38 @@ const uploadImage = multer({ storage: fileUpload() });
 
 const router = express.Router();
 
-router.get('/get-all-services', auth(), adminValidate, superAdminControllers.serviceController.getAllServices);
-router.post(
-  '/add-service',
-  auth('manageServices'),
-  adminValidate,
-  validate(serviceValidation.addService),
-  superAdminControllers.serviceController.createService
-);
-
 router
-  .route('/:serviceId')
+  .route('/:adminId')
   .get(
     auth(),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
+    validate(serviceValidation.getAllService),
+    superAdminControllers.serviceController.getAllServices
+  )
+  .post(
+    auth('manageServices'),
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
+    validate(serviceValidation.addService),
+    superAdminControllers.serviceController.createService
+  );
+
+router
+  .route('/:adminId/:serviceId')
+  .get(
+    auth(),
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditAndDeleteService),
     superAdminControllers.serviceController.getOneService
   )
   .put(
     auth('manageServices'),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditAndDeleteService),
     superAdminControllers.serviceController.editService
   )
   .delete(
     auth('manageServices'),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditAndDeleteService),
     superAdminControllers.serviceController.deleteService
   );

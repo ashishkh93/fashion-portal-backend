@@ -11,7 +11,14 @@ const addService = {
 
 const getEditAndDeleteService = {
   params: Joi.object().keys({
+    adminId: Joi.string().required(),
     serviceId: Joi.string().required(),
+  }),
+};
+
+const getAllService = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
   }),
 };
 
@@ -31,6 +38,7 @@ const getCategories = {
 
 const getEditDeleteCategory = {
   params: Joi.object().keys({
+    adminId: Joi.string().required(),
     catId: Joi.string().required(),
   }),
 };
@@ -53,6 +61,27 @@ const editServiceStatus = {
   }),
 };
 
+const getArtists = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+  }),
+};
+
+const getArts = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+    artistId: Joi.string().required(),
+  }),
+};
+
+const getSingleArt = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+    artId: Joi.string().required(),
+    artistId: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   addService,
   getEditAndDeleteService,
@@ -61,4 +90,8 @@ module.exports = {
   getCategories,
   editServiceStatus,
   editCategoryStatus,
+  getAllService,
+  getArtists,
+  getArts,
+  getSingleArt,
 };

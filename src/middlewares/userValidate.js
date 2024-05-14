@@ -2,16 +2,23 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { ArtistInfo } = require('../models');
 
-const adminValidate = async (req, _res, next) => {
-  try {
+const adminValidate = (getUserId) => async (req, _res, next) => {
+  return new Promise(async (resolve, reject) => {
+    const { superAdminId } = getUserId(req);
     const activeUser = req.user;
-    if (activeUser.role !== 'superAdmin') {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Access denied!!');
+
+    if (!activeUser) {
+      reject(new ApiError(httpStatus.NOT_FOUND, 'Super admin not exist'));
+    } else if (activeUser.role !== 'superAdmin') {
+      new ApiError(httpStatus.UNAUTHORIZED, 'Access denied');
+    } else if (activeUser.id !== superAdminId) {
+      reject(new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!'));
+    } else {
+      resolve();
     }
-    next();
-  } catch (err) {
-    next(err);
-  }
+  })
+    .then(() => next())
+    .catch((err) => next(err));
 };
 
 const artistValidate = (getUserId) => async (req, _res, next) => {

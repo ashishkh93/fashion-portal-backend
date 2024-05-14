@@ -10,15 +10,31 @@ const router = express.Router();
 router.route('/:customerId/:artistId').post(
   auth(),
   customerValidate((req) => req.params.customerId),
-  validate(orderValidation.orderInitate),
-  customerController.orderController.orderInitate
+  validate(orderValidation.orderInitiate),
+  customerController.orderController.orderInitiate
 );
 
-router.route('/payment/:customerId/:orderId').post(
+router
+  .route('/:customerId/:orderId')
+  .get(
+    auth(),
+    customerValidate((req) => req.params.customerId),
+    validate(orderValidation.getOrderForUser),
+    customerController.orderController.fetchOrder
+  )
+  .put(
+    auth(),
+    customerValidate((req) => req.params.customerId),
+    validate(orderValidation.cancelOrderByUser),
+    customerController.orderController.cancelOrderByUser
+  );
+
+router.get(
+  '/:customerId',
   auth(),
   customerValidate((req) => req.params.customerId),
-  validate(orderValidation.orderInitate),
-  customerController.orderController.orderInitate
+  validate(orderValidation.getOrdersForUser),
+  customerController.orderController.fetchOrders
 );
 
 module.exports = router;

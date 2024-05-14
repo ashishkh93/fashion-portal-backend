@@ -3,7 +3,20 @@ const { User, ArtistInfo, Service, Art } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { decrypt } = require('../../utils/crypto');
-const { getArtist } = require('../artist-services/art.service');
+
+/**
+ * Get artist information for admin to check artist's status
+ * @param {string} artistId
+ * @returns
+ */
+const getArtistForAdmin = async (artistId) => {
+  const artist = await ArtistInfo.findOne({ where: { artistId } });
+  if (artist) {
+    return artist;
+  } else {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
+  }
+};
 
 /**
  * Get all services
@@ -91,7 +104,6 @@ const getArtistInfoService = async (artistId) => {
  */
 const getAllArtsForAdminService = async (artistId, page, size) => {
   try {
-    await getArtist(artistId);
     const artCondition = { artistId };
     const allArts = await getPaginationDataFromModel(Art, artCondition, page, size);
     return allArts.items;
@@ -111,7 +123,7 @@ const updateArtistStatusService = async (body, artistId) => {
     const currentArtist = await User.findOne({ where: { id: artistId, role: 'artist' } });
     if (currentArtist) {
       const artistUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
-      const artistInfoUpdateBody = { status: !!body.isActive ? 'approved' : 'rejected' };
+      const artistInfoUpdateBody = { status: body.status };
       await User.update(artistUpdateBody, { where: { id: artistId } });
       await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
     } else {
@@ -131,19 +143,40 @@ const updateArtistStatusService = async (body, artistId) => {
  */
 const approveArtStatusService = async (body, artistId, artId) => {
   try {
-    await getArtist(artistId);
-    const artCondition = { id: artId, artistId };
-    const singleArt = await Art.findOne({ where: artCondition });
-    if (singleArt) {
-      const artUpdateBody = {
-        ...body,
-        status: !!body.isActive ? 'approved' : 'rejected',
-        reasonToDeclineArt: !!body.isActive ? null : body.reasonToDeclineArt,
-      };
-      await Art.update(artUpdateBody, { where: artCondition });
+    const artist = await getArtistForAdmin(artistId);
+
+    if (artist.dataValues.status === 'approved') {
+      const artCondition = { id: artId, artistId };
+      const singleArt = await Art.findOne({ where: artCondition });
+      if (singleArt) {
+        const artUpdateBody = {
+          ...body,
+          status: !!body.isActive ? 'approved' : 'rejected',
+          reasonToDeclineArt: !!body.isActive ? null : body.reasonToDeclineArt,
+        };
+        await Art.update(artUpdateBody, { where: artCondition });
+      } else {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Art not found');
+      }
     } else {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Art not found');
+      throw new ApiError(httpStatus.FORBIDDEN, `Artist is currently ${artist.status}, please approve artist first`);
     }
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  }
+};
+
+/**
+ * Update Latitude and Longitude of Artist's location
+ * @param {object} body
+ * @param {string} artistId
+ * @returns {Promise}
+ */
+const updateLatLongService = async (body, artistId) => {
+  try {
+    await getArtistForAdmin(artistId);
+    const artistInfoCondition = { artistId };
+    await ArtistInfo.update(body, { where: artistInfoCondition });
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
   }
@@ -155,4 +188,5 @@ module.exports = {
   getAllArtsForAdminService,
   updateArtistStatusService,
   approveArtStatusService,
+  updateLatLongService,
 };

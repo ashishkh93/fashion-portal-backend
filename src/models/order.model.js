@@ -24,29 +24,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.UUID),
         allowNull: false,
       },
-      totalAmount: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-      },
-      advanceAmountForOrder: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-      },
-      advanceAmountPaid: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      discount: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0,
-      },
-      addOnAmount: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0,
-      },
       date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATEONLY,
         allowNull: false,
       },
       time: {
@@ -54,7 +33,16 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'cancelled by artist', 'cancelled by customer'),
+        type: DataTypes.ENUM(
+          'pending',
+          'approved',
+          'rejected',
+          'not_responded',
+          'auto_cancelled_due_to_unpaid_advance_amount',
+          'cancelled_by_artist',
+          'cancelled_by_customer',
+          'completed'
+        ),
         allowNull: false,
       },
       customerOrderNote: {
@@ -65,9 +53,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      artistAddOnNote: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+      approvedAt: {
+        type: DataTypes.DATE,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -99,6 +86,9 @@ module.exports = (sequelize, DataTypes) => {
 
   Order.associate = function (models) {
     Order.belongsTo(models.User, { foreignKey: 'customerId', as: 'customer' });
+    Order.hasOne(models.OrderFinancialInfo, { foreignKey: 'orderId', as: 'orderFinancialInfo' });
+    Order.hasMany(models.Transaction, { foreignKey: 'cfOrderId' });
+    Order.belongsTo(models.Transaction, { foreignKey: 'transactionId' });
     Order.belongsToMany(models.Art, {
       through: 'ArtOrder',
       foreignKey: 'artOrderId', // Reference from ArtOrder to Order

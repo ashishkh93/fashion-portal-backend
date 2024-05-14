@@ -30,8 +30,17 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Order status updated!', entity: req.body || null });
 });
 
+const addDiscountAndAddOnInOrder = catchAsync(async (req, res) => {
+  const { artistId, orderId } = req.params;
+  await artistServices.orderService.addDiscountAndAddOnInOrderService(artistId, orderId, req.body);
+
+  const msg = req.body.discount ? 'Discount added!' : 'Add-on amount added!';
+  res.status(httpStatus.OK).send({ status: true, message: msg, entity: req.body || null });
+});
+
 module.exports = {
   getAllOrders,
   getSingleOrder,
   updateOrderStatus,
+  addDiscountAndAddOnInOrder,
 };

@@ -26,8 +26,16 @@ router
   .put(
     auth(),
     artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
-    validate(orderValidation.editOrderForArtist),
+    validate(orderValidation.updateOrderStatusForArtist),
     artistControllers.orderController.updateOrderStatus
   );
+
+router.put(
+  '/:artistId/:orderId/edit-order',
+  auth(),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
+  validate(orderValidation.discountAndAddAddOnAmountInOrder),
+  artistControllers.orderController.addDiscountAndAddOnInOrder
+);
 
 module.exports = router;

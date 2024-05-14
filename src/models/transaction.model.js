@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSON,
         allowNull: false,
       },
+      paymentType: {
+        type: DataTypes.ENUM('advance', 'final', 'artist_payout'),
+        allowNull: true,
+      },
       details: {
         type: DataTypes.JSON,
         allowNull: false,
@@ -65,7 +69,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Transaction.associate = function (models) {};
+  Transaction.associate = function (models) {
+    Transaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'orderTransactions' });
+    Transaction.hasOne(models.Order, { foreignKey: 'transactionId' });
+  };
 
   return Transaction;
 };

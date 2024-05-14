@@ -7,38 +7,37 @@ const { adminValidate } = require('../../../middlewares/userValidate');
 
 const router = express.Router();
 
-router.post(
-  '/add-category',
-  auth('manageServices'),
-  adminValidate,
-  validate(serviceValidation.addCategory),
-  superAdminControllers.categoryController.createCategory
-);
-
-router.get(
-  '/get-all-categories',
-  auth(),
-  adminValidate,
-  validate(serviceValidation.getCategories),
-  superAdminControllers.categoryController.getAllCategories
-);
 router
-  .route('/:catId')
+  .route('/:adminId')
+  .post(
+    auth('manageServices'),
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
+    validate(serviceValidation.addCategory),
+    superAdminControllers.categoryController.createCategory
+  )
   .get(
     auth(),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
+    validate(serviceValidation.getCategories),
+    superAdminControllers.categoryController.getAllCategories
+  );
+router
+  .route('/:adminId/:catId')
+  .get(
+    auth(),
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditDeleteCategory),
     superAdminControllers.categoryController.getOneCategory
   )
   .put(
     auth('manageServices'),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditDeleteCategory),
     superAdminControllers.categoryController.editCategory
   )
   .delete(
     auth('manageServices'),
-    adminValidate,
+    adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditDeleteCategory),
     superAdminControllers.categoryController.deleteCategory
   );

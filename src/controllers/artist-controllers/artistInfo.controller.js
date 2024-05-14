@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
-const { commonServices, artistServices } = require('../../services');
-const ApiError = require('../../utils/ApiError');
+const { artistServices } = require('../../services');
 
 const addArtistInfo = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;

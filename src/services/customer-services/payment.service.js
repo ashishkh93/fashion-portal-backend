@@ -55,7 +55,7 @@ const paymentInitiateService = async (customerId, orderId, body, customer) => {
     //   // use only for development
     //   return_url: `https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id=${pgOrderId}`,
     // },
-    order_note: orderId,
+    order_note: body?.isAdvance ? 'Advance Amount Order' : 'Final Amount Order',
   };
 
   try {

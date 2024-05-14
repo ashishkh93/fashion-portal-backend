@@ -1,6 +1,10 @@
 const Joi = require('joi');
+const moment = require('moment');
+const logger = require('../config/logger');
+const config = require('../config/config');
+const minTimeToOrderInHours = config.order.minTimeToOrder;
 
-const orderInitate = {
+const orderInitiate = {
   params: Joi.object().keys({
     customerId: Joi.string().required(),
     artistId: Joi.string().required(),
@@ -10,6 +14,24 @@ const orderInitate = {
     date: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
       .required()
+      .custom((value, helpers) => {
+        const dateInput = moment(value);
+        const time = helpers.state.ancestors[0].time;
+        const minTimeToOrder = moment().add(minTimeToOrderInHours, 'hours');
+
+        // Combine the date and time into one moment object
+        const orderDateTimeCombined = moment(`${dateInput.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD hh:mm A');
+
+        // New order must be after 6 hours from current time
+        if (orderDateTimeCombined.isAfter(minTimeToOrder)) {
+          logger.info('You can order');
+        } else {
+          logger.error(`Customer is trying to create an order within next ${minTimeToOrderInHours} hours, which is invalid`);
+          return helpers.message('You cannot create an order for a date and time you selected');
+        }
+
+        return value;
+      })
       .messages({
         'string.empty': `"Date" is required`,
         'string.pattern.name': `"Date" must be in YYYY-MM-DD format`,
@@ -38,6 +60,34 @@ const getOrdersForArtist = {
   }),
 };
 
+const getOrderForUser = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+    orderId: Joi.string().required(),
+  }),
+};
+
+const cancelOrderByUser = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+    orderId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    status: Joi.string().required().valid('cancelled_by_customer'),
+    cancelReason: Joi.string().required(),
+  }),
+};
+
+const getOrdersForUser = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+  }),
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+  }),
+};
+
 const getSingleOrderForArtist = {
   params: Joi.object().keys({
     artistId: Joi.string().required(),
@@ -45,7 +95,7 @@ const getSingleOrderForArtist = {
   }),
 };
 
-const editOrderForArtist = {
+const updateOrderStatusForArtist = {
   params: Joi.object().keys({
     artistId: Joi.string().required(),
     orderId: Joi.string().required(),
@@ -53,19 +103,35 @@ const editOrderForArtist = {
   body: Joi.object().keys({
     status: Joi.string()
       .required()
-      .valid('approved', 'rejected', 'cancelled by artist')
+      .valid('approved', 'rejected', 'cancelled_by_artist')
       .messages({ 'any.only': `Invalid status` }),
     artistOrderNote: Joi.string().when('status', {
-      is: Joi.valid('cancelled by artist', 'rejected'),
+      is: Joi.valid('cancelled_by_artist', 'rejected'),
       then: Joi.required(),
       // otherwise: Joi.forbidden(),
     }),
   }),
 };
 
+const discountAndAddAddOnAmountInOrder = {
+  params: Joi.object().keys({
+    artistId: Joi.string().required(),
+    orderId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    discount: Joi.number(),
+    addOnAmount: Joi.number(),
+    artistAddOnNote: Joi.string(),
+  }),
+};
+
 module.exports = {
-  orderInitate,
+  orderInitiate,
   getOrdersForArtist,
   getSingleOrderForArtist,
-  editOrderForArtist,
+  updateOrderStatusForArtist,
+  getOrderForUser,
+  getOrdersForUser,
+  discountAndAddAddOnAmountInOrder,
+  cancelOrderByUser,
 };
