@@ -1,6 +1,9 @@
 // const { sendSMS } = require('../services/sms.service');
 const moment = require('moment');
+const crypto = require('crypto');
 const config = require('../config/config');
+const path = require('path');
+const fs = require('fs');
 
 const otpExpireTimeInMinutes = config.otp.expiry;
 
@@ -100,7 +103,48 @@ const getFormattedDate = (date) => {
   return moment(date).format('YYYY-MM-DD');
 };
 
-module.exports = { generateOtp, getCancellationHoursForPendingOrder, checkIsRefundEligible, getFormattedDate };
+/**
+ * Read cashfree public key from the .pem file
+ */
+const readPublicKey = (filename) => {
+  const filePath = path.resolve(__dirname, '..', '..', filename); // Go up two directories and then find the file
+  try {
+    const publicKey = fs.readFileSync(filePath, { encoding: 'utf8' });
+    return publicKey;
+  } catch (error) {
+    console.error('Error reading the public key file:', error);
+    return null;
+  }
+};
+
+/**
+ * generate certificate from cashfree's public key
+ */
+const generateXCFSignature = (clientId) => {
+  const publicKeyFilename = 'pem-config/cf_public_key.pem';
+  const publicKey = readPublicKey(publicKeyFilename);
+
+  const curTimeStamp = Math.floor(Date.now() / 1000); // Convert to seconds and round down
+  const message = clientId + '.' + curTimeStamp.toString();
+  const buffer = Buffer.from(message, 'utf8'); // Convert string to buffer with 'utf8' encoding
+  const encrypted = crypto.publicEncrypt(
+    {
+      key: publicKey,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    },
+    buffer
+  );
+  return encrypted.toString('base64');
+};
+
+module.exports = {
+  generateOtp,
+  getCancellationHoursForPendingOrder,
+  checkIsRefundEligible,
+  getFormattedDate,
+  readPublicKey,
+  generateXCFSignature,
+};
 
 // function generateCode(len, k) {
 //   const s = (k) => {

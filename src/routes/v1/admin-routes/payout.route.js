@@ -15,7 +15,7 @@ router.route('/:adminId').post(
 );
 
 router.get(
-  '/:adminId/:batchPayoutId',
+  '/:adminId/:batchTransferId',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(beneficiaryValidation.payoutVerify),

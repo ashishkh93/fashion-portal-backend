@@ -157,7 +157,7 @@ const payoutToArtistsService = async (body) => {
        */
       logger.info(`Payout successful for ${body.fromDate} to ${body.toDate}`);
       const payoutModelBody = {
-        batchPayoutId: batch_transfer_id,
+        batchTransferId: batch_transfer_id,
         fromDate: body.fromDate,
         toDate: body.toDate,
         artistIds,
@@ -178,12 +178,12 @@ const payoutToArtistsService = async (body) => {
 
 /**
  * Batch payout verify from batch transfer id
- * @param {string} batchPayoutId
+ * @param {string} batchTransferId
  * @returns {Promise}
  */
-const batchPayoutVerifyService = async (batchPayoutId) => {
+const batchPayoutVerifyService = async (batchTransferId) => {
   try {
-    const payoutResponse = await payoutAPICallback('GET', {}, `/transfers/batch?batch_transfer_id=${batchPayoutId}`);
+    const payoutResponse = await payoutAPICallback('GET', {}, `/transfers/batch?batch_transfer_id=${batchTransferId}`);
     const data = await payoutResponse.json();
 
     if (payoutResponse.status === 200) {

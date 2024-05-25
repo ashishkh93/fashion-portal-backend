@@ -3,6 +3,8 @@ const { User, ArtistInfo, Service, Art } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { decrypt } = require('../../utils/crypto');
+const { getSignature } = require('../../utils/cashfree.util');
+const { getAuthenticationTokenAPICallback, verifyUPICallback } = require('../../utils/cashfree-payout-api.util');
 
 /**
  * Get artist information for admin to check artist's status
@@ -183,6 +185,30 @@ const updateLatLongService = async (body, artistId) => {
   }
 };
 
+/**
+ * Verify artist's UPI via cashfree APIs and methods
+ * @param {string} artistId
+ * @returns {object}
+ */
+const verifyUPIService = async (artistId) => {
+  try {
+    const artist = await getArtistForAdmin(artistId);
+    const {
+      dataValues: { upi },
+    } = artist;
+    const decipherUpi = decrypt(upi);
+    const cfSignature = getSignature();
+
+    const authenticationTokenRes = await getAuthenticationTokenAPICallback(cfSignature);
+    const { token } = authenticationTokenRes.data;
+
+    const validateUpiResult = await verifyUPICallback(token, decipherUpi);
+    return validateUpiResult;
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getAllArtistService,
   getArtistInfoService,
@@ -190,4 +216,5 @@ module.exports = {
   updateArtistStatusService,
   approveArtStatusService,
   updateLatLongService,
+  verifyUPIService,
 };

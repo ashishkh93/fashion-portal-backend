@@ -43,7 +43,7 @@ const payout = {
 const payoutVerify = {
   params: Joi.object().keys({
     adminId: Joi.string().required(),
-    batchPayoutId: Joi.string().required(),
+    batchTransferId: Joi.string().required(),
   }),
 };
 

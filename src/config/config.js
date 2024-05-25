@@ -28,6 +28,7 @@ const envVarsSchema = Joi.object()
     CASHFREE_ENV: Joi.string().required().description('Cashfree environment'),
     CASHFREE_X_API_VERSION: Joi.string().required().description('Cashfree x api version'),
     CASHFREE_PAYOUT_API_BASE_URL: Joi.string().required().description('Cashfree Payout api base url'),
+    CASHFREE_PAYOUT_GAMMA_API_BASE_URL: Joi.string().required().description('Cashfree Payout gamma api base url'),
     CASHFREE_PAYOUT_CLIENT_ID: Joi.string().required().description('Cashfree Payout client id'),
     CASHFREE_PAYOUT_CLIENT_SECRET: Joi.string().required().description('Cashfree Payout client secret'),
     CASHFREE_PAYOUT_X_API_VERSION: Joi.string().required().description('Cashfree Payout x api version'),
@@ -94,6 +95,7 @@ module.exports = {
     env: envVars.CASHFREE_ENV, // cashfree environment
     apiVersion: envVars.CASHFREE_X_API_VERSION, // cashfree x-api-version
     payoutBaseUrl: envVars.CASHFREE_PAYOUT_API_BASE_URL, // cashfree x-api-version
+    payoutGammaUrl: envVars.CASHFREE_PAYOUT_GAMMA_API_BASE_URL, // cashfree old api(gamma) base url
     payoutClientId: envVars.CASHFREE_PAYOUT_CLIENT_ID, // cashfree x-api-version
     payoutClientSecret: envVars.CASHFREE_PAYOUT_CLIENT_SECRET, // cashfree x-api-version
     payoutApiVersion: envVars.CASHFREE_PAYOUT_X_API_VERSION, // cashfree x-api-version

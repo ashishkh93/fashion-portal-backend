@@ -20,8 +20,15 @@ const updateLatLong = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Lat Long updated', entity: null });
 });
 
+const verifyUPI = catchAsync(async (req, res) => {
+  const { artistId } = req.params;
+  const upiValidateResponse = await superAdminServices.infoService.verifyUPIService(artistId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Upi verification done!', entity: upiValidateResponse || null });
+});
+
 module.exports = {
   approveArt,
   changeArtistStatus,
   updateLatLong,
+  verifyUPI,
 };

@@ -28,5 +28,12 @@ router.put(
   validate(artistValidation.updateLatLong),
   superAdminControllers.verifyStatusController.updateLatLong
 );
+router.get(
+  '/:adminId/:artistId/upi',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(artistValidation.verifyUpi),
+  superAdminControllers.verifyStatusController.verifyUPI
+);
 
 module.exports = router;

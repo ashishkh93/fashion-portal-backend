@@ -8,8 +8,8 @@ const payoutToArtists = catchAsync(async (req, res) => {
 });
 
 const verifyPayout = catchAsync(async (req, res) => {
-  const { batchPayoutId } = req.params;
-  const payoutStatus = await superAdminServices.payoutService.batchPayoutVerifyService(batchPayoutId);
+  const { batchTransferId } = req.params;
+  const payoutStatus = await superAdminServices.payoutService.batchPayoutVerifyService(batchTransferId);
   res.status(httpStatus.OK).send({ status: true, message: 'Payout status fetched!', entity: payoutStatus || null });
 });
 

@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
-      batchPayoutId: {
+      batchTransferId: {
         type: DataTypes.STRING(40),
         allowNull: false,
       },
