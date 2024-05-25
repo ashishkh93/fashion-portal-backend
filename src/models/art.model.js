@@ -61,8 +61,8 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
       },
       coverImage: {
-        type: DataTypes.STRING(),
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       reasonToDeclineArt: {
         type: DataTypes.TEXT,

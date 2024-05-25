@@ -2,10 +2,11 @@ const httpStatus = require('http-status');
 const moment = require('moment');
 const catchAsync = require('../../utils/catchAsync');
 const ApiError = require('../../utils/ApiError');
-const { Transaction, Order } = require('../../models');
+const { Transaction, Order, OrderFinancialInfo } = require('../../models');
 const logger = require('../../config/logger');
 
 const webhookTransaction = catchAsync(async (req, res) => {
+  // return res.status(httpStatus.CREATED).send({ status: true, message: 'Transaction created', entity: null });
   try {
     const webhookReqBody = req.body.data;
 
@@ -36,31 +37,39 @@ const webhookTransaction = catchAsync(async (req, res) => {
     const newTrn = await Transaction.create(createTransactionBody);
     if (newTrn) {
       if (!!actualOrderId) {
-        let advancedPaid = false;
-        if ((isAdvancePayment && webhookReqBody.payment.payment_status === 'SUCCESS') || isFinalPayment) {
-          advancedPaid = true;
-        }
         let orderUpdateBody = {
           transactionId: newTrn.id,
-          advanceAmountPaid: advancedPaid,
-          advancePaidAt: moment(),
         };
-
         if (isFinalPayment) {
           orderUpdateBody.status = 'completed';
         }
 
         await Order.update(orderUpdateBody, { where: { id: actualOrderId } });
+
+        let advancedPaid = false;
+        if ((isAdvancePayment && webhookReqBody.payment.payment_status === 'SUCCESS') || isFinalPayment) {
+          advancedPaid = true;
+        }
+
+        let orderFinancialInfoUpdateBody = {
+          advanceAmountPaid: advancedPaid,
+        };
+
+        if (advancedPaid) {
+          orderFinancialInfoUpdateBody.advancePaidAt = moment();
+        }
+
+        await OrderFinancialInfo.update(orderFinancialInfoUpdateBody, { where: { orderId: actualOrderId } });
       }
 
-      logger.info('Transaction created for order: ', actualOrderId);
+      logger.info('Transaction created for order: ' + actualOrderId);
       res.status(httpStatus.CREATED).send({ status: true, message: 'Transaction created', entity: newTrn });
     } else {
       logger.error('Transaction not created, something went wrong');
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Transaction not created, something went wrong');
     }
   } catch (error) {
-    logger.error('Transaction not created, something went wrong with reason: ', error.message);
+    logger.error('Transaction not created, something went wrong with reason: ' + error.message);
     throw new ApiError(
       error.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
       error.message || 'Transaction not created, something went wrong'

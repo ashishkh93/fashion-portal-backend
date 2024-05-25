@@ -25,10 +25,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      artistAddOnNote: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
       discount: {
         type: DataTypes.FLOAT,
         defaultValue: 0,
@@ -36,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
       addOnAmount: {
         type: DataTypes.FLOAT,
         defaultValue: 0,
+      },
+      artistAddOnNote: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       advancePaidAt: {
         type: DataTypes.DATE,

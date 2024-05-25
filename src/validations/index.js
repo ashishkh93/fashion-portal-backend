@@ -6,4 +6,4 @@ module.exports.artValidation = require('./art.validation');
 module.exports.customerValidation = require('./customer.validation');
 module.exports.orderValidation = require('./order.validation');
 module.exports.paymentValidation = require('./payment.validation');
-module.exports.vendorValidation = require('./vendor.validation');
+module.exports.beneficiaryValidation = require('./beneficiary.validation');

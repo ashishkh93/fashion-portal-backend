@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       beneficiaryId: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(30),
         allowNull: true,
       },
       status: {
@@ -32,34 +32,42 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(50),
         allowNull: true,
       },
-      bankAccountHolderName: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
+      upi: {
+        type: DataTypes.STRING(120), // because we are storing the cipher
+        allowNull: true,
       },
-      bankAccountNumber: {
-        type: DataTypes.STRING(1000),
-        allowNull: false,
-      },
-      bankIfscCode: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-      },
-      cancelChequeImage: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      aadharCardNumber: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      aadharCardFrontImage: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      aadharCardBackImage: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+      // bankAccountHolderName: {
+      //   type: DataTypes.STRING(100),
+      //   allowNull: false,
+      // },
+      // bankAccountNumber: {
+      //   type: DataTypes.STRING(1000),
+      //   allowNull: false,
+      // },
+      // bankIfscCode: {
+      //   type: DataTypes.STRING(20),
+      //   allowNull: false,
+      // },
+      // cancelChequeImage: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // aadharCardNumber: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // aadharCardFrontImage: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // aadharCardBackImage: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // pancardImage: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
       email: {
         type: DataTypes.STRING(255),
         allowNull: false,
@@ -122,6 +130,10 @@ module.exports = (sequelize, DataTypes) => {
       state: {
         type: DataTypes.STRING(20),
         allowNull: false,
+      },
+      pincode: {
+        type: DataTypes.STRING(8),
+        allowNull: true,
       },
       country: {
         type: DataTypes.ENUM('india'),

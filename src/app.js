@@ -90,4 +90,9 @@ app.listen(PORT, () => {
 //   logger.info('The 2 days period has not yet expired.');
 // }
 
+const currentDate = moment().format('DDMMYYYY');
+const id = '113beb5b-f74d-4106-bfa9-c9f5cf3f3a87';
+const newId = id.split('-')[0];
+console.log(currentDate, newId, 'currentDate');
+
 module.exports = app;

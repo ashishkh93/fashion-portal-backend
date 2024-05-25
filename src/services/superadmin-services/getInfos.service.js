@@ -84,8 +84,9 @@ const getArtistInfoService = async (artistId) => {
     });
 
     if (artistInfo) {
-      const decipherAcc = decrypt(artistInfo.bankAccountNumber);
-      const artistInfoWithBankAcc = { ...artistInfo.dataValues, bankAccountNumber: decipherAcc };
+      // const decipherAcc = decrypt(artistInfo.bankAccountNumber);
+      const decipherUpi = decrypt(artistInfo.upi);
+      const artistInfoWithBankAcc = { ...artistInfo.dataValues, upi: decipherUpi };
       return artistInfoWithBankAcc;
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, "Artist does'n added information yet");

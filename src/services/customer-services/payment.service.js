@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const uuid = require('uuid');
-const { User, Order } = require('../../models');
+const { User, Order, OrderFinancialInfo } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { CashfreeUtil } = require('../../utils/cashfree.util');
 const logger = require('../../config/logger');
@@ -14,16 +14,35 @@ const xAPiVersion = config.cashfree.apiVersion;
  */
 const getOrderById = async (orderId) => {
   const order = await Order.findOne({
-    where: { id: orderId, status: 'approved' },
-    attributes: ['totalAmount', 'advanceAmountForOrder', 'discount', 'addOnAmount'],
+    where: { id: orderId },
+    attributes: ['status'],
+    include: [
+      {
+        model: OrderFinancialInfo,
+        as: 'orderFinancialInfo',
+        attributes: ['totalAmount', 'advanceAmountForOrder', 'advanceAmountPaid', 'discount', 'addOnAmount'],
+      },
+    ],
   });
   if (order) {
-    return order;
+    const {
+      dataValues: { status },
+    } = order;
+
+    if (status === 'approved') {
+      return order;
+    } else if (status === 'completed') {
+      throw new ApiError(httpStatus.FORBIDDEN, 'Your order has already completed');
+    } else if (status.includes('cancelled')) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'Your order is already cancelled');
+    } else {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        'Artist has not been accepted your order yet, please wait until order accepted'
+      );
+    }
   } else {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      'Artist has not been accepted your order yet, please wait until order accepted'
-    );
+    throw new ApiError(httpStatus.FORBIDDEN, 'Order not found');
   }
 };
 
@@ -37,11 +56,37 @@ const getOrderById = async (orderId) => {
  */
 const paymentInitiateService = async (customerId, orderId, body, customer) => {
   const orderById = await getOrderById(orderId);
+  const orderFinancialInfo = orderById.dataValues.orderFinancialInfo.dataValues;
+
+  if (body?.isAdvance && orderFinancialInfo?.advanceAmountForOrder === 0) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'You cannot create a advance payment for this order, because artist is not asking for it.'
+    );
+  }
+
+  /**
+   * if user doesn't paid an advance amount for the order, then he should not able to make final payment
+   */
+
+  if (!body?.isAdvance && orderFinancialInfo?.advanceAmountForOrder > 0 && !orderFinancialInfo?.advanceAmountPaid) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'You have not paid advance amount for this order yet, please pay advance first'
+    );
+  }
+
   const pgOrderId = body?.isAdvance ? `ADVANCE_${orderId}` : `FINAL_${orderId}`;
+  const totalAmount = orderFinancialInfo.totalAmount;
+  const addOnAmount = orderFinancialInfo.addOnAmount;
+  const advanceAmountForOrder = orderFinancialInfo.advanceAmountForOrder;
+  const discount = orderFinancialInfo.discount;
 
-  const finalTotalAmount = orderById.totalAmount + orderById.totalAmount - orderById.discount;
+  const finalTotalAmount = totalAmount + addOnAmount - advanceAmountForOrder - discount;
 
-  const orderAmount = body?.isAdvance ? orderById?.advanceAmountForOrder : finalTotalAmount;
+  // set order amount based on payment type (advance or final)
+  const orderAmount = body?.isAdvance ? advanceAmountForOrder : finalTotalAmount;
+
   let requestInitBody = {
     order_amount: orderAmount,
     order_currency: 'INR',

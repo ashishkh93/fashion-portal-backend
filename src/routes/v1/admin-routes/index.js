@@ -5,7 +5,8 @@ const categoryRoutes = require('./category.route');
 const infoRoutes = require('./get-infos.route');
 const verifyStatusRoutes = require('./verifyStatus.route');
 const webhookRoute = require('./webhook.route');
-const vendorRoutes = require('./vendor.route');
+const beneficiaryRoutes = require('./beneficiary.route');
+const payoutRoutes = require('./payout.route');
 
 const router = express.Router();
 
@@ -31,12 +32,16 @@ const defaultUserRoutes = [
     route: verifyStatusRoutes,
   },
   {
-    path: '/vendor',
-    route: vendorRoutes,
+    path: '/bene',
+    route: beneficiaryRoutes,
   },
   {
     path: '/webhook',
     route: webhookRoute,
+  },
+  {
+    path: '/payout',
+    route: payoutRoutes,
   },
 ];
 

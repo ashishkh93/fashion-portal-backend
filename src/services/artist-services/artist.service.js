@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { User, ArtistInfo, ArtistInfoService, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { encrypt } = require('../../utils/crypto');
+const { encrypt, decrypt } = require('../../utils/crypto');
 const { Op } = require('sequelize');
 
 const checkArtistStatus = async (artist, mode) => {
@@ -58,8 +58,9 @@ const addArtistInfoService = async (artistId, body) => {
     if (artist) {
       await checkArtistStatus(artist, 'add');
     } else {
-      const accCipher = encrypt(body.bankAccountNumber);
-      const artistInfoEntries = { ...body, artistId, bankAccountNumber: accCipher, status: 'pending' };
+      const upiCipher = encrypt(body.upi);
+
+      const artistInfoEntries = { ...body, artistId, upi: upiCipher, status: 'pending' };
 
       let tmpArtistInfo = await ArtistInfo.create(artistInfoEntries);
 
@@ -107,13 +108,18 @@ const getArtistInfoService = async (artistId) => {
     });
 
     if (artist) {
+      const plainDataArtist = artist.get({ plain: true });
+      const { upi } = plainDataArtist;
+
+      const decipherUpi = decrypt(upi);
+
       // if (artist.status !== 'approved') {
       //   await checkArtistStatus(artist.dataValues);
       //   return null;
       // } else {
       //   return artist;
       // }
-      return artist;
+      return { ...plainDataArtist, upi: decipherUpi };
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
     }
@@ -130,12 +136,8 @@ const getArtistInfoService = async (artistId) => {
  */
 const editArtistInfoService = async (artistId, body, artistInfo) => {
   try {
-    // const artist = await ArtistInfo.findOne({ where: { artistId } });
-
-    // await checkArtistStatus(artist, 'edit');
-
-    if (!!body.deletedServices) {
-      // Need to think on this operation before deleting all entries from ArtistInfoService table
+    // Deleting services if any are marked for deletion
+    if (body.deletedServices?.length) {
       await ArtistInfoService.destroy({
         where: {
           serviceId: {
@@ -146,8 +148,9 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
       });
     }
 
-    if (!!body.newServices) {
-      const newServiceEntries = body?.newServices?.map((serviceId) => ({
+    // Adding new services if any are provided
+    if (body.newServices?.length) {
+      const newServiceEntries = body.newServices.map((serviceId) => ({
         artistInfoId: artistInfo.id,
         serviceId,
         artistId,
@@ -155,29 +158,48 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
       await ArtistInfoService.bulkCreate(newServiceEntries);
     }
 
+    // Updating the services array
     let updatedServicesArray = [...artistInfo.services];
 
-    if (body.deletedServices) {
+    if (body.deletedServices?.length) {
       updatedServicesArray = updatedServicesArray.filter((id) => !body.deletedServices.includes(id));
     }
-    if (body.newServices) {
-      body.newServices?.map((id) => {
-        if (!updatedServicesArray.includes(id)) {
-          updatedServicesArray.push(id);
-        }
-      });
+
+    if (body.newServices?.length) {
+      updatedServicesArray = [...new Set([...updatedServicesArray, ...body.newServices])];
     }
 
-    if (!!body.bankAccountNumber) {
-      // this operation must be verified for security reason (avoid to do like this directly)
-      const accCipher = encrypt(body.bankAccountNumber);
-      const artistInfoUpdateBody = { ...body, services: updatedServicesArray, bankAccountNumber: accCipher };
+    // Preparing update payload
+    const artistInfoUpdateBody = {
+      ...body,
+      services: updatedServicesArray,
+    };
 
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
-    } else {
-      const artistInfoUpdateBody = { ...body, services: updatedServicesArray };
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+    // Updating the artist info
+    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
+  }
+};
+
+/**
+ * Edit artist upi id
+ * @param {string} artistId
+ * @param {object} body
+ * @returns {Promise<ArtistInfo>}
+ */
+const editArtistUPIService = async (artistId, body, artistInfo) => {
+  try {
+    if (!artistInfo) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
     }
+    /**
+     * this operation must be verified for security reason
+     * consider to send & verify otp before update
+     */
+    const upiCipher = encrypt(body.upi);
+    const artistInfoUpdateBody = { upi: upiCipher };
+    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
   }
@@ -188,4 +210,5 @@ module.exports = {
   getArtistInfoService,
   editArtistInfoService,
   getApprovedArtist,
+  editArtistUPIService,
 };

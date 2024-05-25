@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       cfOrderId: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: false,
       },
       cfPaymentId: {
@@ -71,7 +71,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Transaction.associate = function (models) {
     Transaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'orderTransactions' });
-    Transaction.hasOne(models.Order, { foreignKey: 'transactionId' });
+    // Transaction.hasOne(models.Order, { foreignKey: 'transactionId' });
   };
 
   return Transaction;

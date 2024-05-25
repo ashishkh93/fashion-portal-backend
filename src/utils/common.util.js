@@ -95,7 +95,12 @@ const checkIsRefundEligible = (order) => {
   }
 };
 
-module.exports = { generateOtp, getCancellationHoursForPendingOrder, checkIsRefundEligible };
+const getFormattedDate = (date) => {
+  console.log(moment(date).format('YYYY-MM-DD'), 'date=');
+  return moment(date).format('YYYY-MM-DD');
+};
+
+module.exports = { generateOtp, getCancellationHoursForPendingOrder, checkIsRefundEligible, getFormattedDate };
 
 // function generateCode(len, k) {
 //   const s = (k) => {

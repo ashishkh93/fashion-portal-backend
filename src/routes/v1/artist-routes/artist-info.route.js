@@ -7,26 +7,33 @@ const { artistValidate } = require('../../../middlewares/userValidate');
 
 const router = express.Router();
 
-router.post(
-  '/:artistId/add-info',
-  auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  validate(artistValidation.addArtistInfo),
-  artistControllers.artistInfoController.addArtistInfo
-);
-router.get(
-  '/:artistId/get-info',
-  auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  validate(artistValidation.getArtistInfo),
-  artistControllers.artistInfoController.getArtistInfo
-);
+router
+  .route('/:artistId')
+  .post(
+    auth(),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
+    validate(artistValidation.addArtistInfo),
+    artistControllers.artistInfoController.addArtistInfo
+  )
+  .get(
+    auth(),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
+    validate(artistValidation.getArtistInfo),
+    artistControllers.artistInfoController.getArtistInfo
+  )
+  .put(
+    auth(),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
+    validate(artistValidation.editArtistInfo),
+    artistControllers.artistInfoController.editArtistInfo
+  );
+
 router.put(
-  '/:artistId/edit-info',
+  '/:artistId/update-upi',
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  validate(artistValidation.editArtistInfo),
-  artistControllers.artistInfoController.editArtistInfo
+  validate(artistValidation.editUpi),
+  artistControllers.artistInfoController.editUpi
 );
 
 module.exports = router;

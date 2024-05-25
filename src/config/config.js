@@ -27,6 +27,12 @@ const envVarsSchema = Joi.object()
     CASHFREE_CLIENT_SECRET: Joi.string().required().description('Cashfree client secret key'),
     CASHFREE_ENV: Joi.string().required().description('Cashfree environment'),
     CASHFREE_X_API_VERSION: Joi.string().required().description('Cashfree x api version'),
+    CASHFREE_PAYOUT_API_BASE_URL: Joi.string().required().description('Cashfree Payout api base url'),
+    CASHFREE_PAYOUT_CLIENT_ID: Joi.string().required().description('Cashfree Payout client id'),
+    CASHFREE_PAYOUT_CLIENT_SECRET: Joi.string().required().description('Cashfree Payout client secret'),
+    CASHFREE_PAYOUT_X_API_VERSION: Joi.string().required().description('Cashfree Payout x api version'),
+    CASHFREE_PAYOUT_FUND_SOURCE_ID: Joi.string().required().description('Cashfree Payout fund source id'),
+    COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
   })
@@ -87,7 +93,16 @@ module.exports = {
     clientSecret: envVars.CASHFREE_CLIENT_SECRET,
     env: envVars.CASHFREE_ENV, // cashfree environment
     apiVersion: envVars.CASHFREE_X_API_VERSION, // cashfree x-api-version
+    payoutBaseUrl: envVars.CASHFREE_PAYOUT_API_BASE_URL, // cashfree x-api-version
+    payoutClientId: envVars.CASHFREE_PAYOUT_CLIENT_ID, // cashfree x-api-version
+    payoutClientSecret: envVars.CASHFREE_PAYOUT_CLIENT_SECRET, // cashfree x-api-version
+    payoutApiVersion: envVars.CASHFREE_PAYOUT_X_API_VERSION, // cashfree x-api-version
+    fundSourceId: envVars.CASHFREE_PAYOUT_FUND_SOURCE_ID, // cashfree x-api-version
   },
+  /**
+   * This is our commision in percentage
+   */
+  comission: envVars.COMISSION,
   order: {
     minTimeToOrder: envVars.MIN_TIME_TO_ORDER,
   },

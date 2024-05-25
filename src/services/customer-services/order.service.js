@@ -183,8 +183,10 @@ const fetchOrdersService = async (customerId, page, size) => {
  */
 const cancelOrderByUserService = async (customerId, orderId, body) => {
   const order = await getOrderById({ id: orderId, customerId });
+  const orderFinancialInfo = order.dataValues.orderFinancialInfo.dataValues;
+
   const userCanCancleOrder = order.status === 'pending' || order.status === 'approved';
-  const advancedPaid = order.status === 'approved' && order.advanceAmountPaid;
+  const advancedPaid = order.status === 'approved' && orderFinancialInfo.advanceAmountPaid;
 
   if (order.status === 'cancelled_by_artist' || order.status === 'cancelled_by_customer' || order.status === 'rejected') {
     const msg =
@@ -202,7 +204,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
   }
 
   if (advancedPaid) {
-    const isRefundEligible = checkIsRefundEligible(order);
+    const isRefundEligible = checkIsRefundEligible(orderFinancialInfo);
     if (isRefundEligible) {
       /**
        * Refund the order advance amount to customer based on the cancel policy
