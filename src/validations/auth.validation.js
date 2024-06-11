@@ -72,7 +72,7 @@ const changeArtistStatus = {
   }),
   body: Joi.object().keys({
     isActive: Joi.boolean().required(),
-    status: Joi.string().required().valid('pending', 'approved', 'rejected', 'blocked', 'suspended'),
+    status: Joi.string().required().valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED'),
     reasonToDecline: Joi.string().when('isActive', {
       is: false, // The condition where 'isActive' is false
       then: Joi.required(), // Make 'reason' field required if condition is met

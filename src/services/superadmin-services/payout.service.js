@@ -3,10 +3,11 @@ const { Op } = require('sequelize');
 const moment = require('moment');
 const _ = require('lodash');
 const ApiError = require('../../utils/ApiError');
-const { Payout, Order, OrderFinancialInfo, User, ArtistInfo } = require('../../models');
+const { Payout, Transfer, Order, OrderFinancialInfo, User, ArtistInfo } = require('../../models');
 const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
 const logger = require('../../config/logger');
 const config = require('../../config/config');
+const { decrypt } = require('../../utils/crypto');
 const fundSourceId = config.cashfree.fundSourceId;
 const comission = Number(config.comission);
 
@@ -34,7 +35,7 @@ const payoutToArtistsService = async (body) => {
         date: {
           [Op.between]: [body.fromDate, body.toDate],
         },
-        status: 'completed',
+        status: 'COMPLETED',
       },
       attributes: ['id', 'customerId', 'artistId', 'date', 'time', 'status', 'createdAt'],
       include: [
@@ -82,6 +83,8 @@ const payoutToArtistsService = async (body) => {
           artistInfos: { beneficiaryId, fullName, upi, email, location, city, state, pincode },
         } = groupedOrder[0].artist;
 
+        const decipheredUpi = decrypt(upi);
+
         const parsedArtistId = artistId.split('-')[0];
         let beneficiaryPayoutInfo = {
           transfer_id: `transfer_${parsedArtistId}_${curDateTime}`,
@@ -91,7 +94,7 @@ const payoutToArtistsService = async (body) => {
             beneficiary_id: beneficiaryId,
             beneficiary_name: fullName,
             beneficiary_instrument_details: {
-              vpa: upi, // success@upi
+              vpa: decipheredUpi, // success@upi
             },
             beneficiary_contact_details: {
               beneficiary_email: email,
@@ -105,6 +108,7 @@ const payoutToArtistsService = async (body) => {
           },
           transfer_remarks: 'Payout created',
           fundsource_id: fundSourceId,
+          artistId,
         };
 
         const totalTransferAmount = groupedOrder.reduce((acc, order) => {
@@ -125,7 +129,7 @@ const payoutToArtistsService = async (body) => {
           return acc;
         }, 0);
 
-        // this is the comission amount per artist for current total payout
+        // this is the comission amount for artist per current total payout
         const commisionAmount = totalTransferAmount * (comission / 100);
 
         // this is the amount to be paid to artist after cut out the comission
@@ -140,7 +144,7 @@ const payoutToArtistsService = async (body) => {
     const batch_transfer_id = 'payout_at_' + curDateTime;
     const payoutFinalBody = {
       batch_transfer_id,
-      transfers: reducedOrderArray,
+      transfers: reducedOrderArray, // contains artist's information with transfer amount
     };
 
     // return payoutFinalBody;
@@ -162,10 +166,26 @@ const payoutToArtistsService = async (body) => {
         toDate: body.toDate,
         artistIds,
         status: data.status || 'initiated',
-        detail: artistWithOrderIds,
+        orderDetail: artistWithOrderIds,
       };
 
-      await Payout.create(payoutModelBody);
+      const payoutRes = await Payout.create(payoutModelBody);
+
+      if (payoutRes) {
+        const reducedTransfers = reducedOrderArray?.reduce((acc, trn) => {
+          let transfer = {};
+          transfer.payoutId = payoutRes.id;
+          transfer.artistId = trn.artistId;
+          transfer.payoutTransferId = trn.transfer_id;
+          transfer.status = 'INITIATED';
+
+          acc.push(transfer);
+          return acc;
+        }, []);
+
+        await Transfer.bulkCreate(reducedTransfers);
+      }
+
       return data;
     } else {
       logger.error('Payout failed due to reason: ' + data.message);

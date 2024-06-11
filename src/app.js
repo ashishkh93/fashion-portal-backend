@@ -6,6 +6,7 @@ const compression = require('compression');
 const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
+const bodyParser = require('body-parser');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -15,7 +16,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const db = require('./models');
 const transactionMiddleware = require('./middlewares/transaction');
-const logger = require('./config/logger');
+
 const app = express();
 
 if (config.env !== 'test') {
@@ -23,7 +24,7 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-// re-sync database ---- SHOULD ONLY USE FOR IN DEVELOPMENT
+// re-sync database ---- SHOULD ONLY USE IN DEV ENVIRONMENT
 // db.sequelize.sync({ alter: true }).then(() => {
 //   console.log('Drop and re-sync db.');
 // });
@@ -36,6 +37,7 @@ app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // sanitize request data
 app.use(xss());

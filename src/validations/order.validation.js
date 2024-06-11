@@ -4,13 +4,30 @@ const logger = require('../config/logger');
 const config = require('../config/config');
 const minTimeToOrderInHours = config.order.minTimeToOrder;
 
+const artSchema = Joi.object({
+  id: Joi.string().uuid().required().messages({
+    'number.base': 'Art id must be a string.',
+    'any.required': 'Art id is required.',
+  }),
+  qty: Joi.number().integer().positive().required().messages({
+    'number.base': 'Quantity must be a number.',
+    'number.integer': 'Quantity must be an integer.',
+    'number.positive': 'Quantity must be a positive number.',
+    'any.required': 'Quantity is required.',
+  }),
+});
+
 const orderInitiate = {
   params: Joi.object().keys({
-    customerId: Joi.string().required(),
-    artistId: Joi.string().required(),
+    customerId: Joi.string().uuid().required(),
+    artistId: Joi.string().uuid().required(),
   }),
   body: Joi.object().keys({
-    artIds: Joi.array().items(Joi.string().required()).min(1).required(),
+    arts: Joi.array().items(artSchema).min(1).required().messages({
+      'array.base': 'Arts must be an array.',
+      'array.min': 'Arts array must contain at least one item.',
+      'any.required': 'Arts is required.',
+    }),
     date: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
       .required()
@@ -45,7 +62,7 @@ const orderInitiate = {
         'string.pattern.name': `"Time" must be in 'HH:MM AM' or 'HH:MM PM' format`,
         'any.required': `"Time" is a required field`,
       }),
-    status: Joi.string().required().valid('pending'),
+    status: Joi.string().required().valid('PENDING'),
     customerOrderNote: Joi.string(),
   }),
 };
@@ -73,7 +90,7 @@ const cancelOrderByUser = {
     orderId: Joi.string().required(),
   }),
   body: Joi.object().keys({
-    status: Joi.string().required().valid('cancelled_by_customer'),
+    status: Joi.string().required().valid('CANCELLED_BY_CUSTOMER'),
     cancelReason: Joi.string().required(),
   }),
 };
@@ -103,10 +120,10 @@ const updateOrderStatusForArtist = {
   body: Joi.object().keys({
     status: Joi.string()
       .required()
-      .valid('approved', 'rejected', 'cancelled_by_artist')
+      .valid('APPROVED', 'REJECTED', 'CANCELLED_BY_ARTIST')
       .messages({ 'any.only': `Invalid status` }),
     artistOrderNote: Joi.string().when('status', {
-      is: Joi.valid('cancelled_by_artist', 'rejected'),
+      is: Joi.valid('CANCELLED_BY_ARTIST', 'REJECTED'),
       then: Joi.required(),
       // otherwise: Joi.forbidden(),
     }),

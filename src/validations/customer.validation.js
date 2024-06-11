@@ -48,8 +48,55 @@ const getCustomerInfo = {
   }),
 };
 
+const addReview = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    artistId: Joi.string().required(),
+    orderId: Joi.string().required(),
+    description: Joi.string(),
+    reviewCount: Joi.number()
+      .required()
+      .custom((value, helpers) => {
+        const limit = 5;
+        if (value > 5) {
+          return helpers.error('any.custom', { limit });
+        }
+        return value;
+      })
+      .messages({
+        'any.custom': 'You can give maximun {{#limit}} star review for the order',
+      }),
+  }),
+};
+
+const getOrderReview = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+    orderId: Joi.string().required(),
+  }),
+};
+
+const getFilteredArtists = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+  }),
+  params: Joi.object().keys({
+    customerId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    latitude: Joi.number(),
+    longitude: Joi.number(),
+  }),
+};
+
 module.exports = {
   addCustomerInfo,
   editCustomerInfo,
   getCustomerInfo,
+  addReview,
+  getOrderReview,
+  getFilteredArtists,
 };

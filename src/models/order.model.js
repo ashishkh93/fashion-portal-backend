@@ -11,14 +11,23 @@ module.exports = (sequelize, DataTypes) => {
       customerId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: { model: 'Users', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: { model: 'Users', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       transactionId: {
         type: DataTypes.UUID,
         allowNull: true,
+        references: { model: 'Transactions', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       artIds: {
         type: DataTypes.ARRAY(DataTypes.UUID),
@@ -34,14 +43,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       status: {
         type: DataTypes.ENUM(
-          'pending',
-          'approved',
-          'rejected',
-          'not_responded',
-          'auto_cancelled_due_to_unpaid_advance_amount',
-          'cancelled_by_artist',
-          'cancelled_by_customer',
-          'completed'
+          'PENDING',
+          'APPROVED',
+          'REJECTED',
+          'NOT_RESPONDED',
+          'AUTO_CANCELLED_DUE_TO_UNPAID_ADVANCE_AMOUNT',
+          'CANCELLED_BY_ARTIST',
+          'CANCELLED_BY_CUSTOMER',
+          'COMPLETED'
         ),
         allowNull: false,
       },

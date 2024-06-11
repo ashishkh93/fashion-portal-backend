@@ -2,6 +2,9 @@ const httpStatus = require('http-status');
 const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const tokenService = require('./token.service');
+const { FirebaseAdminUtil } = require('../../utils/firebase-admin.util');
+const { FirebaseInstance } = require('../../firebase-admin/admin');
+const logger = require('../../config/logger');
 
 // to remove path from cahche, when all imports are okay, and still you are getting an errpr
 // delete require.cache[require.resolve('./token.service')];
@@ -129,6 +132,18 @@ const verifyUserOtp = async (body, role) => {
     if (otp === user.otp || validOtpForDev) {
       if (Date.now() < user.otpExpire || validOtpForDev) {
         const updateBody = { otp: null, otpExpire: null };
+
+        const fb_admin = new FirebaseAdminUtil();
+        const firebaseUser = await fb_admin.getUsers(phone);
+
+        if (firebaseUser.users.length === 0) {
+          const newUser = await fb_admin.createUser(phone);
+          if (newUser) {
+            const newUserBody = { uid: newUser.uid, phone: newUser.phoneNumber };
+            logger.info('Created new user in firebase ' + JSON.stringify(newUserBody));
+          }
+        }
+
         await updateUserById(updateBody, user.id);
         const tokens = await tokenService.generateAuthTokens(user);
         return tokens;

@@ -29,11 +29,11 @@ const getOrderById = async (orderId) => {
       dataValues: { status },
     } = order;
 
-    if (status === 'approved') {
+    if (status === 'APPROVED') {
       return order;
-    } else if (status === 'completed') {
+    } else if (status === 'COMPLETED') {
       throw new ApiError(httpStatus.FORBIDDEN, 'Your order has already completed');
-    } else if (status.includes('cancelled')) {
+    } else if (status.includes('CANCELLED')) {
       throw new ApiError(httpStatus.FORBIDDEN, 'Your order is already cancelled');
     } else {
       throw new ApiError(
@@ -66,7 +66,7 @@ const paymentInitiateService = async (customerId, orderId, body, customer) => {
   }
 
   /**
-   * if user doesn't paid an advance amount for the order, then he should not able to make final payment
+   * if user doesn't paid an advance amount for the order, then he should not able to make final payment (for version 1 we are considering this flow)
    */
 
   if (!body?.isAdvance && orderFinancialInfo?.advanceAmountForOrder > 0 && !orderFinancialInfo?.advanceAmountPaid) {

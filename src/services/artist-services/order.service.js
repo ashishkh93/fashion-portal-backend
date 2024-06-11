@@ -1,10 +1,12 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
-const { Order, OrderFinancialInfo, Art, Service, Category, User, CustomerInfo } = require('../../models');
+const { Order, OrderFinancialInfo, Art, Service, Category, User, CustomerInfo, RefundRequest } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
+const { getPlainData } = require('../../utils/common.util');
+const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 
 const includeModelForOrderFetch = [
   {
@@ -102,6 +104,32 @@ const getSingleOrderService = async (artistId, orderId) => {
 };
 
 /**
+ * Get order with financialInfo
+ * @param {string} artistId
+ * @param {string} orderId
+ * @returns {Order}
+ */
+const getOrderWithFinancialInfoService = async (orderId) => {
+  const order = await Order.findOne({
+    where: {
+      id: orderId,
+    },
+    include: [
+      {
+        model: OrderFinancialInfo,
+        as: 'orderFinancialInfo',
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+      },
+    ],
+  });
+  if (order) {
+    return getPlainData(order);
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Order not found, please provide valid orderId');
+  }
+};
+
+/**
  * Update order status
  * @param {string} artistId
  * @param {string} orderId
@@ -109,40 +137,41 @@ const getSingleOrderService = async (artistId, orderId) => {
  * @returns {Order}
  */
 const updateOrderStatusService = async (artistId, orderId, body) => {
-  const curOrder = await Order.findOne({
-    where: {
-      id: orderId,
-      artistId,
-    },
-  });
-  if (curOrder) {
-    if (curOrder.status === 'pending' || curOrder.status === 'approved') {
-      const updateOrderBody = { ...body, approvedAt: moment() };
-      const orderUpdateCondition = { id: orderId, artistId };
+  const curOrder = await getOrderWithFinancialInfoService(orderId);
 
-      await Order.update(updateOrderBody, { where: orderUpdateCondition });
+  if (curOrder.status === 'PENDING' || curOrder.status === 'APPROVED') {
+    let updateOrderBody = { ...body };
+    if (body.status === 'APPROVED') {
+      updateOrderBody = { ...updateOrderBody, approvedAt: moment() };
+    }
+    const orderUpdateCondition = { id: orderId, artistId };
 
-      if (body.status === 'cancelled_by_artist' && curOrder.advanceAmountForOrder > 0 && curOrder.advanceAmountPaid) {
-        /**
-         * Initiate the advance amount refund to user, because artist is cancelling the order and customer has already paid advance amount for an order
-         */
-      } else if (body.status === 'approved') {
-        /**
-         * Initiate the auto order cancel schedule if the advance amount is not paid by user within timely manner
-         * AND
-         * send the notification to user that your order has been approved by artist, and you need to pay advance amount if it is, in timely manner.
-         */
-        cancelPendingOrderSchedule(orderId, 'approvedOrder');
-      } else if (body.status === 'rejected') {
-        /**
-         * send the notification to user that your order has been rejected by artist due to some reason
-         */
-      }
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Order status already updated!');
+    await Order.update(updateOrderBody, { where: orderUpdateCondition });
+
+    if (
+      body.status === 'CANCELLED_BY_ARTIST' &&
+      curOrder.orderFinancialInfo.advanceAmountForOrder > 0 &&
+      curOrder.orderFinancialInfo.advanceAmountPaid
+    ) {
+      /**
+       * Initiate the advance amount refund to user, because artist is cancelling the order and customer has already paid advance amount for an order
+       */
+
+      await createRefunRequestForOrderService(curOrder, 'Order Cancelled by Artist');
+    } else if (body.status === 'APPROVED') {
+      /**
+       * Initiate the auto order cancel schedule if the advance amount is not paid by user within timely manner
+       * AND
+       * send the notification to user that your order has been approved by artist, and you need to pay advance amount if it is, in timely manner.
+       */
+      cancelPendingOrderSchedule(orderId, 'approvedOrder');
+    } else if (body.status === 'REJECTED') {
+      /**
+       * send the notification to user that your order has been rejected by artist due to some reason
+       */
     }
   } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Order not found, please provide valid orderId');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Order status already updated!');
   }
 };
 
@@ -153,7 +182,7 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
  * @param {object} body
  * @returns {Order}
  */
-const addDiscountAndAddOnInOrderService = async (artistId, orderId, body) => {
+const addDiscountAndAddOnInOrderService = async (orderId, body) => {
   const orderCondition = { orderId };
 
   // const curOrder = await Order.findByPk(orderId);
@@ -167,9 +196,7 @@ const addDiscountAndAddOnInOrderService = async (artistId, orderId, body) => {
       } else {
         updateOrderBody.discount = body.discount;
       }
-    }
-
-    if (body.addOnAmount) {
+    } else if (body.addOnAmount) {
       updateOrderBody.addOnAmount = body.addOnAmount;
       updateOrderBody.artistAddOnNote = body?.artistAddOnNote || '';
     }
@@ -184,4 +211,5 @@ module.exports = {
   getSingleOrderService,
   updateOrderStatusService,
   addDiscountAndAddOnInOrderService,
+  getOrderWithFinancialInfoService,
 };

@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       orderId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: { model: 'Orders', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       totalAmount: {
         type: DataTypes.FLOAT,
@@ -41,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
       },
       paidToArtist: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isRefunded: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },

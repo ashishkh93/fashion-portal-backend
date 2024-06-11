@@ -33,9 +33,14 @@ const envVarsSchema = Joi.object()
     CASHFREE_PAYOUT_CLIENT_SECRET: Joi.string().required().description('Cashfree Payout client secret'),
     CASHFREE_PAYOUT_X_API_VERSION: Joi.string().required().description('Cashfree Payout x api version'),
     CASHFREE_PAYOUT_FUND_SOURCE_ID: Joi.string().required().description('Cashfree Payout fund source id'),
+    CASHFREE_PUBLIC_KEY_PEM_PATH: Joi.string().required().description('Cashfree public key pem path'),
     COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
+    FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
+      .required()
+      .default(6)
+      .description('Firebase admin service account credentials base64'),
   })
   .unknown();
 
@@ -100,6 +105,9 @@ module.exports = {
     payoutClientSecret: envVars.CASHFREE_PAYOUT_CLIENT_SECRET, // cashfree x-api-version
     payoutApiVersion: envVars.CASHFREE_PAYOUT_X_API_VERSION, // cashfree x-api-version
     fundSourceId: envVars.CASHFREE_PAYOUT_FUND_SOURCE_ID, // cashfree x-api-version
+
+    // public key pem path
+    publicKeyPemPath: envVars.CASHFREE_PUBLIC_KEY_PEM_PATH, // cashfree x-api-version
   },
   /**
    * This is our commision in percentage
@@ -107,5 +115,8 @@ module.exports = {
   comission: envVars.COMISSION,
   order: {
     minTimeToOrder: envVars.MIN_TIME_TO_ORDER,
+  },
+  firebase: {
+    serviceAccountKey: envVars.FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64,
   },
 };

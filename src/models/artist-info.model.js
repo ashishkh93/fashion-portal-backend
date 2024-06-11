@@ -11,13 +11,17 @@ module.exports = (sequelize, DataTypes) => {
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
+        unique: true,
+        references: { model: 'Users', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       beneficiaryId: {
         type: DataTypes.STRING(30),
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'blocked', 'suspended'),
+        type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED'),
         allowNull: false,
       },
       fullName: {
@@ -71,7 +75,7 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING(255),
         allowNull: false,
-        unique: false,
+        unique: true,
       },
       dob: {
         type: DataTypes.DATEONLY,
@@ -156,7 +160,7 @@ module.exports = (sequelize, DataTypes) => {
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
-          exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+          exclude: ['deletedAt'],
         },
       },
       timestamps: true,
@@ -165,13 +169,14 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   ArtistInfo.associate = function (models) {
-    ArtistInfo.belongsTo(models.User, { foreignKey: 'artistId' });
+    ArtistInfo.belongsTo(models.User, { foreignKey: 'artistId', as: 'artist' });
     ArtistInfo.belongsToMany(models.Service, {
       through: 'ArtistInfoService', // Corrected join table name
       foreignKey: 'artistInfoId', // Corrected foreignKey to represent ArtistInfo's ID in join table
       otherKey: 'serviceId', // Corrected otherKey to represent Service's ID in join table
       as: 'artistServices',
     });
+    ArtistInfo.hasMany(models.Review, { foreignKey: 'artistId', sourceKey: 'artistId', as: 'artistReview' });
   };
 
   return ArtistInfo;

@@ -6,7 +6,9 @@ const { getApprovedArtist } = require('../artist-services/artist.service');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
-const { checkIsRefundEligible } = require('../../utils/common.util');
+const { checkIsRefundEligible, getPlainData } = require('../../utils/common.util');
+const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
+const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 
 const includeModelForOrderFetch = [
   {
@@ -24,7 +26,7 @@ const includeModelForOrderFetch = [
       },
     ],
     through: {
-      attributes: [], // This excludes all attributes from the join table
+      attributes: ['quantity'],
     },
   },
   {
@@ -57,7 +59,7 @@ const getOrderById = async (orderCondition) => {
     include: includeModelForOrderFetch,
   });
   if (order) {
-    return order;
+    return getPlainData(order);
   } else {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found, please provide valid order id');
   }
@@ -77,33 +79,43 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
   if (artist.phone === customer.phone) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'You cannot create an order for your self');
   } else {
-    const existOrder = await Order.findOne({ where: { customerId, artistId, status: 'pending' } });
+    const existOrder = await Order.findOne({ where: { customerId, artistId, status: 'PENDING' } });
     if (existOrder) {
       throw new ApiError(
         httpStatus.FORBIDDEN,
         'You have already initiated order request for this artist, please be patient untill he/she accept the current order!'
       );
     } else {
+      const artIds = body.arts?.map((art) => art.id);
+
       const allArts = await Art.findAll({
         where: {
           id: {
-            [Op.in]: body.artIds,
+            [Op.in]: artIds,
           },
+          artistId,
+          status: 'APPROVED',
         },
+        raw: true,
       });
+
+      if (!allArts || allArts?.length === 0) {
+        throw new ApiError(httpStatus.FORBIDDEN, 'The Artist does not have any services that you choose');
+      }
 
       // get totalAmount and advanceAmountForOrder from Art model
       const { totalAmount, advanceAmountForOrder } = allArts?.reduce(
         (acc, art) => {
+          const payloadArt = body.arts.find((a) => a.id === art.id);
           return {
-            totalAmount: acc.totalAmount + Number(art.price),
-            advanceAmountForOrder: acc.advanceAmountForOrder + Number(art.advanceAmount),
+            totalAmount: acc.totalAmount + Number(art.price) * Number(payloadArt.qty),
+            advanceAmountForOrder: acc.advanceAmountForOrder + Number(art.advanceAmount) * Number(payloadArt.qty),
           };
         },
         { totalAmount: 0, advanceAmountForOrder: 0 }
       );
 
-      const orderInitiateBody = { ...body, customerId, artistId };
+      const orderInitiateBody = { ...body, artIds, customerId, artistId };
       let tmpOrder = await Order.create(orderInitiateBody);
 
       const orderId = tmpOrder.dataValues.id;
@@ -111,9 +123,10 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
 
       await OrderFinancialInfo.create(orderFinancialInfoBody);
 
-      const artOrderEntries = body?.artIds?.map((artId) => ({
+      const artOrderEntries = body.arts.map((art) => ({
         artOrderId: orderId,
-        artId,
+        artId: art.id,
+        quantity: art.qty,
       }));
       await ArtOrder.bulkCreate(artOrderEntries);
       const { id, status, createdAt } = tmpOrder.dataValues;
@@ -137,7 +150,7 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
 const fetchOrderService = async (customerId, orderId) => {
   const order = await getOrderById({ id: orderId, customerId });
   return {
-    ...order.dataValues,
+    ...order,
     createdAt: convertDateBasedOnTZ(order.createdAt),
     updatedAt: convertDateBasedOnTZ(order.updatedAt),
   };
@@ -182,18 +195,19 @@ const fetchOrdersService = async (customerId, page, size) => {
  * @returns {Promise}
  */
 const cancelOrderByUserService = async (customerId, orderId, body) => {
-  const order = await getOrderById({ id: orderId, customerId });
-  const orderFinancialInfo = order.dataValues.orderFinancialInfo.dataValues;
+  // const order = await getOrderById({ id: orderId, customerId });
+  const order = await getOrderWithFinancialInfoService(orderId);
+  const orderFinancialInfo = order.orderFinancialInfo;
 
-  const userCanCancleOrder = order.status === 'pending' || order.status === 'approved';
-  const advancedPaid = order.status === 'approved' && orderFinancialInfo.advanceAmountPaid;
+  const userCanCancleOrder = order.status === 'PENDING' || order.status === 'APPROVED';
+  const advancedPaid = order.status === 'APPROVED' && orderFinancialInfo.advanceAmountPaid;
 
-  if (order.status === 'cancelled_by_artist' || order.status === 'cancelled_by_customer' || order.status === 'rejected') {
+  if (order.status === 'CANCELLED_BY_ARTIST' || order.status === 'CANCELLED_BY_CUSTOMER' || order.status === 'REJECTED') {
     const msg =
-      order.status === 'cancelled_by_artist' ? 'Order already cancelled by artist' : 'You have already cancelled this order';
+      order.status === 'CANCELLED_BY_ARTIST' ? 'Order already cancelled by artist' : 'You have already cancelled this order';
 
     throw new ApiError(httpStatus.FORBIDDEN, msg);
-  } else if (order.status === 'completed') {
+  } else if (order.status === 'COMPLETED') {
     throw new ApiError(httpStatus.FORBIDDEN, 'You cannot cancel this order, it is already completed');
   } else if (userCanCancleOrder) {
     const cancelOrderBody = {
@@ -201,14 +215,15 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
       customerOrderNote: body.cancelReason,
     };
     await Order.update(cancelOrderBody, { where: { id: orderId, customerId } });
-  }
 
-  if (advancedPaid) {
-    const isRefundEligible = checkIsRefundEligible(orderFinancialInfo);
-    if (isRefundEligible) {
-      /**
-       * Refund the order advance amount to customer based on the cancel policy
-       */
+    if (advancedPaid) {
+      const isRefundEligible = checkIsRefundEligible(orderFinancialInfo);
+      if (isRefundEligible) {
+        /**
+         * Refund the order advance amount to customer based on the cancel policy
+         */
+        await createRefunRequestForOrderService(order, 'Order Cancelled by User');
+      }
     }
   }
 };

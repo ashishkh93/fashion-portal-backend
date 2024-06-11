@@ -17,7 +17,7 @@ const addCustomerInfoService = async (customerId, body) => {
         'You have already added your info, if you want to edit your info, then please go to the profile section'
       );
     } else {
-      const createUserBody = { ...body, customerId, status: 'approved' };
+      const createUserBody = { ...body, customerId, status: 'APPROVED' };
       let tmpCustomerInfo = await CustomerInfo.create(createUserBody);
 
       const { status, createdAt } = tmpCustomerInfo.dataValues;
@@ -43,9 +43,9 @@ const getCustomerInfoService = async (customerId) => {
         as: 'customerInfo',
       },
     ];
-    const curCustomer = await User.findOne({ where: [condition], include });
+    const curCustomer = await User.findOne({ where: condition, include });
     if (curCustomer) {
-      if (curCustomer.isActive && curCustomer?.customerInfo?.status === 'approved') {
+      if (curCustomer.isActive && curCustomer?.customerInfo?.status === 'APPROVED') {
         return curCustomer;
       } else {
         throw new ApiError(

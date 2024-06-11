@@ -3,20 +3,21 @@ const { User, ArtistInfo, ArtistInfoService, Service } = require('../../models')
 const ApiError = require('../../utils/ApiError');
 const { encrypt, decrypt } = require('../../utils/crypto');
 const { Op } = require('sequelize');
+const { verifyUPIService, verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 
 const checkArtistStatus = async (artist, mode) => {
-  if (artist.status === 'rejected' || artist.status === 'blocked') {
+  if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
     throw new ApiError(
       httpStatus.FORBIDDEN,
       `Your profile has been ${artist.status} by admin, please contact support team for further questions`
     );
-  } else if (artist.status === 'approved') {
+  } else if (artist.status === 'APPROVED') {
     if (mode === 'edit') {
       return true;
     } else {
       throw new ApiError(httpStatus.FORBIDDEN, 'You have already added your infos!');
     }
-  } else if (artist.status === 'pending') {
+  } else if (artist.status === 'PENDING') {
     throw new ApiError(httpStatus.FORBIDDEN, 'Your profile is being reviewd by our team, Please be patient!');
   }
 };
@@ -34,7 +35,7 @@ const getApprovedArtist = async (artistId) => {
       {
         model: ArtistInfo,
         as: 'artistInfos',
-        where: { status: 'approved' },
+        where: { status: 'APPROVED' },
       },
     ],
   });
@@ -56,11 +57,12 @@ const addArtistInfoService = async (artistId, body) => {
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
     if (artist) {
+      // safe side checking and giving the response based on the artist status
       await checkArtistStatus(artist, 'add');
     } else {
       const upiCipher = encrypt(body.upi);
 
-      const artistInfoEntries = { ...body, artistId, upi: upiCipher, status: 'pending' };
+      const artistInfoEntries = { ...body, artistId, upi: upiCipher, status: 'PENDING' };
 
       let tmpArtistInfo = await ArtistInfo.create(artistInfoEntries);
 
@@ -113,7 +115,7 @@ const getArtistInfoService = async (artistId) => {
 
       const decipherUpi = decrypt(upi);
 
-      // if (artist.status !== 'approved') {
+      // if (artist.status !== 'APPROVED') {
       //   await checkArtistStatus(artist.dataValues);
       //   return null;
       // } else {
@@ -197,9 +199,16 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
      * this operation must be verified for security reason
      * consider to send & verify otp before update
      */
-    const upiCipher = encrypt(body.upi);
-    const artistInfoUpdateBody = { upi: upiCipher };
-    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+
+    const apiResult = await verifyUpiCallback(body.upi);
+
+    if (apiResult?.status === 'SUCCESS' && apiResult?.data?.accountExists === 'YES') {
+      const upiCipher = encrypt(body.upi);
+      const artistInfoUpdateBody = { upi: upiCipher };
+      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, apiResult?.message || 'Invalid UPI');
+    }
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
   }

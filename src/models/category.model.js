@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       serviceId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: { model: 'Services', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       name: {
         type: DataTypes.STRING(50),

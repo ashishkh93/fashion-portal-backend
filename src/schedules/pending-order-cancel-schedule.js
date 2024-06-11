@@ -11,9 +11,9 @@ const { getCancellationHoursForPendingOrder } = require('../utils/common.util');
 const cancelPendingOrder = async (order) => {
   const orderId = order.id;
   try {
-    if (order.status === 'pending') {
+    if (order.status === 'PENDING') {
       logger.info(`Cancel order schedule started for orderId: ${orderId}, due to pending status`);
-      const orderUpdateBody = { status: 'not_responded' };
+      const orderUpdateBody = { status: 'NOT_RESPONDED' };
       await Order.update(orderUpdateBody, { where: { id: orderId } });
     } else {
       logger.info(`Order status already updated for orderId: {orderId: ${orderId}} {status: ${order.status}}`);
@@ -29,11 +29,11 @@ const cancelPendingOrder = async (order) => {
 const cancelApprovedOrder = async (order) => {
   const orderId = order.id;
   try {
-    if (order.status === 'approved' && order.advanceAmountForOrder > 0 && !order.advanceAmountPaid) {
+    if (order.status === 'APPROVED' && order.advanceAmountForOrder > 0 && !order.advanceAmountPaid) {
       logger.info(
         `Cancel approved order schedule started for orderId: ${orderId}, due to not paid advance amount in timely manner`
       );
-      const orderUpdateBody = { status: 'auto_cancelled_due_to_unpaid_advance_amount' };
+      const orderUpdateBody = { status: 'AUTO_CANCELLED_DUE_TO_UNPAID_ADVANCE_AMOUNT' };
       await Order.update(orderUpdateBody, { where: { id: orderId } });
     } else {
       logger.info(

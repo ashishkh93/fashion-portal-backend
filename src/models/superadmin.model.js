@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
       superAdminId: {
         type: DataTypes.UUID,
         allowNull: false,
+        unique: true,
+        references: { model: 'Users', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       fullName: {
         type: DataTypes.STRING(50),

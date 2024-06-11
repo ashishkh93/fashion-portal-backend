@@ -3,6 +3,8 @@ const authRoutes = require('./auth.route');
 const customerInfoRoutes = require('./customer-info.route');
 const orderRoutes = require('./order.route');
 const paymentRoutes = require('./payment.route');
+const reviewRoutes = require('./review.route');
+const getArtistsRoutes = require('./get-artists.route');
 
 const router = express.Router();
 
@@ -22,6 +24,14 @@ const defaultUserRoutes = [
   {
     path: '/payment',
     route: paymentRoutes,
+  },
+  {
+    path: '/review',
+    route: reviewRoutes,
+  },
+  {
+    path: '/get-artists',
+    route: getArtistsRoutes,
   },
 ];
 

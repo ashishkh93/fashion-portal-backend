@@ -11,9 +11,13 @@ module.exports = (sequelize, DataTypes) => {
       customerId: {
         type: DataTypes.UUID,
         allowNull: false,
+        unique: true,
+        references: { model: 'Users', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
       },
       status: {
-        type: DataTypes.ENUM('approved', 'blocked'),
+        type: DataTypes.ENUM('APPROVED', 'BLOCKED'),
         allowNull: false,
       },
       fullName: {
@@ -76,6 +80,7 @@ module.exports = (sequelize, DataTypes) => {
 
   CustomerInfo.associate = function (models) {
     CustomerInfo.belongsTo(models.User, { foreignKey: 'customerId', as: 'customerInfo' });
+    CustomerInfo.hasMany(models.Review, { foreignKey: 'givenBy', sourceKey: 'customerId' });
   };
 
   return CustomerInfo;

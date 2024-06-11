@@ -148,13 +148,13 @@ const approveArtStatusService = async (body, artistId, artId) => {
   try {
     const artist = await getArtistForAdmin(artistId);
 
-    if (artist.dataValues.status === 'approved') {
+    if (artist.dataValues.status === 'APPROVED') {
       const artCondition = { id: artId, artistId };
       const singleArt = await Art.findOne({ where: artCondition });
       if (singleArt) {
         const artUpdateBody = {
           ...body,
-          status: !!body.isActive ? 'approved' : 'rejected',
+          status: !!body.isActive ? 'APPROVED' : 'REJECTED',
           reasonToDeclineArt: !!body.isActive ? null : body.reasonToDeclineArt,
         };
         await Art.update(artUpdateBody, { where: artCondition });
@@ -186,6 +186,21 @@ const updateLatLongService = async (body, artistId) => {
 };
 
 /**
+ * Verify UPI callback from cashfree
+ * @param {string} upi
+ * @returns
+ */
+const verifyUpiCallback = async (upi) => {
+  const cfSignature = getSignature();
+
+  const authenticationTokenRes = await getAuthenticationTokenAPICallback(cfSignature);
+  const { token } = authenticationTokenRes.data;
+
+  const validateUpiResult = await verifyUPICallback(token, upi);
+  return validateUpiResult;
+};
+
+/**
  * Verify artist's UPI via cashfree APIs and methods
  * @param {string} artistId
  * @returns {object}
@@ -197,13 +212,8 @@ const verifyUPIService = async (artistId) => {
       dataValues: { upi },
     } = artist;
     const decipherUpi = decrypt(upi);
-    const cfSignature = getSignature();
-
-    const authenticationTokenRes = await getAuthenticationTokenAPICallback(cfSignature);
-    const { token } = authenticationTokenRes.data;
-
-    const validateUpiResult = await verifyUPICallback(token, decipherUpi);
-    return validateUpiResult;
+    const apiResult = await verifyUpiCallback(decipherUpi);
+    return apiResult;
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
   }
@@ -217,4 +227,5 @@ module.exports = {
   approveArtStatusService,
   updateLatLongService,
   verifyUPIService,
+  verifyUpiCallback,
 };

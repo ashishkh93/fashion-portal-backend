@@ -121,7 +121,7 @@ const readPublicKey = (filename) => {
  * generate certificate from cashfree's public key
  */
 const generateXCFSignature = (clientId) => {
-  const publicKeyFilename = 'pem-config/cf_public_key.pem';
+  const publicKeyFilename = config.cashfree.publicKeyPemPath;
   const publicKey = readPublicKey(publicKeyFilename);
 
   const curTimeStamp = Math.floor(Date.now() / 1000); // Convert to seconds and round down
@@ -137,6 +137,16 @@ const generateXCFSignature = (clientId) => {
   return encrypted.toString('base64');
 };
 
+/**
+ * Avoid getting data in dataValues instance from database.
+ * data must be an instance of sequelize to get plain data
+ * @param {*} data
+ */
+const getPlainData = (data) => {
+  if (!data) return null;
+  return data?.get({ plain: true });
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -144,6 +154,7 @@ module.exports = {
   getFormattedDate,
   readPublicKey,
   generateXCFSignature,
+  getPlainData,
 };
 
 // function generateCode(len, k) {

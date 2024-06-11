@@ -5,3 +5,4 @@ module.exports.verifyStatusController = require('./verifyStatus.controller');
 module.exports.webhookController = require('./webhook.controller');
 module.exports.beneficiaryController = require('./beneficiary.controller');
 module.exports.payoutController = require('./payout.controller');
+module.exports.refundController = require('./refund.controller');

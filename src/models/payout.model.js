@@ -16,9 +16,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: false,
       },
-      detail: {
+      orderDetail: {
         type: DataTypes.JSON,
-        allowNull: false,
+        allowNull: true,
       },
       transactionId: {
         type: DataTypes.UUID,
@@ -60,7 +60,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Payout.associate = function (models) {};
+  Payout.associate = function (models) {
+    Payout.hasOne(models.Transfer, {
+      foreignKey: 'payoutId',
+      as: 'payoutTransfer',
+    });
+  };
 
   return Payout;
 };

@@ -37,9 +37,9 @@ const artistValidate = (getUserId) => async (req, _res, next) => {
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
     if (route !== 'artistInfo') {
-      if (artist.status === 'pending') {
+      if (artist.status === 'PENDING') {
         throw new ApiError(httpStatus.FORBIDDEN, 'You have not been approved yet by the admin');
-      } else if (artist.status === 'blocked' || artist.status === 'suspended') {
+      } else if (artist.status === 'BLOCKED' || artist.status === 'SUSPENDED' || artist.status === 'REJECTED') {
         throw new ApiError(
           httpStatus.FORBIDDEN,
           `Your account has been ${artist.status}. Please contact admin ASAP`,

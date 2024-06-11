@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         references: { model: 'Art', key: 'id' },
         onDelete: 'CASCADE',
       },
+      quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

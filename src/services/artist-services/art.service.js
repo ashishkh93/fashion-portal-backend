@@ -31,7 +31,7 @@ const getArtist = async (artistId) => {
  */
 const addArtService = async (artistId, body) => {
   // await getApprovedArtist(artistId);
-  const artBody = { ...body, artistId, status: 'pending', isActive: false };
+  const artBody = { ...body, artistId, status: 'PENDING', isActive: false };
   const art = await Art.create(artBody);
   return art;
 };
@@ -56,7 +56,8 @@ const getAllArtsService = async (artistId, page, size) => {
       },
     ];
 
-    const artCondition = { artistId, status: 'approved', isActive: true };
+    // const artCondition = { artistId, status: 'APPROVED', isActive: true };
+    const artCondition = { artistId };
     const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, includeModel);
     return allArts;
   } catch (error) {

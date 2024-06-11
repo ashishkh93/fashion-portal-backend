@@ -4,6 +4,9 @@
 /.pnp
 .pnp.js
 
+# pem
+/pem-config
+
 # yarn error logs
 yarn-error.log
 
