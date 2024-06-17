@@ -69,7 +69,7 @@ const queryUsers = async (filter, options) => {
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
-  return User.findById(id);
+  return User.findByPk(id);
 };
 
 /**
@@ -118,7 +118,18 @@ const deleteUserById = async (userId) => {
 };
 
 /**
- * Verify User Otp
+ * Updated FCM Token in user table
+ * @param {string} fcmToken
+ * @param {string} userId
+ */
+const generateFcmToken = async (fcmToken, userId) => {
+  const user = await getUserById(userId);
+  if (user) await updateUserById({ fcmToken }, userId);
+  else throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+};
+
+/**
+ * Verify User Otp and create user in firebase if not exist
  * @param {Object} body
  * @returns {Promise<customers>}
  */
@@ -133,16 +144,11 @@ const verifyUserOtp = async (body, role) => {
       if (Date.now() < user.otpExpire || validOtpForDev) {
         const updateBody = { otp: null, otpExpire: null };
 
+        /**
+         * Check if user is exist in firebase, if not then create it with phoneNumber
+         */
         const fb_admin = new FirebaseAdminUtil();
-        const firebaseUser = await fb_admin.getUsers(phone);
-
-        if (firebaseUser.users.length === 0) {
-          const newUser = await fb_admin.createUser(phone);
-          if (newUser) {
-            const newUserBody = { uid: newUser.uid, phone: newUser.phoneNumber };
-            logger.info('Created new user in firebase ' + JSON.stringify(newUserBody));
-          }
-        }
+        await fb_admin.checkUserAndCreate(phone);
 
         await updateUserById(updateBody, user.id);
         const tokens = await tokenService.generateAuthTokens(user);
@@ -165,4 +171,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   verifyUserOtp,
+  generateFcmToken,
 };

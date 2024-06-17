@@ -3,6 +3,7 @@ const validate = require('../../../middlewares/validate');
 const authValidation = require('../../../validations/auth.validation');
 const { commonControllers } = require('../../../controllers');
 const addRoleToLoginRoute = require('../../../middlewares/addRole');
+const { userValidateWhileVerifyOTP } = require('../../../middlewares/userValidate');
 
 const router = express.Router();
 
@@ -13,9 +14,10 @@ router.post(
   commonControllers.authController.login
 );
 router.post(
-  '/verify-otp',
+  '/:artistId/verify-otp',
   addRoleToLoginRoute('artist'),
   validate(authValidation.phoneVerify),
+  userValidateWhileVerifyOTP((req) => req.params.artistId),
   commonControllers.authController.verifyOtp
 );
 router.post('/logout', validate(authValidation.logout), commonControllers.authController.logout);

@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         // unique: true,
       },
+      fcmToken: {
+        type: DataTypes.STRING(256),
+        allowNull: true,
+        unique: true,
+      },
       otp: {
         type: DataTypes.INTEGER,
         allowNull: true,

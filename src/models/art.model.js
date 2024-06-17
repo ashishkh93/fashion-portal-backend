@@ -94,6 +94,10 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Art.associate = function (models) {
+    Art.belongsTo(models.ArtistInfo, {
+      foreignKey: 'artistId',
+      targetKey: 'artistId',
+    });
     Art.belongsTo(models.Service, {
       foreignKey: 'serviceId',
       as: 'service',

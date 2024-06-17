@@ -79,22 +79,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-// let createdAt = moment('2024-04-15T22:24:55+05:30');
-// let createdAtUnix = createdAt.unix();
-// let expirationDate = createdAtUnix + 5;
-// // let expirationDate = createdAtUnix + 2 * 24 * 60 * 60 * 1000;
-
-// const now = moment().unix();
-// console.log(now, createdAtUnix, expirationDate);
-// if (now > expirationDate) {
-//   logger.info('The 2 days period has expired.');
-// } else {
-//   logger.info('The 2 days period has not yet expired.');
-// }
-
-const currentDate = moment().format('DDMMYYYY');
-const id = '113beb5b-f74d-4106-bfa9-c9f5cf3f3a87';
-const newId = id.split('-')[0];
-console.log(currentDate, newId, 'currentDate');
-
 module.exports = app;

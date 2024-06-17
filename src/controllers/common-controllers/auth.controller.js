@@ -20,6 +20,13 @@ const verifyOtp = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ status: true, message: 'Otp verified', entity: { ...tokens } });
 });
 
+const updateFcmToken = catchAsync(async (req, res) => {
+  const customerId = req.params.customerId;
+  const fcmToken = req.body.fcmToken;
+  await commonServices.userService.generateFcmToken(fcmToken, customerId);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 const logout = catchAsync(async (req, res) => {
   await commonServices.authService.logout(req.body.refreshToken);
   res.status(httpStatus.NO_CONTENT).send();
@@ -33,6 +40,7 @@ const refreshTokens = catchAsync(async (req, res) => {
 module.exports = {
   login,
   verifyOtp,
+  updateFcmToken,
   logout,
   refreshTokens,
 };

@@ -81,6 +81,15 @@ const changeArtistStatus = {
   }),
 };
 
+const updateFcmToken = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required().uuid(),
+  }),
+  body: Joi.object().keys({
+    fcmToken: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   register,
   createPassword,
@@ -92,4 +101,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changeArtistStatus,
+  updateFcmToken,
 };

@@ -1,10 +1,7 @@
 const httpStatus = require('http-status');
-const geolib = require('geolib');
-const { ArtistInfo, User, Sequelize, Review } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { getPagination, getPagingData } = require('../../utils/paginate');
-const { Op } = require('sequelize');
 const GetFilteredArtists = require('./get-artists.query');
+const { ArtistInfo, User, Service, Art, Sequelize } = require('../../models');
 
 /**
  * ************* VERY IMPORTANT API CONTROLLER *************
@@ -21,7 +18,7 @@ const GetFilteredArtists = require('./get-artists.query');
 
 //     let whereClause = { status: 'APPROVED' };
 
-//     const allArtists = await ArtistInfo.findAndCountAll({
+//     const allArtists = await ArtifstInfo.findAndCountAll({
 //       where: [whereClause],
 //       attributes: {
 //         exclude: ['beneficiaryId', 'bankName', 'upi'],
@@ -90,6 +87,70 @@ const getFilteredArtistsService = async (page, size, body) => {
   }
 };
 
+/**
+ * Get single artist by id
+ * @param {string} artistId
+ * @returns
+ */
+const getSingleArtistService = async (artistId) => {
+  try {
+    const include = [
+      {
+        model: User,
+        as: 'artist',
+        attributes: [], // No attributes needed from User
+      },
+      {
+        model: Service,
+        as: 'artistServices',
+        attributes: ['id', 'name'],
+        through: {
+          attributes: [], // No attributes needed from the join table
+        },
+      },
+      {
+        model: Art,
+        where: { status: 'APPROVED' },
+        as: 'arts',
+        attributes: ['name', 'description', 'images', 'price', 'advanceAmount', 'timeToCompleteInMinutes', 'renderIndex'],
+        order: [['renderIndex', 'ASC']],
+      },
+    ];
+
+    const artistQuery = {
+      where: { artistId, status: 'APPROVED' },
+      attributes: [
+        'fullName',
+        'businessName',
+        'gender',
+        'profilePic',
+        'aboutInfo',
+        'recentWorkImages',
+        'workingTime',
+        'location',
+        'latitude',
+        'longitude',
+        [Sequelize.literal('"artist"."phone"'), 'phone'],
+        [Sequelize.literal('"artist"."createdAt"'), 'createdAt'],
+      ],
+      include,
+      order: [[{ model: Art, as: 'arts' }, 'renderIndex', 'ASC']],
+      // raw: true,
+    };
+
+    const artist = await ArtistInfo.findOne(artistQuery);
+    if (artist) {
+      return artist;
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
+    }
+  } catch (error) {
+    console.error('Error fetching artist:', error);
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal server error');
+  }
+};
+
 module.exports = {
   getFilteredArtistsService,
+  getSingleArtistService,
 };

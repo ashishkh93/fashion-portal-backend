@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { ArtistInfo } = require('../models');
+const { getUserById } = require('../services/common-services/user.service');
 
 const adminValidate = (getUserId) => async (req, _res, next) => {
   try {
@@ -75,4 +76,20 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
   }
 };
 
-module.exports = { artistValidate, adminValidate, customerValidate };
+const userValidateWhileVerifyOTP = (getUserId) => async (req, _res, next) => {
+  try {
+    const userId = getUserId(req);
+    const phone = req.body.phone;
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    } else if (user.phone !== phone) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { artistValidate, adminValidate, customerValidate, userValidateWhileVerifyOTP };

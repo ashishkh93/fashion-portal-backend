@@ -63,6 +63,11 @@ const orderInitiate = {
         'any.required': `"Time" is a required field`,
       }),
     status: Joi.string().required().valid('PENDING'),
+    servicePrefix: Joi.string().required().max(2).messages({
+      'string.max': 'The service prefix must be at most 2 characters long.',
+      'string.empty': 'The service prefix cannot be empty.',
+      'any.required': 'The service prefix is required.',
+    }),
     customerOrderNote: Joi.string(),
   }),
 };

@@ -177,6 +177,11 @@ module.exports = (sequelize, DataTypes) => {
       as: 'artistServices',
     });
     ArtistInfo.hasMany(models.Review, { foreignKey: 'artistId', sourceKey: 'artistId', as: 'artistReview' });
+    ArtistInfo.hasMany(models.Art, {
+      foreignKey: 'artistId',
+      sourceKey: 'artistId',
+      as: 'arts'
+    });
   };
 
   return ArtistInfo;

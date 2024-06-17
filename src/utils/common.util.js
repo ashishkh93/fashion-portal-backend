@@ -147,6 +147,21 @@ const getPlainData = (data) => {
   return data?.get({ plain: true });
 };
 
+/**
+ * Create an order identity patent
+ * @param {string} service
+ * @param {number} currentOrderLength
+ */
+const getOrderIdentity = (servicePrefix, currentOrderLength) => {
+  // BID240614M1
+  const prefix = 'BID';
+  const curDate = moment().format('DDMMYY');
+  const nextChar = servicePrefix;
+  const index = currentOrderLength + 1;
+
+  return `${prefix}${curDate}${nextChar}${index}`;
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -155,6 +170,7 @@ module.exports = {
   readPublicKey,
   generateXCFSignature,
   getPlainData,
+  getOrderIdentity,
 };
 
 // function generateCode(len, k) {

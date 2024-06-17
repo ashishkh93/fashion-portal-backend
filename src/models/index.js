@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cls = require('cls-hooked');
 const config = require('../config/config');
+const logger = require('../config/logger');
 
 const basename = path.basename(__filename);
 
@@ -24,9 +25,10 @@ const sequelize = new Sequelize(config.mysql.db_name, config.mysql.user, config.
 sequelize
   .authenticate()
   .then(() => {
-    console.log('Connection has been established successfully.');
+    logger.info('Connection has been established successfully.');
   })
   .catch((err) => {
+    logger.info('Unable to connect to the database due to ' + err);
     console.log('Unable to connect to the database:', err);
   });
 

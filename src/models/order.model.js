@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
+      orderIdentity: {
+        type: DataTypes.STRING(50),
+        unique: true,
+        allowNull: false,
+      },
       transactionId: {
         type: DataTypes.UUID,
         allowNull: true,

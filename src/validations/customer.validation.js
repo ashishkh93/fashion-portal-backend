@@ -89,6 +89,19 @@ const getFilteredArtists = {
   body: Joi.object().keys({
     latitude: Joi.number(),
     longitude: Joi.number(),
+    maxDistance: Joi.number(),
+    minRating: Joi.number(),
+    services: Joi.array().items(Joi.string().uuid().message('One or more values are not valid UUIDs')).messages({
+      'array.base': 'Services must be an array',
+      'array.includesRequiredUnknowns': 'Services must be an array of valid UUIDs',
+    }),
+  }),
+};
+
+const getSingleArtist = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required().uuid(),
+    artistId: Joi.string().required().uuid(),
   }),
 };
 
@@ -99,4 +112,5 @@ module.exports = {
   addReview,
   getOrderReview,
   getFilteredArtists,
+  getSingleArtist,
 };

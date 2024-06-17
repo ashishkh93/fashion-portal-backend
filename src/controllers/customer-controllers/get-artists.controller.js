@@ -8,6 +8,13 @@ const getFilteredArtists = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Artists fetched!', entity: artists || [] });
 });
 
+const getSingleArtist = catchAsync(async (req, res) => {
+  const { artistId } = req.params;
+  const artist = await customerServices.getArtistsService.getSingleArtistService(artistId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Artist fetched!', entity: artist || {} });
+});
+
 module.exports = {
   getFilteredArtists,
+  getSingleArtist,
 };

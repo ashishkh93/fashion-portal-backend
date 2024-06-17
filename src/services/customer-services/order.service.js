@@ -6,7 +6,7 @@ const { getApprovedArtist } = require('../artist-services/artist.service');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
-const { checkIsRefundEligible, getPlainData } = require('../../utils/common.util');
+const { checkIsRefundEligible, getPlainData, getOrderIdentity } = require('../../utils/common.util');
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 
@@ -87,6 +87,12 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
       );
     } else {
       const artIds = body.arts?.map((art) => art.id);
+      const orderCount = await Order.count(); // get total orders count
+
+      /**
+       * Generate unique identity for each order
+       */
+      const orderIdentity = getOrderIdentity(body.servicePrefix, orderCount);
 
       const allArts = await Art.findAll({
         where: {
@@ -115,7 +121,7 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
         { totalAmount: 0, advanceAmountForOrder: 0 }
       );
 
-      const orderInitiateBody = { ...body, artIds, customerId, artistId };
+      const orderInitiateBody = { ...body, orderIdentity, artIds, customerId, artistId };
       let tmpOrder = await Order.create(orderInitiateBody);
 
       const orderId = tmpOrder.dataValues.id;
