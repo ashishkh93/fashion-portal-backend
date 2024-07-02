@@ -1,6 +1,17 @@
 const httpStatus = require('http-status');
 const { Op } = require('sequelize');
-const { User, Order, OrderFinancialInfo, ArtOrder, Art, Service, Category, CustomerInfo } = require('../../models');
+const {
+  User,
+  Order,
+  OrderFinancialInfo,
+  ArtOrder,
+  Art,
+  Service,
+  Category,
+  Review,
+  ArtistInfo,
+  Sequelize,
+} = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getApprovedArtist } = require('../artist-services/artist.service');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
@@ -10,43 +21,9 @@ const { checkIsRefundEligible, getPlainData, getOrderIdentity } = require('../..
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 
-const includeModelForOrderFetch = [
-  {
-    model: Art,
-    attributes: { exclude: ['artistId', 'serviceId', 'categoryId', 'updatedAt'] },
-    as: 'arts',
-    include: [
-      {
-        model: Service,
-        as: 'service',
-      },
-      {
-        model: Category,
-        as: 'category',
-      },
-    ],
-    through: {
-      attributes: ['quantity'],
-    },
-  },
-  {
-    model: User,
-    as: 'customer',
-    attributes: ['id', 'role', 'phone'],
-    include: [
-      {
-        model: CustomerInfo,
-        as: 'customerInfo',
-        attributes: { exclude: ['customerId', 'status'] },
-      },
-    ],
-  },
-  {
-    model: OrderFinancialInfo,
-    as: 'orderFinancialInfo',
-    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-  },
-];
+const getAverageRatingForArtistInOrderQuery = () => {
+  return '(SELECT AVG("reviewCount") FROM "Reviews" WHERE "Reviews"."artistId" = "artist"."id")';
+};
 
 /**
  * Get single order by id
@@ -54,9 +31,77 @@ const includeModelForOrderFetch = [
  * @param {string} customerId
  */
 const getOrderById = async (orderCondition) => {
+  const orderAttributes = [
+    'id',
+    'artistId',
+    'orderIdentity',
+    'status',
+    'date',
+    'time',
+    'customerOrderNote',
+    'artistOrderNote',
+    'approvedAt',
+    'createdAt',
+    'updatedAt',
+    [Sequelize.literal(getAverageRatingForArtistInOrderQuery()), 'averageRating'],
+  ];
+
+  const includeForSingleOrder = [
+    {
+      model: OrderFinancialInfo,
+      as: 'orderFinancialInfo',
+      attributes: { exclude: ['id', 'paidToArtist', 'isRefunded'] },
+    },
+    {
+      model: Art,
+      as: 'arts',
+      attributes: ['price', 'advanceAmount', 'timeToCompleteInMinutes', 'coverImage', 'name', 'images', 'description'],
+      include: [
+        {
+          model: Service,
+          as: 'service',
+          attributes: ['name'],
+          required: true,
+        },
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['name'],
+          required: true,
+        },
+      ],
+      through: {
+        attributes: ['quantity'],
+      },
+    },
+    {
+      model: User,
+      as: 'artist',
+      attributes: ['id', 'phone'],
+      required: true,
+      include: [
+        {
+          model: ArtistInfo,
+          as: 'artistInfos',
+          attributes: ['profilePic', 'fullName', 'location'],
+          required: true,
+          include: [
+            {
+              model: Review,
+              as: 'artistReview',
+              attributes: [],
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
   const order = await Order.findOne({
     where: orderCondition,
-    include: includeModelForOrderFetch,
+    attributes: orderAttributes,
+    include: includeForSingleOrder,
   });
   if (order) {
     return getPlainData(order);
@@ -171,14 +216,58 @@ const fetchOrderService = async (customerId, orderId) => {
  */
 const fetchOrdersService = async (customerId, page, size) => {
   const orderCondition = { customerId };
-  const mainModelAttributes = { exclude: ['artIds'] };
+  // const mainModelAttributes = { exclude: ['artIds'] };
+
+  const mainModelAttributes = [
+    'id',
+    'artistId',
+    'orderIdentity',
+    'status',
+    'date',
+    'time',
+    'updatedAt',
+    [Sequelize.literal(getAverageRatingForArtistInOrderQuery()), 'averageRating'],
+  ];
+
+  const includeForAllOrders = [
+    {
+      model: Art,
+      as: 'arts',
+      attributes: ['coverImage'],
+      include: [
+        {
+          model: Service,
+          as: 'service',
+          attributes: ['name'],
+          required: true,
+        },
+      ],
+      through: {
+        attributes: [],
+      },
+    },
+    {
+      model: User,
+      as: 'artist',
+      attributes: [],
+      required: true,
+      include: [
+        {
+          model: ArtistInfo,
+          as: 'artistInfos',
+          attributes: ['fullName', 'location'],
+          required: true,
+        },
+      ],
+    },
+  ];
 
   const allOrders = await getPaginationDataFromModel(
     Order,
     orderCondition,
     page,
     size,
-    includeModelForOrderFetch,
+    includeForAllOrders,
     mainModelAttributes
   );
 

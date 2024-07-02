@@ -162,6 +162,18 @@ const getOrderIdentity = (servicePrefix, currentOrderLength) => {
   return `${prefix}${curDate}${nextChar}${index}`;
 };
 
+/**
+ * Get average rating of artist
+ */
+const getAverageRatingOfArtistRawQuery = () => {
+  return `COALESCE(
+            (
+              SELECT AVG("artistReview"."reviewCount")
+              FROM "Reviews" AS "artistReview"
+              WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
+            ), 0)`;
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -171,6 +183,7 @@ module.exports = {
   generateXCFSignature,
   getPlainData,
   getOrderIdentity,
+  getAverageRatingOfArtistRawQuery,
 };
 
 // function generateCode(len, k) {

@@ -105,6 +105,12 @@ const getSingleArtist = {
   }),
 };
 
+const getServices = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required().uuid(),
+  }),
+};
+
 module.exports = {
   addCustomerInfo,
   editCustomerInfo,
@@ -113,4 +119,5 @@ module.exports = {
   getOrderReview,
   getFilteredArtists,
   getSingleArtist,
+  getServices,
 };

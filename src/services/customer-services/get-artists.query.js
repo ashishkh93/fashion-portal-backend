@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { ArtistInfo, User, Sequelize } = require('../../models');
 const { getPagination, getPagingData } = require('../../utils/paginate');
+const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
 
 module.exports = class GetFilteredArtists {
   /**
@@ -155,15 +156,7 @@ module.exports = class GetFilteredArtists {
         [Sequelize.literal('"ArtistInfo"."services"'), 'services'],
         [Sequelize.literal('"ArtistInfo"."createdAt"'), 'createdAt'],
         [Sequelize.literal('"artist"."phone"'), 'phone'],
-        [
-          Sequelize.literal(`COALESCE(
-            (
-              SELECT AVG("artistReview"."reviewCount")
-              FROM "Reviews" AS "artistReview"
-              WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
-            ), 0)`),
-          'averageRating',
-        ],
+        [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
       ],
       include: [
         {

@@ -2,6 +2,8 @@ const Joi = require('joi');
 
 // Define the UPI regex pattern
 const upiRegex = /^[\w.-]+@[\w.-]+$/;
+const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
 // const upiRegex = /^[a-zA-Z0-9.-]{2,256}@[a-zA-Z.-]{2,64}$/;
 
 const addArtistInfo = {
@@ -16,6 +18,11 @@ const addArtistInfo = {
       'string.empty': 'UPI is required',
       'string.pattern.base': 'UPI is invalid, please enter a valid UPI',
     }),
+    pan: Joi.string().pattern(panRegex).required().messages({
+      'string.empty': 'PAN number is required',
+      'string.pattern.base': 'PAN number is invalid, please enter a valid PAN number',
+    }),
+    panImage: Joi.string().required(),
     // bankAccountHolderName: Joi.string().required(),
     // bankAccountNumber: Joi.string().required(),
     // bankIfscCode: Joi.string().required(),

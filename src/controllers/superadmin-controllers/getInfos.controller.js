@@ -5,7 +5,7 @@ const { superAdminServices, artistServices } = require('../../services');
 const getAllArtist = catchAsync(async (req, res) => {
   const { page, size } = req.query;
   const allArtists = await superAdminServices.infoService.getAllArtistService(page, size);
-  res.status(httpStatus.CREATED).send({ status: true, message: 'Artists fetched successfully', entity: allArtists });
+  res.status(httpStatus.OK).send({ status: true, message: 'Artists fetched successfully', entity: allArtists });
 });
 
 const getArtistInfo = catchAsync(async (req, res) => {

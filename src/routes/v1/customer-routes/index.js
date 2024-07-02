@@ -5,6 +5,7 @@ const orderRoutes = require('./order.route');
 const paymentRoutes = require('./payment.route');
 const reviewRoutes = require('./review.route');
 const getArtistsRoutes = require('./get-artists.route');
+const servicesRoutes = require('./services.route');
 
 const router = express.Router();
 
@@ -32,6 +33,10 @@ const defaultUserRoutes = [
   {
     path: '/get-artists',
     route: getArtistsRoutes,
+  },
+  {
+    path: '/services',
+    route: servicesRoutes,
   },
 ];
 

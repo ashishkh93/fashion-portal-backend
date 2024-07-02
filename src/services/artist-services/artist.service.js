@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User, ArtistInfo, ArtistInfoService, Service } = require('../../models');
+const { User, ArtistInfo, ArtistBankingInfo, ArtistInfoService, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { encrypt, decrypt } = require('../../utils/crypto');
 const { Op } = require('sequelize');
@@ -36,6 +36,14 @@ const getApprovedArtist = async (artistId) => {
         model: ArtistInfo,
         as: 'artistInfos',
         where: { status: 'APPROVED' },
+        include: [
+          {
+            model: ArtistBankingInfo,
+            as: 'artistBankingInfo',
+            attributes: ['beneficiaryId', 'upi', 'pan'],
+            where: { upi: { [Op.ne]: null } },
+          },
+        ],
       },
     ],
   });
@@ -60,11 +68,19 @@ const addArtistInfoService = async (artistId, body) => {
       // safe side checking and giving the response based on the artist status
       await checkArtistStatus(artist, 'add');
     } else {
-      const upiCipher = encrypt(body.upi);
+      // const upiCipher = encrypt(body.upi);
+      const artistBankingBody = {
+        artistId,
+        bankName: body.bankName,
+        upi: body.upi,
+        pan: body.pan,
+        panImage: body.panImage,
+      };
 
-      const artistInfoEntries = { ...body, artistId, upi: upiCipher, status: 'PENDING' };
+      const artistInfoEntry = { ...body, artistId, status: 'PENDING' };
 
-      let tmpArtistInfo = await ArtistInfo.create(artistInfoEntries);
+      let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry);
+      await ArtistBankingInfo.create(artistBankingBody);
 
       const artistInfoServiceEntries = body?.services?.map((serviceId) => ({
         artistInfoId: tmpArtistInfo.dataValues.id,
@@ -92,6 +108,11 @@ const getArtistInfoService = async (artistId) => {
     const artistCondoition = { artistId };
     const includeModel = [
       {
+        model: ArtistBankingInfo,
+        as: 'artistBankingInfo',
+        attributes: ['beneficiaryId', 'upi', 'bankName', 'pan', 'panImage'],
+      },
+      {
         model: Service,
         as: 'artistServices', // Ensure this matches the alias we used in association
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
@@ -111,9 +132,9 @@ const getArtistInfoService = async (artistId) => {
 
     if (artist) {
       const plainDataArtist = artist.get({ plain: true });
-      const { upi } = plainDataArtist;
+      // const { upi } = plainDataArtist;
 
-      const decipherUpi = decrypt(upi);
+      // const decipherUpi = decrypt(upi);
 
       // if (artist.status !== 'APPROVED') {
       //   await checkArtistStatus(artist.dataValues);
@@ -121,7 +142,7 @@ const getArtistInfoService = async (artistId) => {
       // } else {
       //   return artist;
       // }
-      return { ...plainDataArtist, upi: decipherUpi };
+      return plainDataArtist;
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
     }
@@ -203,9 +224,11 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
     const apiResult = await verifyUpiCallback(body.upi);
 
     if (apiResult?.status === 'SUCCESS' && apiResult?.data?.accountExists === 'YES') {
-      const upiCipher = encrypt(body.upi);
-      const artistInfoUpdateBody = { upi: upiCipher };
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      // const upiCipher = encrypt(body.upi);
+      const artist = await ArtistBankingInfo.findOne({ where: { artistId } });
+
+      const updateUpiBody = { upi: body.upi };
+      await artist.update(updateUpiBody);
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, apiResult?.message || 'Invalid UPI');
     }

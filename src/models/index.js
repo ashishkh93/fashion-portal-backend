@@ -15,6 +15,7 @@ const sequelize = new Sequelize(config.mysql.db_name, config.mysql.user, config.
   port: config.mysql.db_port,
   dialect: 'postgres',
   operatorsAliases: false,
+  // logging: console.log
   // timezone: '+05:30', // for writing to database
   // dialectOptions: {
   //   connectTimeout: 6000, // Increase timeout to 20000ms (20 seconds)

@@ -7,6 +7,8 @@
 # pem
 /pem-config
 
+local_db_backup.sql
+
 # yarn error logs
 yarn-error.log
 

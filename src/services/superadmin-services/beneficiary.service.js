@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
 const ApiError = require('../../utils/ApiError');
-const { ArtistInfo } = require('../../models');
+const { ArtistBankingInfo } = require('../../models');
 const { getApprovedArtist } = require('../artist-services/artist.service');
 const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
 
@@ -15,8 +15,7 @@ const addBeneToCFService = async (body, artistId) => {
   const artistFromModel = await getApprovedArtist(artistId);
   const artist = artistFromModel.get({ plain: true });
   const artistInfos = artist.artistInfos;
-
-  console.log(artist, 'artist==');
+  const artistBankingInfo = artist.artistInfos.artistBankingInfo;
 
   try {
     const artistCreationDate = moment(artist.createdAt).format('DDMMYYYY');
@@ -26,7 +25,7 @@ const addBeneToCFService = async (body, artistId) => {
     const addBeneficiaryBody = {
       beneficiary_id: beneId,
       beneficiary_name: artistInfos.fullName,
-      beneficiary_instrument_details: { vpa: artistInfos.upi },
+      beneficiary_instrument_details: { vpa: artistBankingInfo.upi },
       beneficiary_contact_details: {
         beneficiary_email: artistInfos.email,
         beneficiary_phone: artist.phone,
@@ -37,7 +36,7 @@ const addBeneToCFService = async (body, artistId) => {
         beneficiary_postal_code: artistInfos.pincode,
       },
     };
-
+    
     const addBeneResponse = await payoutAPICallback('POST', addBeneficiaryBody, '/beneficiary');
     const data = await addBeneResponse.json();
 
@@ -46,7 +45,8 @@ const addBeneToCFService = async (body, artistId) => {
        * Update beneficiary id to the artist info table, if there is no error in cashfree api
        */
       const artistInfoUpdateBody = { beneficiaryId: beneId };
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      // await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      await ArtistBankingInfo.update(artistInfoUpdateBody, { where: { artistId } });
       return data;
     } else {
       throw new ApiError(addBeneResponse.status || httpStatus.INTERNAL_SERVER_ERROR, data.message || 'Something went wrong');

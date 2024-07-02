@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
 const ApiError = require('../../utils/ApiError');
 const GetFilteredArtists = require('./get-artists.query');
-const { ArtistInfo, User, Service, Art, Sequelize } = require('../../models');
+const { ArtistInfo, User, Service, Art, CustomerInfo, Review, Sequelize } = require('../../models');
+const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
 
 /**
  * ************* VERY IMPORTANT API CONTROLLER *************
@@ -20,9 +21,6 @@ const { ArtistInfo, User, Service, Art, Sequelize } = require('../../models');
 
 //     const allArtists = await ArtifstInfo.findAndCountAll({
 //       where: [whereClause],
-//       attributes: {
-//         exclude: ['beneficiaryId', 'bankName', 'upi'],
-//       },
 //       include: [
 //         {
 //           model: User,
@@ -113,13 +111,26 @@ const getSingleArtistService = async (artistId) => {
         where: { status: 'APPROVED' },
         as: 'arts',
         attributes: ['name', 'description', 'images', 'price', 'advanceAmount', 'timeToCompleteInMinutes', 'renderIndex'],
-        order: [['renderIndex', 'ASC']],
+        // order: [['renderIndex', 'ASC']],
+      },
+      {
+        model: Review,
+        as: 'artistReview',
+        attributes: ['reviewCount', 'description', 'createdAt'],
+        include: [
+          {
+            model: CustomerInfo,
+            as: 'CustomerInformation',
+            attributes: ['fullName'],
+          },
+        ],
       },
     ];
 
     const artistQuery = {
       where: { artistId, status: 'APPROVED' },
       attributes: [
+        'artistId',
         'fullName',
         'businessName',
         'gender',
@@ -132,10 +143,13 @@ const getSingleArtistService = async (artistId) => {
         'longitude',
         [Sequelize.literal('"artist"."phone"'), 'phone'],
         [Sequelize.literal('"artist"."createdAt"'), 'createdAt'],
+        [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
       ],
       include,
-      order: [[{ model: Art, as: 'arts' }, 'renderIndex', 'ASC']],
-      // raw: true,
+      order: [
+        [{ model: Art, as: 'arts' }, 'renderIndex', 'ASC'],
+        [{ model: Review, as: 'artistReview' }, 'reviewCount', 'DESC'],
+      ],
     };
 
     const artist = await ArtistInfo.findOne(artistQuery);

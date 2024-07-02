@@ -40,6 +40,22 @@ const getServices = async (body) => {
 };
 
 /**
+ * Get all services for customers
+ * @returns {Promise<Service>}
+ */
+const getServicesForCustomer = async () => {
+  try {
+    const allService = await Service.findAll({
+      where: { isActive: true },
+      order: [['renderIndex', 'ASC']], // order by renderIndex
+    });
+    return allService;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Error while fetching the services');
+  }
+};
+
+/**
  * Get Single services
  * @param {string} serviceId
  * @returns {Promise<Service>}
@@ -97,6 +113,7 @@ const deleteService = async (serviceId) => {
 module.exports = {
   addService,
   getServices,
+  getServicesForCustomer,
   getSingleService,
   editService,
   deleteService,

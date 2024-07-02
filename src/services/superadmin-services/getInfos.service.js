@@ -1,10 +1,12 @@
 const httpStatus = require('http-status');
-const { User, ArtistInfo, Service, Art } = require('../../models');
+const { User, ArtistInfo, ArtistBankingInfo, Service, Art } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { decrypt } = require('../../utils/crypto');
 const { getSignature } = require('../../utils/cashfree.util');
 const { getAuthenticationTokenAPICallback, verifyUPICallback } = require('../../utils/cashfree-payout-api.util');
+const { getPlainData } = require('../../utils/common.util');
+const { Op } = require('sequelize');
 
 /**
  * Get artist information for admin to check artist's status
@@ -34,8 +36,13 @@ const getAllArtistService = async (page, size) => {
       {
         model: ArtistInfo,
         as: 'artistInfos',
-        attributes: { exclude: ['bankAccountNumber', 'deletedAt', 'services'] },
+        attributes: { exclude: ['deletedAt', 'services'] },
         include: [
+          {
+            model: ArtistBankingInfo,
+            as: 'artistBankingInfo',
+            attributes: ['beneficiaryId', 'upi', 'bankName', 'pan', 'panImage'],
+          },
           {
             model: Service,
             as: 'artistServices', // Ensure this matches the alias we used in association
@@ -68,6 +75,11 @@ const getArtistInfoService = async (artistId) => {
     const artistCondoition = { artistId };
     const includeModel = [
       {
+        model: ArtistBankingInfo,
+        as: 'artistBankingInfo',
+        attributes: ['beneficiaryId', 'upi', 'bankName', 'pan', 'panImage'],
+      },
+      {
         model: Service,
         as: 'artistServices', // Ensure this matches the alias we used in association
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
@@ -87,8 +99,8 @@ const getArtistInfoService = async (artistId) => {
 
     if (artistInfo) {
       // const decipherAcc = decrypt(artistInfo.bankAccountNumber);
-      const decipherUpi = decrypt(artistInfo.upi);
-      const artistInfoWithBankAcc = { ...artistInfo.dataValues, upi: decipherUpi };
+      // const decipherUpi = decrypt(artistInfo.upi);
+      const artistInfoWithBankAcc = { ...artistInfo.dataValues };
       return artistInfoWithBankAcc;
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, "Artist does'n added information yet");
@@ -207,13 +219,30 @@ const verifyUpiCallback = async (upi) => {
  */
 const verifyUPIService = async (artistId) => {
   try {
-    const artist = await getArtistForAdmin(artistId);
-    const {
-      dataValues: { upi },
-    } = artist;
-    const decipherUpi = decrypt(upi);
-    const apiResult = await verifyUpiCallback(decipherUpi);
-    return apiResult;
+    let artist = await ArtistInfo.findOne({
+      where: { artistId },
+      attributes: [],
+      include: [
+        {
+          model: ArtistBankingInfo,
+          as: 'artistBankingInfo',
+          attributes: ['upi'],
+          where: { upi: { [Op.ne]: null } },
+        },
+      ],
+    });
+
+    if (artist) {
+      artist = getPlainData(artist);
+      const {
+        artistBankingInfo: { upi },
+      } = artist;
+
+      const apiResult = await verifyUpiCallback(upi);
+      return apiResult;
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
+    }
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
   }

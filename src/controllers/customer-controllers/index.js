@@ -4,3 +4,4 @@ module.exports.orderController = require('./order.controller');
 module.exports.paymentController = require('./payment.controller');
 module.exports.reviewController = require('./review.controller');
 module.exports.getArtistsController = require('./get-artists.controller');
+module.exports.getServicesController = require('./get-services.controller');

@@ -16,10 +16,6 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
-      beneficiaryId: {
-        type: DataTypes.STRING(30),
-        allowNull: true,
-      },
       status: {
         type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED'),
         allowNull: false,
@@ -32,46 +28,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(50),
         allowNull: true,
       },
-      bankName: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
-      upi: {
-        type: DataTypes.STRING(120), // because we are storing the cipher
-        allowNull: true,
-      },
-      // bankAccountHolderName: {
-      //   type: DataTypes.STRING(100),
-      //   allowNull: false,
-      // },
-      // bankAccountNumber: {
-      //   type: DataTypes.STRING(1000),
-      //   allowNull: false,
-      // },
-      // bankIfscCode: {
-      //   type: DataTypes.STRING(20),
-      //   allowNull: false,
-      // },
-      // cancelChequeImage: {
-      //   type: DataTypes.STRING,
-      //   allowNull: false,
-      // },
-      // aadharCardNumber: {
-      //   type: DataTypes.STRING,
-      //   allowNull: false,
-      // },
-      // aadharCardFrontImage: {
-      //   type: DataTypes.STRING,
-      //   allowNull: false,
-      // },
-      // aadharCardBackImage: {
-      //   type: DataTypes.STRING,
-      //   allowNull: false,
-      // },
-      // pancardImage: {
-      //   type: DataTypes.STRING,
-      //   allowNull: false,
-      // },
       email: {
         type: DataTypes.STRING(255),
         allowNull: false,
@@ -127,6 +83,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: true,
       },
+      pincode: {
+        type: DataTypes.STRING(8),
+        allowNull: true,
+      },
       city: {
         type: DataTypes.STRING(20),
         allowNull: false,
@@ -134,10 +94,6 @@ module.exports = (sequelize, DataTypes) => {
       state: {
         type: DataTypes.STRING(20),
         allowNull: false,
-      },
-      pincode: {
-        type: DataTypes.STRING(8),
-        allowNull: true,
       },
       country: {
         type: DataTypes.ENUM('india'),
@@ -170,6 +126,7 @@ module.exports = (sequelize, DataTypes) => {
 
   ArtistInfo.associate = function (models) {
     ArtistInfo.belongsTo(models.User, { foreignKey: 'artistId', as: 'artist' });
+    ArtistInfo.hasOne(models.ArtistBankingInfo, { foreignKey: 'artistId', sourceKey: 'artistId', as: 'artistBankingInfo' });
     ArtistInfo.belongsToMany(models.Service, {
       through: 'ArtistInfoService', // Corrected join table name
       foreignKey: 'artistInfoId', // Corrected foreignKey to represent ArtistInfo's ID in join table
@@ -180,7 +137,7 @@ module.exports = (sequelize, DataTypes) => {
     ArtistInfo.hasMany(models.Art, {
       foreignKey: 'artistId',
       sourceKey: 'artistId',
-      as: 'arts'
+      as: 'arts',
     });
   };
 
