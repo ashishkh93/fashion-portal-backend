@@ -1,14 +1,8 @@
 {
   "version": 2,
   "functions": {
-    "api/test.js": {
+    "src/app/**/*": {
       "maxDuration": 30
-    },
-    "api/*.js": {
-      "maxDuration": 15
-    },
-    "src/api/*.js": {
-      "maxDuration": 25
     }
   },
   "routes": [
