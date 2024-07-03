@@ -1,15 +1,19 @@
 {
   "version": 2,
-  "functions": {
-    "api": {
-      "runtime": "node@14.17.6",
-      "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": "src/**/*"
+  "builds": [
+    {
+      "src": "src/app.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/src/app.js" },
-    { "src": "/(.*)", "dest": "/src/app.js" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/app.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/app.js"
+    }
   ]
 }
