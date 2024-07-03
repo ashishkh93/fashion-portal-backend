@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api": {
-      "runtime": "node@14.x",
+      "runtime": "node@14.17.6",
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "src/**/*"
