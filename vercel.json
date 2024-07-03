@@ -2,8 +2,10 @@
   "version": 2,
   "functions": {
     "api": {
-      "handler": "/src/app.js",
-      "timeout": 60
+      "runtime": "@vercel/node",
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "src/**/*"
     }
   },
   "routes": [
