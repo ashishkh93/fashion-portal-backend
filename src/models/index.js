@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const pg = require('pg');
 const fs = require('fs');
 const path = require('path');
 const cls = require('cls-hooked');
@@ -14,6 +15,7 @@ const sequelize = new Sequelize(config.mysql.db_name, config.mysql.user, config.
   host: config.mysql.host,
   port: config.mysql.db_port,
   dialect: 'postgres',
+  dialectModule: pg,
   operatorsAliases: false,
   // logging: console.log
   // timezone: '+05:30', // for writing to database
