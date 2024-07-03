@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api": {
-      "runtime": "@vercel/node",
+      "runtime": "nodejs12.x",
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "src/**/*"
