@@ -6,6 +6,11 @@
       "use": "@vercel/node"
     }
   ],
+  "functions": {
+    "api": {
+      "maxDuration": 60 // Increase maxDuration to 60 seconds or as needed
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
