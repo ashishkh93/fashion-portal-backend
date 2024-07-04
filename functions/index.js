@@ -1,20 +1,19 @@
-const { app } = require('../src/app'); // Adjust the import according to your project structure
+import { handleRequest } from '../src/app';
 
-export async function fetch(request) {
-  // Create a new request object for your Express app
-  const req = {
-    url: new URL(request.url).pathname,
-    method: request.method,
-    headers: request.headers,
-    body: await request.text(),
-  };
+export default {
+  async fetch(request) {
+    const req = {
+      url: new URL(request.url).pathname,
+      method: request.method,
+      headers: Object.fromEntries(request.headers),
+      body: await request.text(),
+    };
 
-  // Call the handleRequest function defined in app.js
-  const response = await handleRequest(req);
+    const res = await handleRequest(req);
 
-  // Return a Cloudflare Worker response
-  return new Response(response.body, {
-    status: response.status,
-    headers: response.headers,
-  });
-}
+    return new Response(res.body, {
+      status: res.status,
+      headers: res.headers,
+    });
+  },
+};

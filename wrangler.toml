@@ -9,7 +9,7 @@ workers_dev = true
 bucket = "./public"
 
 [build]
-command = "npm install && npm run build"
+upload = { format = "service-worker", main = "./functions/index.js" }
 
 [vars]
 NODE_ENV = "production"
