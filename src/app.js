@@ -46,21 +46,15 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-const corsConfig = {
-  origin: '*',
-  credential: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-};
-app.options('*', cors(corsConfig));
-app.use(cors(corsConfig));
-// app.options('*', cors());
+app.use(cors());
+app.options('*', cors());
 
 // jwt authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
 // Apply transaction middleware to all routes
-app.use(transactionMiddleware);
+// app.use(transactionMiddleware);
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
