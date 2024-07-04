@@ -54,7 +54,7 @@ app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
 // Apply transaction middleware to all routes
-// app.use(transactionMiddleware);
+app.use(transactionMiddleware);
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
@@ -65,10 +65,6 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/api/v1', routes);
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the fashion');
-});
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
@@ -85,4 +81,37 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-module.exports = app;
+// module.exports = app;
+
+module.exports = {
+  app,
+  handleRequest: async (req) => {
+    const res = await new Promise((resolve) => {
+      const expressRes = {
+        headers: {},
+        body: '',
+        status: 200,
+        send: (body) => {
+          expressRes.body = body;
+          resolve(expressRes);
+        },
+        status: (status) => {
+          expressRes.status = status;
+          return expressRes;
+        },
+        setHeader: (name, value) => {
+          expressRes.headers[name] = value;
+        },
+      };
+
+      app.handle(req, expressRes);
+    });
+
+    return {
+      status: res.status,
+      headers: res.headers,
+      body: res.body,
+    };
+  },
+};
+

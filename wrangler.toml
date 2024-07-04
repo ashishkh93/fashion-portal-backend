@@ -1,0 +1,15 @@
+name = "fashion-portal-backend"
+main = "./src/app.js"
+type = "javascript"
+
+account_id = "d1613b4e4cac637c6c47f1022df535fd"
+workers_dev = true
+
+[site]
+bucket = "./public"
+
+[build]
+command = "npm install && npm run build"
+
+[vars]
+NODE_ENV = "production"
