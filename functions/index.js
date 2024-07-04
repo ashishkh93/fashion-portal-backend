@@ -1,4 +1,4 @@
-import { handleRequest } from '../src/app';
+import { app, handleRequest } from '../src/app'; // Adjust the import path according to your project structure
 
 export default {
   async fetch(request) {

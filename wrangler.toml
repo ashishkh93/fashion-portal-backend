@@ -1,15 +1,13 @@
 name = "fashion-portal-backend"
-main = "./src/app.js"
 type = "javascript"
 
 account_id = "d1613b4e4cac637c6c47f1022df535fd"
 workers_dev = true
 
-[site]
-bucket = "./public"
-
+# Function directory
 [build]
 upload = { format = "service-worker", main = "./functions/index.js" }
 
+# Environment variables
 [vars]
 NODE_ENV = "production"
