@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       artistId: {
         type: DataTypes.UUID,
-        allowNull: true
+        allowNull: true,
       },
       serviceId: {
         type: DataTypes.UUID,
@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'ArtistInfoService',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {

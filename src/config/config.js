@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, envpath) });
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+    DB: Joi.string().required().description('DB is required'),
     DB_HOST: Joi.string().required().description('Host is required'),
     DB_PORT: Joi.number().default(8081),
     DB_USER: Joi.string().required().description('USER is required'),
@@ -37,10 +38,10 @@ const envVarsSchema = Joi.object()
     COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
-    FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
-      .required()
-      .default(6)
-      .description('Firebase admin service account credentials base64'),
+    // FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
+    //   .required()
+    //   .default(6)
+    //   .description('Firebase admin service account credentials base64'),
   })
   .unknown();
 
@@ -57,6 +58,7 @@ module.exports = {
     expiry: envVars.OTP_EXPIRATION_MINUTES,
   },
   mysql: {
+    dbString: envVars.DB,
     host: envVars.DB_HOST,
     db_port: envVars.DB_PORT,
     user: envVars.DB_USER,
@@ -118,5 +120,40 @@ module.exports = {
   },
   firebase: {
     serviceAccountKey: envVars.FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64,
+  },
+
+  host: envVars.DB_HOST,
+  db_port: envVars.DB_PORT,
+  user: envVars.DB_USER,
+  pass: envVars.DB_PASSWORD,
+  db_name: envVars.DB_NAME,
+  /** Sequelize migrations configuration for dev and prod */
+  development: {
+    username: envVars.DB_USER,
+    password: envVars.DB_PASSWORD,
+    database: envVars.DB_NAME,
+    host: envVars.DB_HOST,
+    dialect: 'postgres',
+    seederStorage: 'sequelize',
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000, // Increase acquire timeout
+      idle: 10000,
+    },
+  },
+  production: {
+    username: envVars.DB_USER,
+    password: envVars.DB_PASSWORD,
+    database: envVars.DB_NAME,
+    host: envVars.DB_HOST,
+    dialect: 'postgres',
+    seederStorage: 'sequelize',
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000, // Increase acquire timeout
+      idle: 10000,
+    },
   },
 };

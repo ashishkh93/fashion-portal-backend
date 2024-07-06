@@ -169,7 +169,7 @@ const getAverageRatingOfArtistRawQuery = () => {
   return `COALESCE(
             (
               SELECT AVG("artistReview"."reviewCount")
-              FROM "Reviews" AS "artistReview"
+              FROM "Review" AS "artistReview"
               WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
             ), 0)`;
 };

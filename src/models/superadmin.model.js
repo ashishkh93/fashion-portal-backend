@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'SuperAdminInfo',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {

@@ -64,6 +64,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'OrderFinancialInfo',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {

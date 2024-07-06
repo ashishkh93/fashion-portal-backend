@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const moment = require('moment');
 const catchAsync = require('../../utils/catchAsync');
 const { artistServices } = require('../../services');
-moment.tz.setDefault('Asia/Calcutta');
+// moment.tz.setDefault('Asia/Calcutta');
 
 const getAllOrders = catchAsync(async (req, res) => {
   const { artistId } = req.params;

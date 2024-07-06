@@ -40,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'Token',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
@@ -51,7 +52,15 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Token.associate = function (models) {
-    Token.belongsTo(models.User, { foreignKey: 'userId', as: 'customer' });
+    if (models.User) {
+      console.log('Associating Token with User');
+      Token.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'user',
+      });
+    } else {
+      console.error('User model not found for association');
+    }
   };
 
   return Token;

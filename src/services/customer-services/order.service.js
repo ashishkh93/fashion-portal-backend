@@ -22,7 +22,7 @@ const { getOrderWithFinancialInfoService } = require('../artist-services/order.s
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 
 const getAverageRatingForArtistInOrderQuery = () => {
-  return '(SELECT AVG("reviewCount") FROM "Reviews" WHERE "Reviews"."artistId" = "artist"."id")';
+  return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artist"."id")';
 };
 
 /**

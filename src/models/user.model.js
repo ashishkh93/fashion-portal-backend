@@ -51,6 +51,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'User',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
@@ -81,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasOne(models.ArtistInfo, { foreignKey: 'artistId', as: 'artistInfos' });
     User.hasMany(models.RefundRequest, { foreignKey: 'customerId' });
     User.hasMany(models.Order, { foreignKey: 'customerId' });
+    User.hasMany(models.Token, { foreignKey: 'userId' });
   };
 
   return User;

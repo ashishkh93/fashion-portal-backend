@@ -34,7 +34,6 @@ const phoneVerify = {
 const phoneLogin = {
   body: Joi.object().keys({
     phone: Joi.string().required().alphanum().max(10).min(10),
-    phone: Joi.string().required(),
   }),
 };
 

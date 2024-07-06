@@ -1,5 +1,6 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const pg = require('pg');
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const cls = require('cls-hooked');
@@ -11,19 +12,22 @@ const basename = path.basename(__filename);
 const namespace = cls.createNamespace('fashion-portal');
 Sequelize.useCLS(namespace);
 
-const sequelize = new Sequelize(config.mysql.db_name, config.mysql.user, config.mysql.pass, {
-  host: config.mysql.host,
-  port: config.mysql.db_port,
+const sequelize = new Sequelize(config.mysql.dbString, {
   dialect: 'postgres',
   dialectModule: pg,
   operatorsAliases: false,
-  // logging: console.log
+  dialectOptions: {
+    connectTimeout: 30000,
+  },
+  logging: (msg) => logger.info(msg),
   // timezone: '+05:30', // for writing to database
   // dialectOptions: {
   //   connectTimeout: 6000, // Increase timeout to 20000ms (20 seconds)
   //   decimalNumbers: true, // To return all decimal strings into number
   // },
 });
+
+logger.info('sequelize : ' + _.toString(sequelize));
 
 sequelize
   .authenticate()
@@ -32,7 +36,7 @@ sequelize
   })
   .catch((err) => {
     logger.info('Unable to connect to the database due to ' + err);
-    console.log('Unable to connect to the database:', err);
+    console.error('Unable to connect to the database:', err.message || err);
   });
 
 const db = {};
@@ -43,13 +47,15 @@ fs.readdirSync(__dirname)
     return file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js';
   })
   .forEach((file) => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    const model = require(path.join(__dirname, file))(sequelize, DataTypes);
     db[model.name] = model;
   });
 
 // Apply associations
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
+    logger.info('associating model:' + modelName);
+    console.log(`Associating model: ${modelName}`);
     db[modelName].associate(db);
   }
 });
@@ -57,5 +63,7 @@ Object.keys(db).forEach((modelName) => {
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.namespace = namespace;
+
+logger.info('database tables: ' + _.toString(db));
 
 module.exports = db;

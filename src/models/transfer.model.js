@@ -55,6 +55,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: 'Transfer',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {

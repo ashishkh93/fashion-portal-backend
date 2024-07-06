@@ -98,6 +98,7 @@ module.exports = (sequelize, DataTypes) => {
       // },
     },
     {
+      tableName: 'ArtistBankingInfo',
       hooks: {
         beforeCreate: async (artist) => {
           updateUpiInCipher(artist);

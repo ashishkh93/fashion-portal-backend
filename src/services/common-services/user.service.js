@@ -38,6 +38,7 @@ const updateUserById = async (userBody, userId) => {
 
 const createUserPhoneAuth = async (userBody) => {
   const { phone, role } = userBody;
+  console.log(User, 'User111');
   const user = await User.findOne({ where: { phone: phone, role: role } });
   if (user && (await user.isPhoneNumberTaken(phone, role))) {
     const updateBody = { otp: userBody.otp, otpExpire: userBody.otpExpire };

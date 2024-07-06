@@ -1,5 +1,5 @@
 {
-  "name": "customer-portal",
+  "name": "fashion-portal-backend",
   "version": "1.0.0",
   "bin": "bin/createNodejsApp.js",
   "main": "src/app.js",
@@ -18,10 +18,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check **/*.js",
-    "prettier:fix": "prettier --write **/*.js",
-    "build": "npm run build" 
+    "prettier:fix": "prettier --write **/*.js"
   },
   "dependencies": {
+    "@netlify/functions": "^2.8.1",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
@@ -55,6 +55,7 @@
     "pm2": "^4.5.5",
     "sequelize": "^6.37.1",
     "sequelize-cli": "^6.6.2",
+    "serverless-http": "^3.2.0",
     "swagger-jsdoc": "4.2.0",
     "swagger-ui-express": "4.1.4",
     "uuid": "^9.0.1",

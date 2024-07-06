@@ -1,6 +1,5 @@
 const express = require('express');
 const helmet = require('helmet');
-const moment = require('moment');
 const xss = require('xss-clean');
 const compression = require('compression');
 const cors = require('cors');
@@ -15,7 +14,8 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const db = require('./models');
-const transactionMiddleware = require('./middlewares/transaction');
+// const transactionMiddleware = require('./middlewares/transaction');
+const logger = require('./config/logger');
 
 const app = express();
 
@@ -54,14 +54,14 @@ app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
 // Apply transaction middleware to all routes
-app.use(transactionMiddleware);
+// app.use(transactionMiddleware);
 
 // limit repeated failed requests to auth endpoints
-if (config.env === 'production') {
-  app.use('/api/v1/super-admin/auth', authLimiter);
-  app.use('/api/v1/artist/auth', authLimiter);
-  app.use('/api/v1/customer/auth', authLimiter);
-}
+// if (config.env === 'production') {
+//   app.use('/api/v1/super-admin/auth', authLimiter);
+//   app.use('/api/v1/artist/auth', authLimiter);
+//   app.use('/api/v1/customer/auth', authLimiter);
+// }
 
 // v1 api routes
 app.use('/api/v1', routes);
@@ -81,37 +81,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-// module.exports = app;
-
-module.exports = {
-  app,
-  handleRequest: async (req) => {
-    const res = await new Promise((resolve) => {
-      const expressRes = {
-        headers: {},
-        body: '',
-        status: 200,
-        send: (body) => {
-          expressRes.body = body;
-          resolve(expressRes);
-        },
-        status: (status) => {
-          expressRes.status = status;
-          return expressRes;
-        },
-        setHeader: (name, value) => {
-          expressRes.headers[name] = value;
-        },
-      };
-
-      app.handle(req, expressRes);
-    });
-
-    return {
-      status: res.status,
-      headers: res.headers,
-      body: res.body,
-    };
-  },
-};
-
+module.exports = app;

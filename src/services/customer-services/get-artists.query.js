@@ -35,7 +35,7 @@ module.exports = class GetFilteredArtists {
   //         Sequelize.literal(`COALESCE(
   //         (
   //           SELECT AVG("artistReview"."reviewCount")
-  //           FROM "Reviews" AS "artistReview"
+  //           FROM "Review" AS "artistReview"
   //           WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
   //         ), 0)`),
   //         'averageRating',
@@ -132,7 +132,7 @@ module.exports = class GetFilteredArtists {
       ? `
       (
         SELECT AVG("artistReview"."reviewCount")
-        FROM "Reviews" AS "artistReview"
+        FROM "Review" AS "artistReview"
         WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
       ) >= ${minRating}
     `

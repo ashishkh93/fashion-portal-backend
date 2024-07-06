@@ -46,7 +46,7 @@ const cancelApprovedOrder = async (order) => {
 };
 
 const start = async (orderId, type) => {
-  moment.tz.setDefault('Asia/Calcutta');
+  // moment.tz.setDefault('Asia/Calcutta');
   const singleOrder = await Order.findByPk(orderId);
   if (!!singleOrder) {
     const { dataValues } = singleOrder;
