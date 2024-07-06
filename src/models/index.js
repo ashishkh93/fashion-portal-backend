@@ -15,7 +15,7 @@ Sequelize.useCLS(namespace);
 const sequelize = new Sequelize(config.mysql.dbString, {
   dialect: 'postgres',
   dialectModule: pg,
-  operatorsAliases: false,
+  // operatorsAliases: false,
   dialectOptions: {
     connectTimeout: 30000,
   },
@@ -54,8 +54,6 @@ fs.readdirSync(__dirname)
 // Apply associations
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
-    logger.info('associating model:' + modelName);
-    console.log(`Associating model: ${modelName}`);
     db[modelName].associate(db);
   }
 });

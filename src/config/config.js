@@ -58,7 +58,9 @@ module.exports = {
     expiry: envVars.OTP_EXPIRATION_MINUTES,
   },
   mysql: {
-    dbString: envVars.DB,
+    // dbString: envVars.DB,
+    dbString:
+      'postgresql://app:17G518Kh2r0BG08GFz0SDeJX@officially-neutral-anemone.a1.pgedge.io/fashion_portal?sslmode=require',
     host: envVars.DB_HOST,
     db_port: envVars.DB_PORT,
     user: envVars.DB_USER,
