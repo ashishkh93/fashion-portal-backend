@@ -46,12 +46,14 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-app.use(cors());
-app.options('*', cors());
+// app.use(cors());
+// app.options('*', cors());
 
 // jwt authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
+
+app.get('/', (req, res) => res.send('Welcome to the Music Store API!'));
 
 // Apply transaction middleware to all routes
 // app.use(transactionMiddleware);
