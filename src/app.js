@@ -15,6 +15,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const logger = require('./config/logger');
 const { initializeDatabaseConnection } = require('./config/db.config');
+const { initializeDatabaseConnectionForProd } = require('./utils/database');
 // const { initializeDatabaseConnectionForProd } = require('../netlify/functions/api');
 
 // initializeDatabaseConnectionForProd().catch((error) => {
@@ -90,10 +91,17 @@ if (config.env !== 'production') {
       logger.error('Failed to initialize the database connection on startup:', error.message);
     });
 } else {
-  const PORT = process.env.PORT || 8080;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
-  });
+  initializeDatabaseConnectionForProd()
+    .then(() => {
+      const PORT = process.env.PORT || 8080;
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}.`);
+      });
+    })
+    .catch((error) => {
+      logger.error('Failed to initialize the database connection on startup:', error.message);
+    });
 }
+
 
 module.exports = app;
