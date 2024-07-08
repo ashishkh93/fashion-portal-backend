@@ -15,6 +15,12 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const logger = require('./config/logger');
 const { initializeDatabaseConnection } = require('./config/db.config');
+// const { initializeDatabaseConnectionForProd } = require('../netlify/functions/api');
+
+// initializeDatabaseConnectionForProd().catch((error) => {
+//   logger.error('Initial database connection failed:', error.message);
+//   process.exit(1);
+// });
 
 const app = express();
 
@@ -57,6 +63,8 @@ app.get('/', (req, res) => res.send('Welcome to the Music Store API!'));
 // }
 
 // v1 api routes
+app.get('/api/v1/hello', (req, res) => res.send('Hello World!'));
+
 app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request
