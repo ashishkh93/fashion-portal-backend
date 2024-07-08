@@ -1,8 +1,17 @@
 [functions]
-  external_node_modules = ["express", "sequelize", "pg"]
+  external_node_modules = ["express", "sequelize", "pg", "axios"]
   node_bundler = "esbuild"
+  included_files = ["src/config/**", "src/models/**"]
 
 [[redirects]]
   from = "/api/v1/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    cache-control = "no-cache"
+
+[build.environment]
+  SKIP_FUNCTIONS_CACHE = "true"

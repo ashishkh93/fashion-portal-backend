@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, envpath) });
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+    // DB_CONNECT_APP_URL: Joi.string(),
     DB: Joi.string().required().description('DB is required'),
     DB_HOST: Joi.string().required().description('Host is required'),
     DB_PORT: Joi.number().default(8081),
@@ -58,9 +59,9 @@ module.exports = {
     expiry: envVars.OTP_EXPIRATION_MINUTES,
   },
   mysql: {
-    // dbString: envVars.DB,
-    dbString:
-      'postgresql://app:17G518Kh2r0BG08GFz0SDeJX@officially-neutral-anemone.a1.pgedge.io/fashion_portal?sslmode=require',
+    dbString: envVars.DB,
+    // dbString:
+    //   'postgresql://app:17G518Kh2r0BG08GFz0SDeJX@officially-neutral-anemone.a1.pgedge.io/fashion_portal?sslmode=require',
     host: envVars.DB_HOST,
     db_port: envVars.DB_PORT,
     user: envVars.DB_USER,
@@ -158,4 +159,5 @@ module.exports = {
       idle: 10000,
     },
   },
+  // connectDbBackgroundUrl: envVars.DB_CONNECT_APP_URL,
 };
