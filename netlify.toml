@@ -1,5 +1,5 @@
 [functions]
-  external_node_modules = ["express", "sequelize", "pg", "axios"]
+  external_node_modules = ["express", "sequelize", "pg"]
   node_bundler = "esbuild"
   included_files = ["src/config/**", "src/models/**"]
 

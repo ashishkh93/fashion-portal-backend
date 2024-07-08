@@ -2,14 +2,10 @@ const serverless = require('serverless-http');
 const app = require('../../src/app');
 const fetch = require('node-fetch');
 const logger = require('../../src/config/logger');
-const ApiError = require('../../src/utils/ApiError');
-
-const connectionString = 'https://jade-marigold-3eeaba.netlify.app/.netlify/functions/connect-db';
 
 const initializeDatabaseConnectionForProd = async () => {
   try {
-    logger.info('Initializing database connection with: ' + connectionString);
-    const response = await fetch(connectionString);
+    const response = await fetch('https://jade-marigold-3eeaba.netlify.app/.netlify/functions/connect-db');
     const result = await response.json();
 
     logger.info('Database connection result: ' + result.message);
@@ -25,14 +21,10 @@ const initializeDatabaseConnectionForProd = async () => {
   }
 };
 
-app.use(async (req, res, next) => {
-  try {
-    await initializeDatabaseConnectionForProd();
-    next();
-  } catch (error) {
-    console.log('Database connection error: ', error);
-    next(error);
-  }
+// Initialize database connection once at startup
+initializeDatabaseConnectionForProd().catch((error) => {
+  logger.error('Initial database connection failed:', error);
+  process.exit(1);
 });
 
 // Your existing routes and logic
