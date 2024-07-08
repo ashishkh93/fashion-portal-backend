@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 
 const initializeDatabaseConnectionForProd = async () => {
   try {
-    const response = await fetch('https://jade-marigold-3eeaba.netlify.app/.netlify/functions/connect-db');
+    const response = await fetch('https://jade-marigold-3eeaba.netlify.app/netlify/functions/connect-db');
     const result = await response.json();
 
     logger.info('Database connection result: ' + result.message);
