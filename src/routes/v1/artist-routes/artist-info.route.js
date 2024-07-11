@@ -4,6 +4,7 @@ const { artistControllers } = require('../../../controllers');
 const { artistValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router
     auth(),
     artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     validate(artistValidation.addArtistInfo),
+    transactionMiddleware,
     artistControllers.artistInfoController.addArtistInfo
   )
   .get(
@@ -21,14 +23,15 @@ router
     validate(artistValidation.getArtistInfo),
     artistControllers.artistInfoController.getArtistInfo
   )
-  .put(
+  .patch(
     auth(),
     artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     validate(artistValidation.editArtistInfo),
+    transactionMiddleware,
     artistControllers.artistInfoController.editArtistInfo
   );
 
-router.put(
+router.patch(
   '/:artistId/update-upi',
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),

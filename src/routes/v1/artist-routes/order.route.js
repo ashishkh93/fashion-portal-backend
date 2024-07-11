@@ -4,6 +4,7 @@ const { artistControllers } = require('../../../controllers');
 const { orderValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
@@ -23,14 +24,15 @@ router
     validate(orderValidation.getSingleOrderForArtist),
     artistControllers.orderController.getSingleOrder
   )
-  .put(
+  .patch(
     auth(),
     artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
     validate(orderValidation.updateOrderStatusForArtist),
+    transactionMiddleware,
     artistControllers.orderController.updateOrderStatus
   );
 
-router.put(
+router.patch(
   '/:artistId/:orderId/edit-order',
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),

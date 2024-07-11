@@ -1,9 +1,35 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
 const ApiError = require('../../utils/ApiError');
-const { ArtistBankingInfo } = require('../../models');
-const { getApprovedArtist } = require('../artist-services/artist.service');
+const { User, ArtistBankingInfo, ArtistInfo } = require('../../models');
 const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
+const { Op } = require('sequelize');
+
+const getApprovedAndUPIExistingArtist = async (artistId) => {
+  const artist = await User.findOne({
+    where: { id: artistId, role: 'artist', isActive: true },
+    include: [
+      {
+        model: ArtistInfo,
+        as: 'artistInfos',
+        where: { status: 'APPROVED' },
+        include: [
+          {
+            model: ArtistBankingInfo,
+            as: 'artistBankingInfo',
+            attributes: ['beneficiaryId', 'upi', 'pan'],
+            where: { upi: { [Op.ne]: null } },
+          },
+        ],
+      },
+    ],
+  });
+  if (artist) {
+    return artist;
+  } else {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Artist is not approved yet');
+  }
+};
 
 /**
  * Add beneficiary in cashfree payout dashboard
@@ -12,7 +38,7 @@ const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
  * @returns {Promise}
  */
 const addBeneToCFService = async (body, artistId) => {
-  const artistFromModel = await getApprovedArtist(artistId);
+  const artistFromModel = await getApprovedAndUPIExistingArtist(artistId);
   const artist = artistFromModel.get({ plain: true });
   const artistInfos = artist.artistInfos;
   const artistBankingInfo = artist.artistInfos.artistBankingInfo;
@@ -36,7 +62,7 @@ const addBeneToCFService = async (body, artistId) => {
         beneficiary_postal_code: artistInfos.pincode,
       },
     };
-    
+
     const addBeneResponse = await payoutAPICallback('POST', addBeneficiaryBody, '/beneficiary');
     const data = await addBeneResponse.json();
 

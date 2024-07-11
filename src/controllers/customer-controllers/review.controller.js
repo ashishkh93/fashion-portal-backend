@@ -3,9 +3,15 @@ const catchAsync = require('../../utils/catchAsync');
 const { customerServices } = require('../../services');
 
 const createReviewForOrder = catchAsync(async (req, res) => {
-  const { customerId } = req.params;
-  const reviewResponse = await customerServices.reviewService.createReviewForOrderService(customerId, req.body);
+  const { customerId, orderId } = req.params;
+  const reviewResponse = await customerServices.reviewService.createReviewForOrderService(customerId, orderId, req.body);
   res.status(httpStatus.CREATED).send({ status: true, message: 'Review added!', entity: reviewResponse });
+});
+
+const updateReviewForOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const reviewResponse = await customerServices.reviewService.updateReviewForOrderService(orderId, req.body);
+  res.status(httpStatus.OK).send({ status: true, message: 'Review updated!', entity: reviewResponse });
 });
 
 const getOrderReview = catchAsync(async (req, res) => {
@@ -16,5 +22,6 @@ const getOrderReview = catchAsync(async (req, res) => {
 
 module.exports = {
   createReviewForOrder,
+  updateReviewForOrder,
   getOrderReview,
 };

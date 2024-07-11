@@ -50,11 +50,11 @@ const getCustomerInfo = {
 
 const addReview = {
   params: Joi.object().keys({
-    customerId: Joi.string().required(),
+    customerId: Joi.string().required().uuid(),
+    orderId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
     artistId: Joi.string().required(),
-    orderId: Joi.string().required(),
     description: Joi.string(),
     reviewCount: Joi.number()
       .required()

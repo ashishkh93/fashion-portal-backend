@@ -1,8 +1,25 @@
 const httpStatus = require('http-status');
-const { Review, Order } = require('../../models');
+const { Review, Order, ArtistInfo, User } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPlainData } = require('../../utils/common.util');
-const { getApprovedArtist } = require('../artist-services/artist.service');
+
+const getApprovedArtistByStatus = async (artistId) => {
+  const artist = await User.findOne({
+    where: { id: artistId, role: 'artist', isActive: true },
+    include: [
+      {
+        model: ArtistInfo,
+        as: 'artistInfos',
+        where: { status: 'APPROVED' },
+      },
+    ],
+  });
+  if (artist) {
+    return artist;
+  } else {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Artist is not approved yet');
+  }
+};
 
 const getReviewByOrderId = async (orderId) => {
   const review = await Review.findOne({ where: { orderId } });
@@ -18,9 +35,9 @@ const getReviewByOrderId = async (orderId) => {
  * @param {object} body
  * @returns {Review}
  */
-const createReviewForOrderService = async (customerId, body) => {
-  await getApprovedArtist(body.artistId);
-  const order = await Order.findOne({ where: { id: body.orderId, artistId: body.artistId } });
+const createReviewForOrderService = async (customerId, orderId, body) => {
+  await getApprovedArtistByStatus(body.artistId);
+  const order = await Order.findOne({ where: { id: orderId, artistId: body.artistId } });
 
   if (!order) throw new ApiError(httpStatus.FORBIDDEN, `Order not found for the artist`);
   if (order.dataValues.status !== 'COMPLETED') {
@@ -29,7 +46,7 @@ const createReviewForOrderService = async (customerId, body) => {
   /**
    * check that, the order has already got review or not
    */
-  const curReview = await getReviewByOrderId(body.orderId);
+  const curReview = await getReviewByOrderId(orderId);
 
   if (!curReview) {
     const reviewBody = { ...body, givenBy: customerId };
@@ -37,6 +54,25 @@ const createReviewForOrderService = async (customerId, body) => {
     return reviewResp;
   } else {
     throw new ApiError(httpStatus.FORBIDDEN, 'Review already created for this order');
+  }
+};
+
+/**
+ * Create review for the order (actually for the artist)
+ * @param {string} customerId
+ * @param {object} body
+ * @returns {Review}
+ */
+const updateReviewForOrderService = async (orderId, body) => {
+  await getApprovedArtistByStatus(body.artistId);
+
+  const curReview = await getReviewByOrderId(orderId);
+  if (!curReview) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Review does not exist for an order');
+  } else {
+    const reviewBody = { description: body.description, reviewCount: body.reviewCount };
+    const updateReviewRes = await Review.update(reviewBody, { where: { artistId: body.artistId } });
+    return updateReviewRes;
   }
 };
 
@@ -57,5 +93,6 @@ const getOrderReview = async (orderId) => {
 
 module.exports = {
   createReviewForOrderService,
+  updateReviewForOrderService,
   getOrderReview,
 };

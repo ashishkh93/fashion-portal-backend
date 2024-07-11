@@ -29,7 +29,7 @@ router
     validate(serviceValidation.getEditDeleteCategory),
     superAdminControllers.categoryController.getOneCategory
   )
-  .put(
+  .patch(
     auth('manageServices'),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditDeleteCategory),

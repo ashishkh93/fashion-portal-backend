@@ -53,7 +53,6 @@ module.exports = (sequelize, DataTypes) => {
 
   Token.associate = function (models) {
     if (models.User) {
-      console.log('Associating Token with User');
       Token.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'user',

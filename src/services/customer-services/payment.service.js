@@ -5,6 +5,7 @@ const ApiError = require('../../utils/ApiError');
 const { CashfreeUtil } = require('../../utils/cashfree.util');
 const logger = require('../../config/logger');
 const config = require('../../config/config');
+const { getPlainData } = require('../../utils/common.util');
 
 const xAPiVersion = config.cashfree.apiVersion;
 
@@ -30,7 +31,7 @@ const getOrderById = async (orderId) => {
     } = order;
 
     if (status === 'APPROVED') {
-      return order;
+      return getPlainData(order);
     } else if (status === 'COMPLETED') {
       throw new ApiError(httpStatus.FORBIDDEN, 'Your order has already completed');
     } else if (status.includes('CANCELLED')) {
@@ -56,7 +57,7 @@ const getOrderById = async (orderId) => {
  */
 const paymentInitiateService = async (customerId, orderId, body, customer) => {
   const orderById = await getOrderById(orderId);
-  const orderFinancialInfo = orderById.dataValues.orderFinancialInfo.dataValues;
+  const orderFinancialInfo = orderById.orderFinancialInfo;
 
   if (body?.isAdvance && orderFinancialInfo?.advanceAmountForOrder === 0) {
     throw new ApiError(

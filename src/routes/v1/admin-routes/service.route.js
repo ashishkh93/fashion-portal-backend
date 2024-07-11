@@ -34,7 +34,7 @@ router
     validate(serviceValidation.getEditAndDeleteService),
     superAdminControllers.serviceController.getOneService
   )
-  .put(
+  .patch(
     auth('manageServices'),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
     validate(serviceValidation.getEditAndDeleteService),

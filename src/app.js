@@ -13,15 +13,7 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
-const logger = require('./config/logger');
-const { initializeDatabaseConnection } = require('./config/db.config');
-const { initializeDatabaseConnectionForProd } = require('./utils/database');
-// const { initializeDatabaseConnectionForProd } = require('../netlify/functions/api');
-
-// initializeDatabaseConnectionForProd().catch((error) => {
-//   logger.error('Initial database connection failed:', error.message);
-//   process.exit(1);
-// });
+const db = require('./models');
 
 const app = express();
 
@@ -29,6 +21,11 @@ if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
+
+// re-sync database ---- SHOULD ONLY USE IN DEV ENVIRONMENT
+// db.sequelize.sync({ alter: true }).then(() => {
+//   console.log('Drop and re-sync db.');
+// });
 
 // set security HTTP headers
 app.use(helmet());
@@ -56,52 +53,32 @@ passport.use('jwt', jwtStrategy);
 
 app.get('/', (req, res) => res.send('Welcome to the Music Store API!'));
 
+// Apply transaction middleware to all routes
+// app.use(transactionMiddleware);
+
 // limit repeated failed requests to auth endpoints
-// if (config.env === 'production') {
-//   app.use('/api/v1/super-admin/auth', authLimiter);
-//   app.use('/api/v1/artist/auth', authLimiter);
-//   app.use('/api/v1/customer/auth', authLimiter);
-// }
+if (config.env === 'production') {
+  app.use('/api/v1/super-admin/auth', authLimiter);
+  app.use('/api/v1/artist/auth', authLimiter);
+  app.use('/api/v1/customer/auth', authLimiter);
+}
 
 // v1 api routes
-app.get('/api/v1/hello', (req, res) => res.send('Hello World!'));
-
 app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Resource not found'));
 });
-
 // convert error to ApiError, if needed
 app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
 
-if (config.env !== 'production') {
-  initializeDatabaseConnection()
-    .then(() => {
-      const PORT = process.env.PORT || 8080;
-      app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}.`);
-      });
-    })
-    .catch((error) => {
-      logger.error('Failed to initialize the database connection on startup:', error.message);
-    });
-} else {
-  initializeDatabaseConnectionForProd()
-    .then(() => {
-      const PORT = process.env.PORT || 8080;
-      app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}.`);
-      });
-    })
-    .catch((error) => {
-      logger.error('Failed to initialize the database connection on startup:', error.message);
-    });
-}
-
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}.`);
+});
 
 module.exports = app;

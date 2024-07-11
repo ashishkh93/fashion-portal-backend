@@ -21,7 +21,7 @@ router
     validate(customerValidation.getCustomerInfo),
     customerController.customerInfoController.getCustomerInfo
   )
-  .put(
+  .patch(
     auth(),
     customerValidate((req) => req.params.customerId),
     validate(customerValidation.editCustomerInfo),

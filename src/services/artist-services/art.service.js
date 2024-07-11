@@ -56,7 +56,6 @@ const getAllArtsService = async (artistId, page, size) => {
       },
     ];
 
-    // const artCondition = { artistId, status: 'APPROVED', isActive: true };
     const artCondition = { artistId };
     const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, includeModel);
     return allArts;

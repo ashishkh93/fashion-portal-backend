@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
 const { User, ArtistInfo, ArtistBankingInfo, ArtistInfoService, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { encrypt, decrypt } = require('../../utils/crypto');
 const { Op } = require('sequelize');
-const { verifyUPIService, verifyUpiCallback } = require('../superadmin-services/getInfos.service');
+const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -61,6 +61,7 @@ const getApprovedArtist = async (artistId) => {
  * @returns {object}
  */
 const addArtistInfoService = async (artistId, body) => {
+  const transaction = getTransaction();
   try {
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
@@ -79,8 +80,8 @@ const addArtistInfoService = async (artistId, body) => {
 
       const artistInfoEntry = { ...body, artistId, status: 'PENDING' };
 
-      let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry);
-      await ArtistBankingInfo.create(artistBankingBody);
+      let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry, { transaction });
+      await ArtistBankingInfo.create(artistBankingBody, { transaction });
 
       const artistInfoServiceEntries = body?.services?.map((serviceId) => ({
         artistInfoId: tmpArtistInfo.dataValues.id,
@@ -88,7 +89,7 @@ const addArtistInfoService = async (artistId, body) => {
         serviceId,
       }));
 
-      await ArtistInfoService.bulkCreate(artistInfoServiceEntries);
+      await ArtistInfoService.bulkCreate(artistInfoServiceEntries, { transaction });
 
       const { status, createdAt } = tmpArtistInfo.dataValues;
       return { artistId, status, createdAt };
@@ -158,6 +159,7 @@ const getArtistInfoService = async (artistId) => {
  * @returns {Promise}
  */
 const editArtistInfoService = async (artistId, body, artistInfo) => {
+  const transaction = getTransaction();
   try {
     // Deleting services if any are marked for deletion
     if (body.deletedServices?.length) {
@@ -168,6 +170,7 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
           },
           artistId,
         },
+        transaction,
       });
     }
 
@@ -178,7 +181,7 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
         serviceId,
         artistId,
       }));
-      await ArtistInfoService.bulkCreate(newServiceEntries);
+      await ArtistInfoService.bulkCreate(newServiceEntries, { transaction });
     }
 
     // Updating the services array
@@ -199,7 +202,7 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
     };
 
     // Updating the artist info
-    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.FORBIDDEN, error.message || 'Internal Server Error');
   }

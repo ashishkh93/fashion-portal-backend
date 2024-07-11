@@ -3,7 +3,7 @@ const httpStatus = require('http-status');
 const config = require('../config/config');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
-const { namespace } = require('../models');
+// const { namespace } = require('../models');
 
 const errorConverter = (err, req, res, next) => {
   let error = err;
@@ -39,14 +39,14 @@ const errorHandler = async (err, _req, res, _next) => {
   }
 
   // handle sequelize transaction rollback while having error
-  const transaction = namespace.get('transaction');
-  if (transaction) {
-    try {
-      await transaction.rollback();
-    } catch (rollbackError) {
-      logger.error('Transaction rollback error: ', rollbackError.message);
-    }
-  }
+  // const transaction = namespace.get('transaction');
+  // if (transaction) {
+  //   try {
+  //     await transaction.rollback();
+  //   } catch (rollbackError) {
+  //     logger.error('Transaction rollback error: ', rollbackError.message);
+  //   }
+  // }
 
   res.status(statusCode).send(response);
 };

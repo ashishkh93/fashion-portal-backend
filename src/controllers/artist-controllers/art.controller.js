@@ -7,7 +7,7 @@ const addArt = catchAsync(async (req, res) => {
   const art = await artistServices.artService.addArtService(artistId, req.body);
   res.status(httpStatus.CREATED).send({
     status: true,
-    message: 'Art added successfully! You and Users will be able to see this art, once it is verified by the team!',
+    message: 'Art added successfully! Users will be able to see this art, once it is verified by the team!',
     entity: art,
   });
 });

@@ -30,7 +30,7 @@ router
     validate(artValidation.getSingleArt),
     artistControllers.artController.getSingleArt
   )
-  .put(
+  .patch(
     auth(),
     artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     validate(artValidation.editArt),

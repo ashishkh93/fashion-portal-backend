@@ -20,6 +20,7 @@ const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-ca
 const { checkIsRefundEligible, getPlainData, getOrderIdentity } = require('../../utils/common.util');
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
 const getAverageRatingForArtistInOrderQuery = () => {
   return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artist"."id")';
@@ -119,6 +120,7 @@ const getOrderById = async (orderCondition) => {
  * @returns {object}
  */
 const orderInitiateService = async (customerId, artistId, body, customer) => {
+  const transaction = getTransaction()
   const artist = await getApprovedArtist(artistId);
 
   if (artist.phone === customer.phone) {
@@ -167,19 +169,19 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
       );
 
       const orderInitiateBody = { ...body, orderIdentity, artIds, customerId, artistId };
-      let tmpOrder = await Order.create(orderInitiateBody);
+      let tmpOrder = await Order.create(orderInitiateBody, { transaction });
 
       const orderId = tmpOrder.dataValues.id;
       const orderFinancialInfoBody = { orderId, totalAmount, advanceAmountForOrder };
 
-      await OrderFinancialInfo.create(orderFinancialInfoBody);
+      await OrderFinancialInfo.create(orderFinancialInfoBody, { transaction });
 
       const artOrderEntries = body.arts.map((art) => ({
         artOrderId: orderId,
         artId: art.id,
         quantity: art.qty,
       }));
-      await ArtOrder.bulkCreate(artOrderEntries);
+      await ArtOrder.bulkCreate(artOrderEntries, { transaction });
       const { id, status, createdAt } = tmpOrder.dataValues;
 
       /**
@@ -290,6 +292,7 @@ const fetchOrdersService = async (customerId, page, size) => {
  * @returns {Promise}
  */
 const cancelOrderByUserService = async (customerId, orderId, body) => {
+  const transaction = getTransaction();
   // const order = await getOrderById({ id: orderId, customerId });
   const order = await getOrderWithFinancialInfoService(orderId);
   const orderFinancialInfo = order.orderFinancialInfo;
@@ -309,7 +312,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
       status: body.status,
       customerOrderNote: body.cancelReason,
     };
-    await Order.update(cancelOrderBody, { where: { id: orderId, customerId } });
+    await Order.update(cancelOrderBody, { where: { id: orderId, customerId }, transaction });
 
     if (advancedPaid) {
       const isRefundEligible = checkIsRefundEligible(orderFinancialInfo);
@@ -317,7 +320,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
         /**
          * Refund the order advance amount to customer based on the cancel policy
          */
-        await createRefunRequestForOrderService(order, 'Order Cancelled by User');
+        await createRefunRequestForOrderService(order, 'Order Cancelled by User', transaction);
       }
     }
   }

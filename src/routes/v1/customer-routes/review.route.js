@@ -7,20 +7,25 @@ const { customerValidate } = require('../../../middlewares/userValidate');
 
 const router = express.Router();
 
-router.post(
-  '/:customerId',
-  auth(),
-  customerValidate((req) => req.params.customerId),
-  validate(customerValidation.addReview),
-  customerController.reviewController.createReviewForOrder
-);
-
-router.get(
-  '/:customerId/:orderId',
-  auth(),
-  customerValidate((req) => req.params.customerId),
-  validate(customerValidation.getOrderReview),
-  customerController.reviewController.getOrderReview
-);
+router
+  .route('/:customerId/:orderId')
+  .post(
+    auth(),
+    customerValidate((req) => req.params.customerId),
+    validate(customerValidation.addReview),
+    customerController.reviewController.createReviewForOrder
+  )
+  .get(
+    auth(),
+    customerValidate((req) => req.params.customerId),
+    validate(customerValidation.getOrderReview),
+    customerController.reviewController.getOrderReview
+  )
+  .patch(
+    auth(),
+    customerValidate((req) => req.params.customerId),
+    validate(customerValidation.addReview),
+    customerController.reviewController.updateReviewForOrder
+  );
 
 module.exports = router;

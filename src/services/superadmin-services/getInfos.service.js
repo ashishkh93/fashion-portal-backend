@@ -7,6 +7,7 @@ const { getSignature } = require('../../utils/cashfree.util');
 const { getAuthenticationTokenAPICallback, verifyUPICallback } = require('../../utils/cashfree-payout-api.util');
 const { getPlainData } = require('../../utils/common.util');
 const { Op } = require('sequelize');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
 /**
  * Get artist information for admin to check artist's status
@@ -134,13 +135,14 @@ const getAllArtsForAdminService = async (artistId, page, size) => {
  * @returns {Promise}
  */
 const updateArtistStatusService = async (body, artistId) => {
+  const transaction = getTransaction();
   try {
     const currentArtist = await User.findOne({ where: { id: artistId, role: 'artist' } });
     if (currentArtist) {
       const artistUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
       const artistInfoUpdateBody = { status: body.status };
-      await User.update(artistUpdateBody, { where: { id: artistId } });
-      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId } });
+      await User.update(artistUpdateBody, { where: { id: artistId }, transaction });
+      await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
     }

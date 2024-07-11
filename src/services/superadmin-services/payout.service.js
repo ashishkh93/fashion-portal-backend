@@ -30,8 +30,7 @@ const payoutToArtistsService = async (body) => {
       // toDate = moment(lastPayoutToDate).subtract(15, 'days').format('YYYY-MM-DD');
     }
 
-    // if (plainPayouts.length === 0 || moment(body.fromDate).isAfter(lastPayoutToDate)) {
-    if (true) {
+    if (plainPayouts.length === 0 || moment(body.fromDate).isAfter(lastPayoutToDate)) {
       const allOrdersWithinFromToDate = await Order.findAll({
         where: {
           date: {
@@ -76,8 +75,6 @@ const payoutToArtistsService = async (body) => {
        * avoid getting data in sequelize dataValues instance. With below method we will get the plain data
        */
       const plainOrders = allOrdersWithinFromToDate.map((order) => order.get({ plain: true }));
-
-      console.log(plainOrders, 'plainOrders');
 
       const orderIds = plainOrders?.map((order) => order.id);
 

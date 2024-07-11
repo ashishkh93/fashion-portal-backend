@@ -4,24 +4,26 @@ const auth = require('../../../middlewares/auth');
 const validate = require('../../../middlewares/validate');
 const { artValidation, authValidation, artistValidation } = require('../../../validations');
 const { adminValidate } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
-router.put(
+router.patch(
   '/:adminId/:artistId/approve-artist',
   auth('manageArtists'),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(authValidation.changeArtistStatus),
+  transactionMiddleware,
   superAdminControllers.verifyStatusController.changeArtistStatus
 );
-router.put(
+router.patch(
   '/:adminId/:artistId/:artId/approve-art',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artValidation.udpateArtStatus),
   superAdminControllers.verifyStatusController.approveArt
 );
-router.put(
+router.patch(
   '/:adminId/:artistId/update-lat-long',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),

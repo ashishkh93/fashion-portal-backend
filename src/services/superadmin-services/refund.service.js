@@ -83,7 +83,7 @@ const getRefunRequestsService = async (page, size) => {
  * Create refund request
  * @returns {RefundRequest}
  */
-const createRefunRequestForOrderService = async (curOrder, refundReason) => {
+const createRefunRequestForOrderService = async (curOrder, refundReason, transaction) => {
   try {
     if (!curOrder) throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide valid order');
 
@@ -104,7 +104,7 @@ const createRefunRequestForOrderService = async (curOrder, refundReason) => {
       refundReason,
     };
 
-    await RefundRequest.create(refundRequestBody);
+    await RefundRequest.create(refundRequestBody, { transaction });
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }

@@ -14,7 +14,7 @@ const connectToDatabase = async () => {
       dialectModule: pg,
       operatorsAliases: false,
       dialectOptions: {
-        connectTimeout: 30000, // 30 seconds
+        connectTimeout: 15000, // 30 seconds
       },
       logging: (msg) => logger.info(msg),
     });

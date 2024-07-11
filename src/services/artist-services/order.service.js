@@ -7,6 +7,7 @@ const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
 const { getPlainData } = require('../../utils/common.util');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
 const includeModelForOrderFetch = [
   {
@@ -137,6 +138,7 @@ const getOrderWithFinancialInfoService = async (orderId) => {
  * @returns {Order}
  */
 const updateOrderStatusService = async (artistId, orderId, body) => {
+  const transaction = getTransaction()
   const curOrder = await getOrderWithFinancialInfoService(orderId);
 
   if (curOrder.status === 'PENDING' || curOrder.status === 'APPROVED') {
@@ -146,7 +148,7 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
     }
     const orderUpdateCondition = { id: orderId, artistId };
 
-    await Order.update(updateOrderBody, { where: orderUpdateCondition });
+    await Order.update(updateOrderBody, { where: orderUpdateCondition, transaction });
 
     if (
       body.status === 'CANCELLED_BY_ARTIST' &&
@@ -157,7 +159,7 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
        * Initiate the advance amount refund to user, because artist is cancelling the order and customer has already paid advance amount for an order
        */
 
-      await createRefunRequestForOrderService(curOrder, 'Order Cancelled by Artist');
+      await createRefunRequestForOrderService(curOrder, 'Order Cancelled by Artist', transaction);
     } else if (body.status === 'APPROVED') {
       /**
        * Initiate the auto order cancel schedule if the advance amount is not paid by user within timely manner

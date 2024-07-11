@@ -4,6 +4,7 @@ const { customerController } = require('../../../controllers');
 const { orderValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.route('/:customerId/:artistId').post(
   auth(),
   customerValidate((req) => req.params.customerId),
   validate(orderValidation.orderInitiate),
+  transactionMiddleware,
   customerController.orderController.orderInitiate
 );
 
@@ -22,10 +24,11 @@ router
     validate(orderValidation.getOrderForUser),
     customerController.orderController.fetchOrder
   )
-  .put(
+  .patch(
     auth(),
     customerValidate((req) => req.params.customerId),
     validate(orderValidation.cancelOrderByUser),
+    transactionMiddleware,
     customerController.orderController.cancelOrderByUser
   );
 

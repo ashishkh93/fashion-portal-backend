@@ -32,7 +32,9 @@ module.exports = (sequelize, DataTypes) => {
       upi: {
         type: DataTypes.STRING(150), // Maximum length for UPI ID (adjust if necessary)
         allowNull: false, // Allow null if UPI is optional for users
-        unique: true, // Ensure UPI is unique across users if needed
+        unique: {
+          msg: 'The UPI id you provided is already registered',
+        },
         get() {
           const rawValue = this.getDataValue('upi');
           return rawValue ? decrypt(rawValue) : null;
@@ -44,7 +46,9 @@ module.exports = (sequelize, DataTypes) => {
       pan: {
         type: DataTypes.STRING(10), // Assuming PAN card is always 10 characters
         allowNull: false,
-        unique: true, // Optional: if PAN should be unique per user
+        unique: {
+          msg: 'The PAN number you provided is already exist in our system.',
+        },
         validate: {
           is: /^[A-Z]{5}[0-9]{4}[A-Z]$/i, // Validate format using a regular expression
         },

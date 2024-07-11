@@ -1,7 +1,38 @@
+const { Sequelize, DataTypes } = require('sequelize');
+const pg = require('pg');
 const fs = require('fs');
 const path = require('path');
-const { sequelize, DataTypes } = require('../config/db.config');
+// const cls = require('cls-hooked');
+const config = require('../config/config');
+const logger = require('../config/logger');
+
 const basename = path.basename(__filename);
+
+// const namespace = cls.createNamespace('fashion-portal');
+// Sequelize.useCLS(namespace);
+
+const sequelize = new Sequelize(config.mysql.dbString, {
+  dialect: 'postgres',
+  dialectModule: pg,
+  // operatorsAliases: false,
+  logging: (msg) => logger.info(msg),
+  // timezone: '+05:30', // for writing to database
+  // dialectOptions: {
+  //   connectTimeout: 6000, // Increase timeout to 20000ms (20 seconds)
+  //   decimalNumbers: true, // To return all decimal strings into number
+  // },
+});
+
+sequelize
+  .authenticate()
+  .then(() => {
+    logger.info('Connection has been established successfully.');
+  })
+  .catch((err) => {
+    logger.info('Unable to connect to the database due to ' + err);
+    console.error('Unable to connect to the database:', err.message || err);
+  });
+
 const db = {};
 
 // Load each model file
@@ -21,7 +52,8 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
+db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-db.Sequelize = sequelize.constructor;
+// db.namespace = namespace;
 
 module.exports = db;
