@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'ArtistInfos',
+          model: 'ArtistInfo',
           key: 'artistId',
         },
         onDelete: 'NO ACTION',
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Orders',
+          model: 'Order',
           key: 'id',
         },
         onDelete: 'NO ACTION',
@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'CustomerInfos',
+          model: 'CustomerInfo',
           key: 'customerId',
         },
         onDelete: 'NO ACTION',

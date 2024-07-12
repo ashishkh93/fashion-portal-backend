@@ -11,19 +11,19 @@ module.exports = (sequelize, DataTypes) => {
       orderId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Orders', key: 'id' },
+        references: { model: 'Order', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
       customerId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'User', key: 'id' },
       },
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'User', key: 'id' },
       },
       amount: {
         type: DataTypes.FLOAT,

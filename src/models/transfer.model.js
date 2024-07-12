@@ -11,14 +11,14 @@ module.exports = (sequelize, DataTypes) => {
       payoutId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Payouts', key: 'id' },
+        references: { model: 'Payout', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'User', key: 'id' },
       },
       payoutTransferId: {
         type: DataTypes.STRING(40),

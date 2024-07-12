@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       cfOrderId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Orders', key: 'id' },
+        references: { model: 'Order', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },

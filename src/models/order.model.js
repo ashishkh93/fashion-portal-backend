@@ -11,14 +11,14 @@ module.exports = (sequelize, DataTypes) => {
       customerId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'User', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'User', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       transactionId: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: { model: 'Transactions', key: 'id' },
+        references: { model: 'Transaction', key: 'id' },
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },

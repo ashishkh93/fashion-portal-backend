@@ -4,6 +4,8 @@ const Joi = require('joi');
 var envpath = process.env.NODE_ENV == 'development' ? '../../.env' : '../../.env.production';
 dotenv.config({ path: path.join(__dirname, envpath) });
 
+console.log('process.env.DB', process.env.NODE_ENV, process.env.DB);
+
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
