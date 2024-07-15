@@ -51,7 +51,7 @@ app.options('*', cors());
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
-app.get('/', (req, res) => res.send('Welcome to the Music Store API!'));
+app.get('/', (req, res) => res.send('Welcome to the fashion portal APIs!'));
 
 // Apply transaction middleware to all routes
 // app.use(transactionMiddleware);

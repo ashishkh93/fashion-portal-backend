@@ -153,7 +153,9 @@ const verifyUserOtp = async (body, role) => {
 
         await updateUserById(updateBody, user.id);
         const tokens = await tokenService.generateAuthTokens(user);
-        return tokens;
+
+        const resToSend = { id: user.id, phone: user.phone, role: user.role };
+        return { ...resToSend, ...tokens };
       } else {
         throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
       }
