@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Category } = require('../../models');
+const { Category, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPagination, getPagingData } = require('../../utils/paginate');
 
@@ -31,14 +31,22 @@ const addCategory = async (body) => {
  */
 const getAllCategorieService = async (page, size) => {
   try {
-    const conditions = { isActive: true };
+    // const conditions = { isActive: true };
     const { limit, offset } = getPagination(page, size);
+    const include = [
+      {
+        model: Service,
+        as: 'service',
+        attributes: ['name'],
+      },
+    ];
 
     let catRes = await Category.findAndCountAll({
-      where: [conditions],
+      // where: [conditions],
       order: [['updatedAt', 'DESC']],
       limit,
       offset,
+      include
     });
 
     let cats = getPagingData(catRes, page, limit);
