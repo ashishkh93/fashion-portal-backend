@@ -31,6 +31,16 @@ const phoneVerify = {
   }),
 };
 
+const artistPhoneVerify = {
+  params: Joi.object().keys({
+    artistId: Joi.string().required().uuid(),
+  }),
+  body: Joi.object().keys({
+    phone: Joi.string().alphanum().max(10).min(10),
+    otp: Joi.number().required(),
+  }),
+};
+
 const phoneLogin = {
   body: Joi.object().keys({
     phone: Joi.string().required().alphanum().max(10).min(10),
@@ -94,6 +104,7 @@ module.exports = {
   createPassword,
   phoneLogin,
   login,
+  artistPhoneVerify,
   phoneVerify,
   logout,
   refreshTokens,

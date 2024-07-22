@@ -28,25 +28,20 @@ const createUser = async (userBody) => {
  * @returns {Promise<User>}
  */
 const updateUserById = async (userBody, userId) => {
-  try {
-    const updatedUser = await User.update(userBody, { where: { id: userId } });
-    return updatedUser;
-  } catch (error) {
-    new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong, Please try again');
-  }
+  const updatedUser = await User.update(userBody, { where: { id: userId } });
+  return updatedUser;
 };
 
 const createUserPhoneAuth = async (userBody) => {
   const { phone, role } = userBody;
-  console.log(User, 'User111');
   const user = await User.findOne({ where: { phone: phone, role: role } });
   if (user && (await user.isPhoneNumberTaken(phone, role))) {
     const updateBody = { otp: userBody.otp, otpExpire: userBody.otpExpire };
-    const updatedUser = await updateUserById(updateBody, user.id);
-    return updatedUser;
+    await updateUserById(updateBody, user.id);
+    return user.id;
   } else {
     const user = await User.create(userBody);
-    return user;
+    return user.id;
   }
 };
 

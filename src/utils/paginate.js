@@ -19,7 +19,7 @@ const getPaginationDataFromModel = async (
   size,
   includeModel = [],
   mainModelAttributes = {},
-  orderyKey = 'updatedAt',
+  orderByKey = 'updatedAt',
   orderBy = 'DESC'
 ) => {
   const { limit, offset } = getPagination(page, size);
@@ -28,7 +28,7 @@ const getPaginationDataFromModel = async (
     where: [conditions],
     include: includeModel,
     attributes: mainModelAttributes,
-    order: [[orderyKey, orderBy]],
+    order: [[orderByKey, orderBy]],
     limit,
     offset,
     distinct: true, // this will only count the number of rows from main model (which will not lead to get wrong count)

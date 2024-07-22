@@ -13,7 +13,14 @@ const verifyPayout = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Payout status fetched!', entity: payoutStatus || null });
 });
 
+const getAllPayouts = catchAsync(async (req, res) => {
+  const { page, size } = req.query;
+  const allPayouts = await superAdminServices.payoutService.getAllPayoutsService(page, size);
+  res.status(httpStatus.OK).send({ status: true, message: 'Payouts fetched!', entity: allPayouts || [] });
+});
+
 module.exports = {
   payoutToArtists,
   verifyPayout,
+  getAllPayouts,
 };

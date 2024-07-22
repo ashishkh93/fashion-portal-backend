@@ -119,7 +119,7 @@ const getImageUrl = async (userId, s3Key, isAdmin) => {
     credentials: {
       accessKeyId: credentials.accessKeyId,
       secretAccessKey: credentials.secretAccessKey,
-      sessionToken: credentials.sessionToken,
+      sessionToken: credentials.sessionxToken,
     },
   });
 

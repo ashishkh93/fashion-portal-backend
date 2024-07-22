@@ -3,11 +3,22 @@ const { Op } = require('sequelize');
 const moment = require('moment');
 const _ = require('lodash');
 const ApiError = require('../../utils/ApiError');
-const { Payout, Transfer, Order, OrderFinancialInfo, User, ArtistInfo, ArtistBankingInfo } = require('../../models');
+const {
+  Payout,
+  Transfer,
+  Order,
+  OrderFinancialInfo,
+  User,
+  ArtistInfo,
+  ArtistBankingInfo,
+  ArtistTransferOrder,
+} = require('../../models');
 const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
 const logger = require('../../config/logger');
 const config = require('../../config/config');
 const { decrypt } = require('../../utils/crypto');
+const { getPaginationDataFromModel } = require('../../utils/paginate');
+const { getPlainData } = require('../../utils/common.util');
 const fundSourceId = config.cashfree.fundSourceId;
 const comission = Number(config.comission);
 
@@ -20,7 +31,7 @@ const comission = Number(config.comission);
 const payoutToArtistsService = async (body) => {
   try {
     const payouts = await Payout.findAll();
-    const plainPayouts = payouts.map((payout) => payout.get({ plain: true }));
+    const plainPayouts = payouts.map((payout) => getPlainData(payout));
 
     // why did i do this? think on it
     let fromDate, toDate, lastPayoutToDate;
@@ -74,7 +85,7 @@ const payoutToArtistsService = async (body) => {
       /**
        * avoid getting data in sequelize dataValues instance. With below method we will get the plain data
        */
-      const plainOrders = allOrdersWithinFromToDate.map((order) => order.get({ plain: true }));
+      const plainOrders = allOrdersWithinFromToDate.map((order) => getPlainData(order));
 
       const orderIds = plainOrders?.map((order) => order.id);
 
@@ -83,6 +94,8 @@ const payoutToArtistsService = async (body) => {
       // to store this json as artist with their all orders as payout detail json
       const artistWithOrderIds = {};
       const curDateTime = moment().format('DD_MM_YYYY_HH_mm_ss');
+
+      let totalBatchPayoutAmount = 0;
 
       /**
        * Reduce the order object into payout api's required body object
@@ -158,17 +171,28 @@ const payoutToArtistsService = async (body) => {
 
           beneficiaryPayoutInfo.transfer_amount = totalAmountToBePaidToArtistForCurrentPayout;
 
+          totalBatchPayoutAmount += totalAmountToBePaidToArtistForCurrentPayout;
+
           return beneficiaryPayoutInfo;
         })
         .value();
 
-      const batch_transfer_id = 'payout_at_' + curDateTime;
+      const allArtistsHaveUpiAndBeneId = reducedOrderArray.every(
+        (artist) =>
+          artist.beneficiary_details.beneficiary_id && artist.beneficiary_details.beneficiary_instrument_details.vpa
+      );
+
+      if (!allArtistsHaveUpiAndBeneId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Some artist doesn't have beneficiary Id or UPI, please add them first`);
+      }
+
+      const batch_transfer_id = 'batch_payout_at_' + curDateTime;
       const payoutFinalBody = {
         batch_transfer_id,
         transfers: reducedOrderArray, // contains artist's information with transfer amount
       };
 
-      // return payoutFinalBody;
+      // return { ...payoutFinalBody, totalBatchPayoutAmount };
 
       logger.info(`Payout to artists initiated from ${body.fromDate} to ${body.toDate}`);
       logger.info(`Orders to be paid out: ${JSON.stringify(orderIds)}`);
@@ -180,7 +204,7 @@ const payoutToArtistsService = async (body) => {
         /**
          * Make entry into the payout model
          */
-        logger.info(`Payout successful for ${body.fromDate} to ${body.toDate}`);
+        logger.info(`Payout successfully initiated for ${body.fromDate} to ${body.toDate}`);
         const payoutModelBody = {
           batchTransferId: batch_transfer_id,
           fromDate: body.fromDate,
@@ -188,6 +212,7 @@ const payoutToArtistsService = async (body) => {
           artistIds,
           status: data.status || 'initiated',
           orderDetail: artistWithOrderIds,
+          totalBatchPayoutAmount,
         };
 
         const payoutRes = await Payout.create(payoutModelBody);
@@ -199,12 +224,29 @@ const payoutToArtistsService = async (body) => {
             transfer.artistId = trn.artistId;
             transfer.payoutTransferId = trn.transfer_id;
             transfer.status = 'INITIATED';
+            transfer.orderIds = artistWithOrderIds[trn.artistId];
 
             acc.push(transfer);
             return acc;
           }, []);
 
-          await Transfer.bulkCreate(reducedTransfers);
+          const bulkTransfers = await Transfer.bulkCreate(reducedTransfers);
+          if (bulkTransfers) {
+            await Promise.all(
+              bulkTransfers.map(async (transfer) => {
+                const { orderIds } = transfer;
+                await Promise.all(
+                  orderIds.map((orderId) => {
+                    const orderTransferEntry = {
+                      orderId,
+                      transferId: transfer.id,
+                    };
+                    return ArtistTransferOrder.create(orderTransferEntry);
+                  })
+                );
+              })
+            );
+          }
         }
 
         return data;
@@ -212,7 +254,7 @@ const payoutToArtistsService = async (body) => {
         logger.error('Payout failed due to reason: ' + data.message);
         throw new ApiError(
           payoutResponse.status || httpStatus.INTERNAL_SERVER_ERROR,
-          data.message || 'Something went wrong'
+          data.message || 'Something went wrong, please try again later'
         );
       }
     } else {
@@ -225,7 +267,7 @@ const payoutToArtistsService = async (body) => {
 
 /**
  * Batch payout verify from batch transfer id
- * @param {string} batchTransferId
+ * @param {String} batchTransferId
  * @returns {Promise}
  */
 const batchPayoutVerifyService = async (batchTransferId) => {
@@ -243,7 +285,39 @@ const batchPayoutVerifyService = async (batchTransferId) => {
   }
 };
 
+/**
+ * Get all payouts
+ * @param {Number} page
+ * @param {Number} size
+ * @returns {Promise}
+ */
+const getAllPayoutsService = async (page, size) => {
+  const includeModel = [
+    {
+      model: Transfer,
+      as: 'payoutTransfers',
+    },
+  ];
+
+  const mainModelAttributes = [
+    'id',
+    'batchTransferId',
+    'totalBatchPayoutAmount',
+    'fromDate',
+    'toDate',
+    'status',
+    'transactionId',
+    'createdAt',
+    'updatedAt',
+  ];
+
+  const allPayouts = await getPaginationDataFromModel(Payout, {}, page, size, includeModel, mainModelAttributes);
+
+  return allPayouts;
+};
+
 module.exports = {
   payoutToArtistsService,
   batchPayoutVerifyService,
+  getAllPayoutsService,
 };

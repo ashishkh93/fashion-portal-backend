@@ -76,13 +76,9 @@ const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
 // };
 
 const getFilteredArtistsService = async (page, size, body) => {
-  try {
-    const getArtistsInstance = new GetFilteredArtists(page, size, body);
-    const artists = await getArtistsInstance.get();
-    return artists;
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal server error');
-  }
+  const getArtistsInstance = new GetFilteredArtists(page, size, body);
+  const artists = await getArtistsInstance.get();
+  return artists;
 };
 
 /**
@@ -91,76 +87,71 @@ const getFilteredArtistsService = async (page, size, body) => {
  * @returns
  */
 const getSingleArtistService = async (artistId) => {
-  try {
-    const include = [
-      {
-        model: User,
-        as: 'artist',
-        attributes: [], // No attributes needed from User
+  const include = [
+    {
+      model: User,
+      as: 'artist',
+      attributes: [], // No attributes needed from User
+    },
+    {
+      model: Service,
+      as: 'artistServices',
+      attributes: ['id', 'name'],
+      through: {
+        attributes: [], // No attributes needed from the join table
       },
-      {
-        model: Service,
-        as: 'artistServices',
-        attributes: ['id', 'name'],
-        through: {
-          attributes: [], // No attributes needed from the join table
+    },
+    {
+      model: Art,
+      where: { status: 'APPROVED' },
+      as: 'arts',
+      attributes: ['name', 'description', 'images', 'price', 'advanceAmount', 'timeToCompleteInMinutes', 'renderIndex'],
+      // order: [['renderIndex', 'ASC']],
+    },
+    {
+      model: Review,
+      as: 'artistReview',
+      attributes: ['reviewCount', 'description', 'createdAt'],
+      include: [
+        {
+          model: CustomerInfo,
+          as: 'CustomerInformation',
+          attributes: ['fullName'],
         },
-      },
-      {
-        model: Art,
-        where: { status: 'APPROVED' },
-        as: 'arts',
-        attributes: ['name', 'description', 'images', 'price', 'advanceAmount', 'timeToCompleteInMinutes', 'renderIndex'],
-        // order: [['renderIndex', 'ASC']],
-      },
-      {
-        model: Review,
-        as: 'artistReview',
-        attributes: ['reviewCount', 'description', 'createdAt'],
-        include: [
-          {
-            model: CustomerInfo,
-            as: 'CustomerInformation',
-            attributes: ['fullName'],
-          },
-        ],
-      },
-    ];
-
-    const artistQuery = {
-      where: { artistId, status: 'APPROVED' },
-      attributes: [
-        'artistId',
-        'fullName',
-        'businessName',
-        'gender',
-        'profilePic',
-        'aboutInfo',
-        'recentWorkImages',
-        'workingTime',
-        'location',
-        'latitude',
-        'longitude',
-        [Sequelize.literal('"artist"."phone"'), 'phone'],
-        [Sequelize.literal('"artist"."createdAt"'), 'createdAt'],
-        [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
       ],
-      include,
-      order: [
-        [{ model: Art, as: 'arts' }, 'renderIndex', 'ASC'],
-        [{ model: Review, as: 'artistReview' }, 'reviewCount', 'DESC'],
-      ],
-    };
+    },
+  ];
 
-    const artist = await ArtistInfo.findOne(artistQuery);
-    if (artist) {
-      return artist;
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
-    }
-  } catch (error) {
-    console.error('Error fetching artist:', error);
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal server error');
+  const artistQuery = {
+    where: { artistId, status: 'APPROVED' },
+    attributes: [
+      'artistId',
+      'fullName',
+      'businessName',
+      'gender',
+      'profilePic',
+      'aboutInfo',
+      'recentWorkImages',
+      'workingTime',
+      'location',
+      'latitude',
+      'longitude',
+      [Sequelize.literal('"artist"."phone"'), 'phone'],
+      [Sequelize.literal('"artist"."createdAt"'), 'createdAt'],
+      [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
+    ],
+    include,
+    order: [
+      [{ model: Art, as: 'arts' }, 'renderIndex', 'ASC'],
+      [{ model: Review, as: 'artistReview' }, 'reviewCount', 'DESC'],
+    ],
+  };
+
+  const artist = await ArtistInfo.findOne(artistQuery);
+  if (artist) {
+    return artist;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
   }
 };
 

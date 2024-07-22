@@ -13,7 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       artistIds: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        allowNull: false,
+      },
+      totalBatchPayoutAmount: {
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
       orderDetail: {
@@ -62,9 +66,9 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Payout.associate = function (models) {
-    Payout.hasOne(models.Transfer, {
+    Payout.hasMany(models.Transfer, {
       foreignKey: 'payoutId',
-      as: 'payoutTransfer',
+      as: 'payoutTransfers',
     });
   };
 

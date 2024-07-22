@@ -2,9 +2,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 const Joi = require('joi');
 var envpath = process.env.NODE_ENV == 'development' ? '../../.env' : '../../.env.production';
-dotenv.config({ path: path.join(__dirname, envpath) });
 
-console.log('process.env.DB', process.env.NODE_ENV, process.env.DB);
+dotenv.config({ path: path.join(__dirname, envpath) });
 
 const envVarsSchema = Joi.object()
   .keys({
@@ -41,10 +40,16 @@ const envVarsSchema = Joi.object()
     COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
-    // FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
-    //   .required()
-    //   .default(6)
-    //   .description('Firebase admin service account credentials base64'),
+    FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
+      .required()
+      .default(6)
+      .description('Firebase admin service account credentials base64'),
+
+    AWS_ACCOUNT_ID: Joi.string().required().description('Aws IAM account id'),
+    AWS_ACCESS_KEY_ID: Joi.string().required().description('Aws access key'),
+    AWS_SECRET_ACCESS_KEY: Joi.string().required().description('Aws secret key'),
+    AWS_REGION: Joi.string().required().description('Aws region'),
+    AWS_BUCKET_NAME: Joi.string().required().description('Aws bucket'),
   })
   .unknown();
 
@@ -132,6 +137,15 @@ module.exports = {
   user: envVars.DB_USER,
   pass: envVars.DB_PASSWORD,
   db_name: envVars.DB_NAME,
+
+  /** AWS configs */
+  aws: {
+    accountId: envVars.AWS_ACCOUNT_ID,
+    accessKeyId: envVars.AWS_ACCESS_KEY_ID,
+    secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
+    region: envVars.AWS_REGION,
+    bucket: envVars.AWS_BUCKET_NAME,
+  },
   /** Sequelize migrations configuration for dev and prod */
   development: {
     username: envVars.DB_USER,

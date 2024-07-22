@@ -111,6 +111,11 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'artId', // Reference from ArtOrder to Art
       as: 'arts',
     });
+    Order.belongsToMany(models.Transfer, {
+      through: models.ArtistTransferOrder,
+      foreignKey: 'orderId',
+      otherKey: 'transferId',
+    });
   };
 
   return Order;

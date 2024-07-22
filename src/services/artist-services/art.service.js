@@ -44,24 +44,20 @@ const addArtService = async (artistId, body) => {
  * @returns {Promise<Art>}
  */
 const getAllArtsService = async (artistId, page, size) => {
-  try {
-    const includeModel = [
-      {
-        model: Service,
-        as: 'service',
-      },
-      {
-        model: Category,
-        as: 'category',
-      },
-    ];
+  const includeModel = [
+    {
+      model: Service,
+      as: 'service',
+    },
+    {
+      model: Category,
+      as: 'category',
+    },
+  ];
 
-    const artCondition = { artistId };
-    const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, includeModel);
-    return allArts;
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
-  }
+  const artCondition = { artistId };
+  const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, includeModel);
+  return allArts;
 };
 
 /**
@@ -71,25 +67,21 @@ const getAllArtsService = async (artistId, page, size) => {
  * @returns {Promise<Art>}
  */
 const getSingleArtService = async (artistId, artId) => {
-  try {
-    const include = [
-      {
-        model: Service,
-        as: 'service',
-      },
-      {
-        model: Category,
-        as: 'category',
-      },
-    ];
-    const curArt = await Art.findOne({ where: { id: artId, artistId }, include });
-    if (curArt) {
-      return curArt;
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
-    }
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  const include = [
+    {
+      model: Service,
+      as: 'service',
+    },
+    {
+      model: Category,
+      as: 'category',
+    },
+  ];
+  const curArt = await Art.findOne({ where: { id: artId, artistId }, include });
+  if (curArt) {
+    return curArt;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
   }
 };
 
@@ -105,27 +97,23 @@ const throwErrorForAdvanceAmount = (maxAdvanceAmount) => {
  * @returns {Promise}
  */
 const editArtService = async (artistId, artId, body) => {
-  try {
-    const curArt = await Art.findOne({ where: { id: artId, artistId } });
-    if (curArt) {
-      /**
-       * check for advance amount, which must not be greater than 20% of price
-       */
-      if (_.has(body, 'price') && !_.has(body, 'advanceAmount')) {
-        const maxAdvanceAmount = body.price * advanceAmountPT;
-        if (curArt.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
-      } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
-        const maxAdvanceAmount = curArt.price * advanceAmountPT;
-        if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
-      }
-
-      const updatedArtBody = { ...body };
-      await Art.update(updatedArtBody, { where: { id: artId, artistId } });
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
+  const curArt = await Art.findOne({ where: { id: artId, artistId } });
+  if (curArt) {
+    /**
+     * check for advance amount, which must not be greater than 20% of price
+     */
+    if (_.has(body, 'price') && !_.has(body, 'advanceAmount')) {
+      const maxAdvanceAmount = body.price * advanceAmountPT;
+      if (curArt.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
+    } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
+      const maxAdvanceAmount = curArt.price * advanceAmountPT;
+      if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
     }
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+
+    const updatedArtBody = { ...body };
+    await Art.update(updatedArtBody, { where: { id: artId, artistId } });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
   }
 };
 

@@ -2,8 +2,9 @@ const express = require('express');
 const serviceValidation = require('../../../validations/services.validation');
 const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
-const { adminValidate } = require('../../../middlewares/userValidate');
+const { adminValidate, artistValidate } = require('../../../middlewares/userValidate');
 const validate = require('../../../middlewares/validate');
+const { artistValidation } = require('../../../validations');
 
 const router = express.Router();
 
@@ -34,6 +35,15 @@ router.get(
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(serviceValidation.getSingleArt),
   superAdminControllers.infoController.getSingleArt
+);
+
+// Get reviews of single artist
+router.get(
+  '/reviews/:adminId/:artistId',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(artistValidation.getReviewsForArtist),
+  superAdminControllers.infoController.getAllReviews
 );
 
 module.exports = router;

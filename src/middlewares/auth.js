@@ -19,19 +19,21 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
 
     if (!hasRequiredRights) {
-      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Access denied!'));
+      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Access denied'));
     }
   }
 
   resolve();
 };
 
-const auth = (...requiredRights) => async (req, res, next) => {
-  return new Promise((resolve, reject) => {
-    passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
-  })
-    .then(() => next())
-    .catch((err) => next(err));
-};
+const auth =
+  (...requiredRights) =>
+  async (req, res, next) => {
+    return new Promise((resolve, reject) => {
+      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
+    })
+      .then(() => next())
+      .catch((err) => next(err));
+  };
 
 module.exports = auth;

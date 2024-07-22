@@ -2,26 +2,19 @@ const Joi = require('joi');
 
 const addBeneficiary = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
-  }),
-  body: Joi.object().keys({
-    beneficiary_name: Joi.string().required(),
-    beneficiary_email: Joi.string().required(),
-    beneficiary_phone: Joi.string().alphanum().max(10).min(10),
-    vpa: Joi.string().required(),
-    beneficiary_address: Joi.string().required(),
-    beneficiary_city: Joi.string().required(),
-    beneficiary_state: Joi.string().required(),
-    beneficiary_postal_code: Joi.string().required().max(6),
+    adminId: Joi.string().required().uuid(),
+    artistId: Joi.string().required().uuid(),
   }),
 };
 
 const payout = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
+    adminId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
+    rights: Joi.string().required().messages({
+      'any.required': 'You have not provided the privileges to access this resource.',
+    }),
     fromDate: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
       .required()
@@ -40,10 +33,21 @@ const payout = {
       }),
   }),
 };
+
 const payoutVerify = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
+    adminId: Joi.string().required().uuid(),
     batchTransferId: Joi.string().required(),
+  }),
+};
+
+const getAllPayouts = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
   }),
 };
 
@@ -51,4 +55,5 @@ module.exports = {
   addBeneficiary,
   payout,
   payoutVerify,
+  getAllPayouts,
 };

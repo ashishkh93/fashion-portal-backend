@@ -20,13 +20,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         references: { model: 'User', key: 'id' },
       },
+      transactionId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
       payoutTransferId: {
         type: DataTypes.STRING(40),
         allowNull: false,
       },
-      transactionId: {
-        type: DataTypes.UUID,
-        allowNull: true,
+      orderIds: {
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        allowNull: false,
       },
       status: {
         type: DataTypes.ENUM(
@@ -71,6 +75,12 @@ module.exports = (sequelize, DataTypes) => {
     Transfer.belongsTo(models.Payout, {
       foreignKey: 'payoutId',
       as: 'payout',
+    });
+    Transfer.belongsToMany(models.Order, {
+      through: models.ArtistTransferOrder,
+      foreignKey: 'transferId',
+      otherKey: 'orderId',
+      as: 'orders',
     });
   };
 

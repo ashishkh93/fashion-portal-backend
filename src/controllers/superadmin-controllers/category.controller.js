@@ -3,8 +3,8 @@ const catchAsync = require('../../utils/catchAsync');
 const { categoryService } = require('../../services/superadmin-services');
 
 const getAllCategories = catchAsync(async (req, res) => {
-  const { page, size } = req.query;
-  const cats = await categoryService.getAllCategorieService(page, size);
+  const { page, size, searchToken } = req.query;
+  const cats = await categoryService.getAllCategorieService(page, size, searchToken);
   res.status(httpStatus.OK).send({ status: true, message: 'Categories fetched successfully', entity: cats });
 });
 

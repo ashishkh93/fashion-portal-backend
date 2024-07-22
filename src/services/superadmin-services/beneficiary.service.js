@@ -4,6 +4,7 @@ const ApiError = require('../../utils/ApiError');
 const { User, ArtistBankingInfo, ArtistInfo } = require('../../models');
 const { payoutAPICallback } = require('../../utils/cashfree-payout-api.util');
 const { Op } = require('sequelize');
+const { getPlainData } = require('../../utils/common.util');
 
 const getApprovedAndUPIExistingArtist = async (artistId) => {
   const artist = await User.findOne({
@@ -24,6 +25,7 @@ const getApprovedAndUPIExistingArtist = async (artistId) => {
       },
     ],
   });
+
   if (artist) {
     return artist;
   } else {
@@ -37,11 +39,14 @@ const getApprovedAndUPIExistingArtist = async (artistId) => {
  * @param {string} artistId
  * @returns {Promise}
  */
-const addBeneToCFService = async (body, artistId) => {
+const addBeneToCFService = async (artistId) => {
   const artistFromModel = await getApprovedAndUPIExistingArtist(artistId);
-  const artist = artistFromModel.get({ plain: true });
+  const artist = getPlainData(artistFromModel);
+
   const artistInfos = artist.artistInfos;
   const artistBankingInfo = artist.artistInfos.artistBankingInfo;
+
+  // TEST UPI -> success@upi
 
   try {
     const artistCreationDate = moment(artist.createdAt).format('DDMMYYYY');

@@ -8,20 +8,16 @@ const ApiError = require('../../utils/ApiError');
  * @returns {Promise<Service>}
  */
 const addService = async (body) => {
-  try {
-    const serviceBody = {
-      name: body.name,
-      icon: body.icon,
-      coverImage: body.coverImage,
-      renderIndex: body.renderIndex,
-    };
-    const newService = await Service.create(serviceBody);
-    const { createdAt, updatedAt, deletedAt, ...others } = newService.dataValues;
-    const responseToSend = { ...others };
-    return responseToSend;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
-  }
+  const serviceBody = {
+    name: body.name,
+    icon: body.icon,
+    coverImage: body.coverImage,
+    renderIndex: body.renderIndex,
+  };
+  const newService = await Service.create(serviceBody);
+  const { createdAt, updatedAt, deletedAt, ...others } = newService.dataValues;
+  const responseToSend = { ...others };
+  return responseToSend;
 };
 
 /**
@@ -29,14 +25,10 @@ const addService = async (body) => {
  * @returns {Promise<Service>}
  */
 const getServices = async (body) => {
-  try {
-    // To override the default scope to include excluded fields
-    // Service.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } }).findAll();
-    const allService = await Service.findAll();
-    return allService;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Error while fetching the services');
-  }
+  // To override the default scope to include excluded fields
+  // Service.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } }).findAll();
+  const allService = await Service.findAll();
+  return allService;
 };
 
 /**
@@ -44,15 +36,11 @@ const getServices = async (body) => {
  * @returns {Promise<Service>}
  */
 const getServicesForCustomer = async () => {
-  try {
-    const allService = await Service.findAll({
-      where: { isActive: true },
-      order: [['renderIndex', 'ASC']], // order by renderIndex
-    });
-    return allService;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Error while fetching the services');
-  }
+  const allService = await Service.findAll({
+    where: { isActive: true },
+    order: [['renderIndex', 'ASC']], // order by renderIndex
+  });
+  return allService;
 };
 
 /**
@@ -61,15 +49,11 @@ const getServicesForCustomer = async () => {
  * @returns {Promise<Service>}
  */
 const getSingleService = async (serviceId) => {
-  try {
-    const singleService = await Service.findByPk(serviceId);
-    if (singleService) {
-      return singleService;
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Error while fetching service');
+  const singleService = await Service.findByPk(serviceId);
+  if (singleService) {
+    return singleService;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
   }
 };
 
@@ -80,15 +64,11 @@ const getSingleService = async (serviceId) => {
  * @returns {Promise}
  */
 const editService = async (updateServiceBody, serviceId) => {
-  try {
-    const currentService = await Service.findByPk(serviceId);
-    if (currentService) {
-      await Service.update(updateServiceBody, { where: { id: serviceId } });
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  const currentService = await Service.findByPk(serviceId);
+  if (currentService) {
+    await Service.update(updateServiceBody, { where: { id: serviceId } });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
   }
 };
 
@@ -98,15 +78,11 @@ const editService = async (updateServiceBody, serviceId) => {
  * @returns {Promise}
  */
 const deleteService = async (serviceId) => {
-  try {
-    const currentService = await Service.findByPk(serviceId);
-    if (currentService) {
-      await Service.destroy({ where: { id: serviceId } });
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Error while deleteing service');
+  const currentService = await Service.findByPk(serviceId);
+  if (currentService) {
+    await Service.destroy({ where: { id: serviceId } });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
   }
 };
 

@@ -33,6 +33,7 @@ const getCategories = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
+    searchToken: Joi.string().allow(''),
   }),
 };
 
@@ -62,12 +63,23 @@ const editServiceStatus = {
 };
 
 const getArtists = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow(''),
+  }),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
   }),
 };
 
 const getArts = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow(''),
+    sortKey: Joi.string().allow(''),
+  }),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
     artistId: Joi.string().required(),

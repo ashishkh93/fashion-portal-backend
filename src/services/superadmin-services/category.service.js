@@ -1,7 +1,9 @@
 const httpStatus = require('http-status');
 const { Category, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { getPagination, getPagingData } = require('../../utils/paginate');
+const { getPaginationDataFromModel, getPagingData, getPagination } = require('../../utils/paginate');
+const { Op } = require('sequelize');
+const { GET_ALL_CATS_SEARCH_QUERY } = require('../../search-queries/get-all-cats-search-query copy');
 
 /**
  * Add Category
@@ -9,68 +11,58 @@ const { getPagination, getPagingData } = require('../../utils/paginate');
  * @returns {Category}
  */
 const addCategory = async (body) => {
-  try {
-    const catBody = {
-      name: body.name,
-      serviceId: body.serviceId,
-    };
-    const newCat = await Category.create(catBody);
-    const { createdAt, updatedAt, deletedAt, ...others } = newCat.dataValues;
-    const responseToSend = { ...others };
-    return responseToSend;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
-  }
+  const catBody = {
+    name: body.name,
+    serviceId: body.serviceId,
+  };
+  const newCat = await Category.create(catBody);
+  const { createdAt, updatedAt, deletedAt, ...others } = newCat.dataValues;
+  const responseToSend = { ...others };
+  return responseToSend;
 };
 
 /**
  * Get all Categories
- * @param {number} page
- * @param {number} size
+ * @param {Number} page
+ * @param {Number} size
+ * @param {String} searchToken
  * @returns {Category}
  */
-const getAllCategorieService = async (page, size) => {
-  try {
-    // const conditions = { isActive: true };
-    const { limit, offset } = getPagination(page, size);
-    const include = [
-      {
-        model: Service,
-        as: 'service',
-        attributes: ['name'],
-      },
-    ];
 
-    let catRes = await Category.findAndCountAll({
-      // where: [conditions],
-      order: [['updatedAt', 'DESC']],
-      limit,
-      offset,
-      include
-    });
+const getAllCategorieService = async (page, size, searchToken) => {
+  let include = [
+    {
+      model: Service,
+      as: 'service',
+      attributes: ['name'],
+      required: false,
+    },
+  ];
 
-    let cats = getPagingData(catRes, page, limit);
-    return cats;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  let whereCondition = {};
+  if (searchToken) {
+    searchToken = searchToken.trim();
+    whereCondition = {
+      ...GET_ALL_CATS_SEARCH_QUERY(searchToken),
+    };
   }
+
+  const cats = await getPaginationDataFromModel(Category, whereCondition, page, size, include);
+
+  return cats;
 };
 
 /**
  * Get one Category
- * @param {object} catId
+ * @param {String} catId
  * @returns {Category}
  */
 const getSingleCategory = async (catId) => {
-  try {
-    const currentCat = await Category.findOne({ where: { id: catId, isActive: true } });
-    if (currentCat) {
-      return currentCat;
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  const currentCat = await Category.findOne({ where: { id: catId } });
+  if (currentCat) {
+    return currentCat;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
   }
 };
 
@@ -81,15 +73,11 @@ const getSingleCategory = async (catId) => {
  * @returns {Category}
  */
 const editCatService = async (catBody, catId) => {
-  try {
-    const currentCat = await Category.findByPk(catId);
-    if (currentCat) {
-      await Category.update(catBody, { where: { id: catId } });
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  const currentCat = await Category.findByPk(catId);
+  if (currentCat) {
+    await Category.update(catBody, { where: { id: catId } });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
   }
 };
 
@@ -99,15 +87,11 @@ const editCatService = async (catBody, catId) => {
  * @returns {Category}
  */
 const deleteCatService = async (catId) => {
-  try {
-    const currentCat = await Category.findByPk(catId);
-    if (currentCat) {
-      await Category.destroy({ where: { id: catId } });
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  const currentCat = await Category.findByPk(catId);
+  if (currentCat) {
+    await Category.destroy({ where: { id: catId } });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
   }
 };
 

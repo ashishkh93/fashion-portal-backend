@@ -10,8 +10,10 @@ const login = catchAsync(async (req, res) => {
   const isActive = req.role === 'artist' ? false : true;
 
   const userBody = { phone, otp, otpExpire, role: req.role, isActive };
-  await commonServices.userService.createUserPhoneAuth(userBody);
-  res.status(httpStatus.CREATED).send({ status: true, message: 'OTP has been sent to this mobile number' });
+  const userId = await commonServices.userService.createUserPhoneAuth(userBody);
+  res
+    .status(httpStatus.CREATED)
+    .send({ status: true, message: 'OTP has been sent to this mobile number', entity: { userId } });
 });
 
 const verifyOtp = catchAsync(async (req, res) => {

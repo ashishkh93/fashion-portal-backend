@@ -16,7 +16,7 @@ router.post(
 router.post(
   '/:artistId/verify-otp',
   addRoleToLoginRoute('artist'),
-  validate(authValidation.phoneVerify),
+  validate(authValidation.artistPhoneVerify),
   userValidateWhileVerifyOTP((req) => req.params.artistId),
   commonControllers.authController.verifyOtp
 );

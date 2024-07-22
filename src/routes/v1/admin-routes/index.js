@@ -8,6 +8,8 @@ const webhookRoute = require('./webhook.route');
 const beneficiaryRoutes = require('./beneficiary.route');
 const payoutRoutes = require('./payout.route');
 const refundRoutes = require('./refund.route');
+const reviewRoutes = require('./review.route');
+// const orderRoutes = require('./order.route');
 
 const router = express.Router();
 
@@ -47,6 +49,14 @@ const defaultUserRoutes = [
   {
     path: '/refund',
     route: refundRoutes,
+  },
+  {
+    path: '/review',
+    route: reviewRoutes,
+  },
+  {
+    path: '/order',
+    route: reviewRoutes,
   },
 ];
 
