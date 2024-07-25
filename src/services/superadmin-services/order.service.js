@@ -1,4 +1,4 @@
-const { Order, User, ArtistInfo, CustomerInfo } = require('../../models');
+const { Order, ArtistInfo, CustomerInfo } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPlainData } = require('../../utils/common.util');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
@@ -23,7 +23,7 @@ const includeModel = [
  * @param {String} artistId
  * @param {Number} page
  * @param {Number} size
- * @returns {Promise<Review>}
+ * @returns {Promise<Order>}
  */
 const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
   const orderCondition = { artistId };
@@ -37,7 +37,7 @@ const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
  * @param {String} customerId
  * @param {Number} page
  * @param {Number} size
- * @returns {Promise<Review>}
+ * @returns {Promise<Order>}
  */
 const getAllOrdersForSingleCustomerService = async (customerId, page, size) => {
   const orderCondition = { customerId };
@@ -50,13 +50,19 @@ const getAllOrdersForSingleCustomerService = async (customerId, page, size) => {
  * Get all orders
  * @param {Number} page
  * @param {Number} size
- * @returns {Promise<Review>}
+ * @returns {Promise<Order>}
  */
 const getAllOrdersService = async (page, size) => {
   const allOrdes = await getPaginationDataFromModel(Order, {}, page, size, includeModel);
   return allOrdes;
 };
 
+/**
+ * Get Single order by Id
+ * @param {Number} page
+ * @param {Number} size
+ * @returns {Promise<Order>}
+ */
 const getSingleOrderForAdminService = async (orderId) => {
   const orderCondition = { id: orderId };
   const include = [...includeModelForOrderFetch, includeModel[0]];
