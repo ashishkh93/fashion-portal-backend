@@ -57,21 +57,19 @@ const payoutToArtistsService = async (body) => {
             attributes: ['totalAmount', 'advanceAmountForOrder', 'advanceAmountPaid', 'discount', 'addOnAmount'],
           },
           {
-            model: User,
-            as: 'artist',
-            attributes: ['id', 'phone', 'role'],
+            model: ArtistInfo,
+            as: 'orderArtist',
+            attributes: ['fullName', 'email', 'location', 'city', 'state', 'pincode'],
             include: [
               {
-                model: ArtistInfo,
-                as: 'artistInfos',
-                attributes: ['fullName', 'email', 'location', 'city', 'state', 'pincode'],
-                include: [
-                  {
-                    model: ArtistBankingInfo,
-                    as: 'artistBankingInfo',
-                    attributes: ['beneficiaryId', 'upi'],
-                  },
-                ],
+                model: User,
+                as: 'artist',
+                attributes: ['id', 'phone', 'role'],
+              },
+              {
+                model: ArtistBankingInfo,
+                as: 'artistBankingInfo',
+                attributes: ['beneficiaryId', 'upi'],
               },
             ],
           },
@@ -105,19 +103,15 @@ const payoutToArtistsService = async (body) => {
         .map((groupedOrder, artistId) => {
           artistIds.push(artistId);
           const {
-            phone,
-            artistInfos: {
-              fullName,
-              email,
-              location,
-              city,
-              state,
-              pincode,
-              artistBankingInfo: { beneficiaryId, upi },
-            },
-          } = groupedOrder[0].artist;
-
-          // const decipheredUpi = decrypt(upi);
+            fullName,
+            email,
+            location,
+            city,
+            state,
+            pincode,
+            artistBankingInfo: { beneficiaryId, upi },
+            artist: { phone },
+          } = groupedOrder[0].orderArtist;
 
           const parsedArtistId = artistId.split('-')[0];
           let beneficiaryPayoutInfo = {
@@ -224,6 +218,7 @@ const payoutToArtistsService = async (body) => {
             transfer.artistId = trn.artistId;
             transfer.payoutTransferId = trn.transfer_id;
             transfer.status = 'INITIATED';
+            transfer.transferAmount = trn.transfer_amount;
             transfer.orderIds = artistWithOrderIds[trn.artistId];
 
             acc.push(transfer);
@@ -296,6 +291,7 @@ const getAllPayoutsService = async (page, size) => {
     {
       model: Transfer,
       as: 'payoutTransfers',
+      attributes: ['transferAmount', 'payoutTransferId', 'status'],
     },
   ];
 
@@ -316,8 +312,74 @@ const getAllPayoutsService = async (page, size) => {
   return allPayouts;
 };
 
+/**
+ * Get payout by Id
+ * @param {String} payoutId
+ * @returns {Promise<Payout>}
+ */
+const getPayoutById = async (payoutId) => {
+  const includeModel = [
+    {
+      model: Transfer,
+      as: 'payoutTransfers',
+      attributes: ['transferAmount', 'payoutTransferId', 'status'],
+      include: [
+        {
+          model: ArtistInfo,
+          as: 'payoutArtistInfo',
+          attributes: ['status', 'fullName', 'businessName', 'email', 'gender', 'profilePic', 'location'],
+        },
+        {
+          model: Order,
+          as: 'orders',
+          attributes: ['status', 'createdAt', 'orderIdentity', 'date', 'time'],
+          through: {
+            attributes: [],
+          },
+          include: [
+            {
+              model: OrderFinancialInfo,
+              as: 'orderFinancialInfo',
+              attributes: [
+                'totalAmount',
+                'advanceAmountForOrder',
+                'advanceAmountPaid',
+                'discount',
+                'addOnAmount',
+                'paidToArtist',
+                'isRefunded',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const mainModelAttributes = [
+    'id',
+    'batchTransferId',
+    'totalBatchPayoutAmount',
+    'fromDate',
+    'toDate',
+    'status',
+    'transactionId',
+    'createdAt',
+    'updatedAt',
+  ];
+
+  const singlePayout = await Payout.findOne({
+    where: { id: payoutId },
+    attributes: mainModelAttributes,
+    include: includeModel,
+  });
+
+  return singlePayout;
+};
+
 module.exports = {
   payoutToArtistsService,
   batchPayoutVerifyService,
   getAllPayoutsService,
+  getPayoutById,
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const validate = require('../../../middlewares/validate');
-const { artistControllers, superAdminControllers } = require('../../../controllers');
+const { artistControllers, superAdminControllers, commonControllers } = require('../../../controllers');
 const { artistValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
@@ -48,14 +48,14 @@ router.post(
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
   uploadImage.single('file'),
-  superAdminControllers.serviceController.uploadFile
+  commonControllers.uploadController.uploadPrivateFile
 );
 
 router.get(
   '/:artistId/get-private-image',
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  superAdminControllers.serviceController.getPrivateImageUrl
+  commonControllers.uploadController.getPrivateImage
 );
 
 module.exports = router;

@@ -1,8 +1,8 @@
 const { scheduleJob } = require('node-schedule');
 const moment = require('moment');
-const { Order } = require('../models');
+const { Order, OrderFinancialInfo } = require('../models');
 const logger = require('../config/logger');
-const { getCancellationHoursForPendingOrder } = require('../utils/common.util');
+const { getCancellationHoursForPendingOrder, getPlainData } = require('../utils/common.util');
 
 /**
  * Schedule job for the orders, which has still the pending status after 24 hours of order creation
@@ -29,7 +29,11 @@ const cancelPendingOrder = async (order) => {
 const cancelApprovedOrder = async (order) => {
   const orderId = order.id;
   try {
-    if (order.status === 'APPROVED' && order.advanceAmountForOrder > 0 && !order.advanceAmountPaid) {
+    if (
+      order.status === 'APPROVED' &&
+      order.orderFinancialInfo.advanceAmountForOrder > 0 &&
+      !order.orderFinancialInfo.advanceAmountPaid
+    ) {
       logger.info(
         `Cancel approved order schedule started for orderId: ${orderId}, due to not paid advance amount in timely manner`
       );
@@ -37,7 +41,7 @@ const cancelApprovedOrder = async (order) => {
       await Order.update(orderUpdateBody, { where: { id: orderId } });
     } else {
       logger.info(
-        `Order status already updated for orderId: {orderId: ${orderId}} {status: ${order.status}}, advance amount is: ${order.advanceAmountForOrder} `
+        `Order status already updated for orderId: {orderId: ${orderId}} {status: ${order.status}}, advance amount is: ${order.orderFinancialInfo.advanceAmountForOrder} `
       );
     }
   } catch (error) {
@@ -47,21 +51,30 @@ const cancelApprovedOrder = async (order) => {
 
 const start = async (orderId, type) => {
   // moment.tz.setDefault('Asia/Calcutta');
-  const singleOrder = await Order.findByPk(orderId);
+  const singleOrder = await Order.findOne({
+    where: { id: orderId },
+    include: [
+      {
+        model: OrderFinancialInfo,
+        as: 'orderFinancialInfo',
+        attributes: ['advanceAmountForOrder', 'advanceAmountPaid'],
+      },
+    ],
+  });
   if (!!singleOrder) {
-    const { dataValues } = singleOrder;
-    const dateTimeToConsider = type === 'pendingOrder' ? dataValues.createdAt : dataValues.approvedAt;
+    const orderData = getPlainData(singleOrder);
+    const dateTimeToConsider = type === 'pendingOrder' ? orderData.createdAt : orderData.approvedAt;
 
     const callbackToBeCalled = type === 'pendingOrder' ? cancelPendingOrder : cancelApprovedOrder;
 
     /**
      * get cancellation hours, aftet that auto order schedule should run
      */
-    const cancellationHours = getCancellationHoursForPendingOrder(dataValues, dateTimeToConsider);
+    const cancellationHours = getCancellationHoursForPendingOrder(orderData, dateTimeToConsider);
 
     const cancellationTime = moment().add(cancellationHours, 'hours').toDate();
     // const cancellationTime = new Date(Date.now() + 40 * 1000);
-    const job = scheduleJob(cancellationTime, () => callbackToBeCalled(dataValues));
+    const job = scheduleJob(cancellationTime, () => callbackToBeCalled(orderData));
     return job;
   }
 };

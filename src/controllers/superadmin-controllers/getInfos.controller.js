@@ -26,17 +26,9 @@ const getSingleArt = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Art fetched successfully', entity: singleArt });
 });
 
-const getAllReviews = catchAsync(async (req, res) => {
-  const { artistId } = req.params;
-  const { page, size } = req.query;
-  const reviews = await artistServices.reviewService.getAllArtistReviewsForAdminService(artistId, page, size);
-  res.status(httpStatus.OK).send({ status: true, message: 'Reviews fetched!', entity: reviews });
-});
-
 module.exports = {
   getAllArtist,
   getArtistInfo,
   getAllArts,
   getSingleArt,
-  getAllReviews,
 };

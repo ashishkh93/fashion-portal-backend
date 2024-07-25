@@ -17,8 +17,8 @@ const getAllOrders = catchAsync(async (req, res) => {
 });
 
 const getSingleOrder = catchAsync(async (req, res) => {
-  const { artistId, orderId } = req.params;
-  const orders = await artistServices.orderService.getSingleOrderService(artistId, orderId);
+  const { orderId } = req.params;
+  const orders = await artistServices.orderService.getSingleOrderService(orderId);
 
   res.status(httpStatus.OK).send({ status: true, message: 'Order fetched!', entity: orders || [] });
 });

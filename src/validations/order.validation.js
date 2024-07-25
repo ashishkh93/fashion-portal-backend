@@ -147,6 +147,14 @@ const discountAndAddAddOnAmountInOrder = {
   }),
 };
 
+const getSingleOrderInAdmin = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+    orderId: Joi.string().required().uuid(),
+  }),
+};
+
+
 module.exports = {
   orderInitiate,
   getOrdersForArtist,
@@ -156,4 +164,5 @@ module.exports = {
   getOrdersForUser,
   discountAndAddAddOnAmountInOrder,
   cancelOrderByUser,
+  getSingleOrderInAdmin,
 };

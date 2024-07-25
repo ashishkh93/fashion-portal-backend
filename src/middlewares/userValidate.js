@@ -8,11 +8,7 @@ const adminValidate = (getUserId) => async (req, _res, next) => {
     const { superAdminId } = getUserId(req);
     const activeUser = req.user;
 
-    console.log(superAdminId, activeUser.id, 'activeUser');
-
-    if (!activeUser) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Super admin not exist');
-    } else if (activeUser.role !== 'superAdmin') {
+    if (!activeUser || activeUser.role !== 'superAdmin') {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'Access denied');
     } else if (activeUser.id !== superAdminId) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You don’t have permission to access this resource!');

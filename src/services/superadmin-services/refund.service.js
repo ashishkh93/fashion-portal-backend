@@ -117,8 +117,10 @@ const createRefunRequestForOrderService = async (curOrder, refundReason, transac
  */
 const initiateRefundService = async (orderId, customerId) => {
   try {
-    const curRefundRequest = await RefundRequest.findOne({ orderId, customerId });
+    let curRefundRequest = await RefundRequest.findOne({ where: { orderId, customerId, status: 'PENDING' } });
     if (curRefundRequest) {
+      curRefundRequest = getPlainData(curRefundRequest);
+      
       const parsedArtistId = curRefundRequest.orderId.split('-')[0];
       const curDateTime = moment().format('DD_MM_YYYY_HH_mm_ss');
 
@@ -140,10 +142,10 @@ const initiateRefundService = async (orderId, customerId) => {
 
       return createRefundRequest.data;
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Refund request doesn't exist");
+      throw new ApiError(httpStatus.BAD_REQUEST, "Refund request doesn't exists, OR the order is already refunded");
     }
   } catch (error) {
-    logger.error('Refund for orderId: ' + orderId + ' failed de to: ' + error?.response?.data?.message || error.message);
+    logger.error('Refund for orderId: ' + orderId + ' failed due to: ' + error?.response?.data?.message || error.message);
 
     throw new ApiError(
       error?.statusCode || httpStatus.INTERNAL_SERVER_ERROR,

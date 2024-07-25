@@ -100,8 +100,8 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Order.associate = function (models) {
-    Order.belongsTo(models.User, { foreignKey: 'customerId', as: 'customer' });
-    Order.belongsTo(models.User, { foreignKey: 'artistId', as: 'artist' });
+    Order.belongsTo(models.CustomerInfo, { foreignKey: 'customerId', as: 'orderCustomer', targetKey: 'customerId' });
+    Order.belongsTo(models.ArtistInfo, { foreignKey: 'artistId', as: 'orderArtist', targetKey: 'artistId' });
     Order.hasOne(models.OrderFinancialInfo, { foreignKey: 'orderId', as: 'orderFinancialInfo' });
     Order.hasMany(models.Transaction, { foreignKey: 'cfOrderId' });
     // Order.belongsTo(models.Transaction, { foreignKey: 'transactionId' });

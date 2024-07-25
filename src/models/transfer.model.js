@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(40),
         allowNull: false,
       },
+      transferAmount: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+      },
       orderIds: {
         type: DataTypes.ARRAY(DataTypes.UUID),
         allowNull: false,
@@ -81,6 +85,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'transferId',
       otherKey: 'orderId',
       as: 'orders',
+    });
+    Transfer.belongsTo(models.ArtistInfo, {
+      foreignKey: 'artistId',
+      as: 'payoutArtistInfo',
+      targetKey: 'artistId',
     });
   };
 

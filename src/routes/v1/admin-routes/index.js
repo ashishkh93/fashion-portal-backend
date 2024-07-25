@@ -9,7 +9,7 @@ const beneficiaryRoutes = require('./beneficiary.route');
 const payoutRoutes = require('./payout.route');
 const refundRoutes = require('./refund.route');
 const reviewRoutes = require('./review.route');
-// const orderRoutes = require('./order.route');
+const orderRoutes = require('./order.route');
 
 const router = express.Router();
 
@@ -27,15 +27,15 @@ const defaultUserRoutes = [
     route: categoryRoutes,
   },
   {
-    path: '/info',
+    path: '/:adminId/infos',
     route: infoRoutes,
   },
   {
-    path: '/verify',
+    path: '/:adminId/verify',
     route: verifyStatusRoutes,
   },
   {
-    path: '/bene',
+    path: '/:adminId/bene',
     route: beneficiaryRoutes,
   },
   {
@@ -43,20 +43,20 @@ const defaultUserRoutes = [
     route: webhookRoute,
   },
   {
-    path: '/payout',
+    path: '/:adminId/payout',
     route: payoutRoutes,
   },
   {
-    path: '/refund',
+    path: '/:adminId/refund',
     route: refundRoutes,
   },
   {
-    path: '/review',
+    path: '/:adminId/reviews',
     route: reviewRoutes,
   },
   {
-    path: '/order',
-    route: reviewRoutes,
+    path: '/:adminId/orders',
+    route: orderRoutes,
   },
 ];
 

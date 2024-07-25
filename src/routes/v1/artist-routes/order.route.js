@@ -33,7 +33,7 @@ router
   );
 
 router.patch(
-  '/:artistId/:orderId/edit-order',
+  '/:artistId/edit-order/:orderId',
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
   validate(orderValidation.discountAndAddAddOnAmountInOrder),

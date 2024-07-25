@@ -76,24 +76,23 @@ const getOrderById = async (orderCondition) => {
       },
     },
     {
-      model: User,
-      as: 'artist',
-      attributes: ['id', 'phone'],
+      model: ArtistInfo,
+      as: 'orderArtist',
+      attributes: ['profilePic', 'fullName', 'location'],
       required: true,
       include: [
         {
-          model: ArtistInfo,
-          as: 'artistInfos',
-          attributes: ['profilePic', 'fullName', 'location'],
+          model: User,
+          as: 'artist',
+          attributes: ['id', 'phone'],
           required: true,
-          include: [
-            {
-              model: Review,
-              as: 'artistReview',
-              attributes: [],
-              required: true,
-            },
-          ],
+          include: [],
+        },
+        {
+          model: Review,
+          as: 'artistReview',
+          attributes: [],
+          required: true,
         },
       ],
     },
@@ -120,7 +119,7 @@ const getOrderById = async (orderCondition) => {
  * @returns {object}
  */
 const orderInitiateService = async (customerId, artistId, body, customer) => {
-  const transaction = getTransaction()
+  const transaction = getTransaction();
   const artist = await getApprovedArtist(artistId);
 
   if (artist.phone === customer.phone) {

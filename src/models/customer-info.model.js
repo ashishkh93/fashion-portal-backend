@@ -82,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
   CustomerInfo.associate = function (models) {
     CustomerInfo.belongsTo(models.User, { foreignKey: 'customerId', as: 'customerInfo' });
     CustomerInfo.hasMany(models.Review, { foreignKey: 'givenBy', sourceKey: 'customerId' });
+    CustomerInfo.hasMany(models.Order, { foreignKey: 'customerId', sourceKey: 'customerId' });
   };
 
   return CustomerInfo;

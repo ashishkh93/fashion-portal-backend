@@ -6,10 +6,10 @@ const { artValidation, authValidation, artistValidation } = require('../../../va
 const { adminValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.patch(
-  '/:adminId/:artistId/approve-artist',
+  '/:artistId/approve-artist',
   auth('manageArtists'),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(authValidation.changeArtistStatus),
@@ -17,21 +17,21 @@ router.patch(
   superAdminControllers.verifyStatusController.changeArtistStatus
 );
 router.patch(
-  '/:adminId/:artistId/:artId/approve-art',
+  '/:artistId/:artId/approve-art',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artValidation.udpateArtStatus),
   superAdminControllers.verifyStatusController.approveArt
 );
 router.patch(
-  '/:adminId/:artistId/update-lat-long',
+  '/:artistId/update-lat-long',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artistValidation.updateLatLong),
   superAdminControllers.verifyStatusController.updateLatLong
 );
 router.get(
-  '/:adminId/:artistId/upi',
+  '/:artistId/upi',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artistValidation.verifyUpi),

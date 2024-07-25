@@ -6,3 +6,5 @@ module.exports.webhookController = require('./webhook.controller');
 module.exports.beneficiaryController = require('./beneficiary.controller');
 module.exports.payoutController = require('./payout.controller');
 module.exports.refundController = require('./refund.controller');
+module.exports.reviewController = require('./review.controller');
+module.exports.orderController = require('./order.controller');

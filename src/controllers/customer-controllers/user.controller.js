@@ -16,7 +16,6 @@ const getUsers = catchAsync(async (req, res) => {
   res.send(result);
 });
 
-
 const getUser = catchAsync(async (req, res) => {
   console.log(req.body, req.user, req.params);
   const user = await userService.getUserById(req.params.userId);
@@ -38,19 +37,15 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-const updateUserProfile = catchAsync(async (req,res) => {
-  const user = await userService.updateUserProfileById(req.params.userId,req.body); // req.body.userId
+const updateUserProfile = catchAsync(async (req, res) => {
+  const user = await userService.updateUserProfileById(req.params.userId, req.body); // req.body.userId
   res.send(user.profile);
-})
+});
 
-const getImageUploadURL = catchAsync(async(req,res) => {
-  await userService.getImageUrl(req.params.userId,res);
-})
-
-const getWallet = catchAsync(async (req,res) => {
+const getWallet = catchAsync(async (req, res) => {
   const wallet = await walletService.getWallet(req.params.userId);
   return wallet;
-})
+});
 
 module.exports = {
   createUser,
@@ -59,6 +54,5 @@ module.exports = {
   updateUser,
   deleteUser,
   updateUserProfile,
-  getImageUploadURL,
-  getWallet
+  getWallet,
 };

@@ -117,7 +117,7 @@ const verifyUpi = {
   }),
 };
 
-const getReviewsForArtist = {
+const getReviewsForSingleArtist = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
@@ -128,6 +128,27 @@ const getReviewsForArtist = {
   }),
 };
 
+const getOrdersForSingleCustomer = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+    customerId: Joi.string().required().uuid(),
+  }),
+};
+
+const getAllReviews = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+  }),
+};
+
 module.exports = {
   addArtistInfo,
   getArtistInfo,
@@ -135,5 +156,7 @@ module.exports = {
   editUpi,
   updateLatLong,
   verifyUpi,
-  getReviewsForArtist,
+  getReviewsForSingleArtist,
+  getAllReviews,
+  getOrdersForSingleCustomer,
 };

@@ -29,16 +29,9 @@ const includeModelForOrderFetch = [
     },
   },
   {
-    model: User,
-    as: 'customer',
-    attributes: ['id', 'role', 'phone'],
-    include: [
-      {
-        model: CustomerInfo,
-        as: 'customerInfo',
-        attributes: { exclude: ['customerId', 'status'] },
-      },
-    ],
+    model: CustomerInfo,
+    as: 'orderCustomer',
+    attributes: ['status', 'fullName', 'email', 'gender', 'profilePic'],
   },
   {
     model: OrderFinancialInfo,
@@ -80,12 +73,12 @@ const getAllOrderForArtistService = async (artistId, page, size) => {
 
 /**
  * Get single order
- * @param {string} artistId
- * @param {string} orderId
+ * @param {String} artistId
+ * @param {String} orderId
  * @returns {Order}
  */
-const getSingleOrderService = async (artistId, orderId) => {
-  const orderCondition = { id: orderId, artistId };
+const getSingleOrderService = async (orderId) => {
+  const orderCondition = { id: orderId };
 
   const singleOrder = await Order.findOne({
     where: [orderCondition],
@@ -138,7 +131,7 @@ const getOrderWithFinancialInfoService = async (orderId) => {
  * @returns {Order}
  */
 const updateOrderStatusService = async (artistId, orderId, body) => {
-  const transaction = getTransaction()
+  const transaction = getTransaction();
   const curOrder = await getOrderWithFinancialInfoService(orderId);
 
   if (curOrder.status === 'PENDING' || curOrder.status === 'APPROVED') {
@@ -185,14 +178,22 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
  * @returns {Order}
  */
 const addDiscountAndAddOnInOrderService = async (orderId, body) => {
-  const orderCondition = { orderId };
+  const existingOrder = await Order.findOne({
+    where: { id: orderId, status: 'APPROVED' },
+    include: [
+      {
+        model: OrderFinancialInfo,
+        as: 'orderFinancialInfo',
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+      },
+    ],
+  });
 
-  // const curOrder = await Order.findByPk(orderId);
-  const curOrder = await OrderFinancialInfo.findOne({ where: { orderId } });
-  if (curOrder) {
+  if (existingOrder) {
+    const curOrder = getPlainData(existingOrder);
     let updateOrderBody = {};
     if (body.discount) {
-      const maxDiscount = curOrder.totalAmount * 0.2;
+      const maxDiscount = curOrder.orderFinancialInfo.totalAmount * 0.2;
       if (body.discount > maxDiscount) {
         throw new ApiError(httpStatus.BAD_REQUEST, `Discount can not be more than 20%(Rs.${maxDiscount}) of total amount`);
       } else {
@@ -202,9 +203,10 @@ const addDiscountAndAddOnInOrderService = async (orderId, body) => {
       updateOrderBody.addOnAmount = body.addOnAmount;
       updateOrderBody.artistAddOnNote = body?.artistAddOnNote || '';
     }
-    await OrderFinancialInfo.update(updateOrderBody, { where: orderCondition });
+
+    await OrderFinancialInfo.update(updateOrderBody, { where: { orderId } });
   } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Order not found, please provide valid orderId to update the current order');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You can not edit this order, because the order may have been completed!');
   }
 };
 
@@ -214,4 +216,5 @@ module.exports = {
   updateOrderStatusService,
   addDiscountAndAddOnInOrderService,
   getOrderWithFinancialInfoService,
+  includeModelForOrderFetch,
 };

@@ -11,10 +11,18 @@ let cachedCredentials = null;
 let credentialsExpiry = null;
 
 const accountId = config.aws.accountId;
-// const accessKeyId = config.aws.accessKeyId;
-// const secretAccessKey = config.aws.secretAccessKey;
+const accessKeyId = config.aws.accessKeyId;
+const secretAccessKey = config.aws.secretAccessKey;
 const region = config.aws.region;
 const bucket = config.aws.bucket;
+
+const s3Client = new S3Client({
+  region: region,
+  credentials: {
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+  },
+});
 
 const assumeRoleWithPolicy = async (userId, isAdmin) => {
   if (cachedCredentials && credentialsExpiry && new Date() < credentialsExpiry) {
@@ -110,7 +118,7 @@ const uploadPrivateImage = async (file, userId, isAdmin) => {
   return s3Key;
 };
 
-const getImageUrl = async (userId, s3Key, isAdmin) => {
+const getPrivateImageUrl = async (userId, s3Key, isAdmin) => {
   const credentials = await assumeRoleWithPolicy(userId, isAdmin);
 
   // Configure S3Client with temporary credentials
@@ -149,37 +157,36 @@ const getImageUrl = async (userId, s3Key, isAdmin) => {
     return imageUrl;
   } catch (err) {
     throw new ApiError(err?.statusCode || httpStatus.NOT_FOUND, err.message || 'Image not found');
-    // console.error('Error fetching object:', err);
   }
 };
 
-// const getImageUrl = async (userId, s3Key, isAdmin) => {
-//   const credentials = await assumeRoleWithPolicy(userId, isAdmin);
-//   const s3Client = new S3Client({
-//     region: region,
-//     credentials: {
-//       accessKeyId: credentials.accessKeyId,
-//       secretAccessKey: credentials.secretAccessKey,
-//       sessionToken: credentials.sessionToken,
-//     },
-//   });
+const uploadPublicFileToBucket = async (req) => {
+  const file = req.file;
+  if (!file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide a image source');
+  }
 
-//   const params = {
-//     Bucket: bucket,
-//     Key: s3Key,
-//     Expires: 60,
-//   };
+  const fileContent = file.buffer;
+  const contenType = file.mimetype;
 
-//   const command = new GetObjectCommand(params);
-//   const { Body } = await s3Client.send(command);
+  const fileName = `${Date.now()}_${file.originalname}`;
 
-//   // Construct URL manually
+  const s3Key = `public/${fileName}`;
 
-//   const url = `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
-//   return url;
-// };
+  const s3Params = {
+    Bucket: bucket,
+    Key: s3Key,
+    Body: fileContent,
+    ContentType: contenType,
+  };
+
+  await s3Client.send(new PutObjectCommand(s3Params));
+  const fileUrl = `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
+  return fileUrl;
+};
 
 module.exports = {
   uploadPrivateImage,
-  getImageUrl,
+  getPrivateImageUrl,
+  uploadPublicFileToBucket,
 };

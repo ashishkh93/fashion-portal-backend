@@ -81,7 +81,6 @@ module.exports = (sequelize, DataTypes) => {
     User.hasOne(models.CustomerInfo, { foreignKey: 'customerId', as: 'customerInfo' });
     User.hasOne(models.ArtistInfo, { foreignKey: 'artistId', as: 'artistInfos' });
     User.hasMany(models.RefundRequest, { foreignKey: 'customerId' });
-    User.hasMany(models.Order, { foreignKey: 'customerId' });
     User.hasMany(models.Token, { foreignKey: 'userId' });
   };
 

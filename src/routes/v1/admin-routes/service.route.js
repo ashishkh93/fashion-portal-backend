@@ -2,12 +2,12 @@ const express = require('express');
 const multer = require('multer');
 const validate = require('../../../middlewares/validate');
 const serviceValidation = require('../../../validations/services.validation');
-const { superAdminControllers } = require('../../../controllers');
+const { superAdminControllers, commonControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
-const fileUpload = require('../../../middlewares/multerUpload');
 const { adminValidate } = require('../../../middlewares/userValidate');
 
-const uploadImage = multer({ storage: fileUpload() });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = express.Router();
 
@@ -48,17 +48,18 @@ router
   );
 
 router.post(
-  '/upload-file',
+  '/:adminId/upload-file',
   auth('manageServices'),
-  uploadImage.single('file'),
-  superAdminControllers.serviceController.uploadFile
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  upload.single('file'),
+  commonControllers.uploadController.uploadPublicFile
 );
 
-router.post(
-  '/upload-files',
-  auth('manageServices'),
-  uploadImage.array('files', 10),
-  superAdminControllers.serviceController.uploadFiles
-);
+// router.post(
+//   '/upload-files',
+//   auth('manageServices'),
+//   uploadImage.array('files', 10),
+//   superAdminControllers.serviceController.uploadFiles
+// );
 
 module.exports = router;
