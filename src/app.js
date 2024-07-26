@@ -44,11 +44,31 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-// const corsOptions = {
-//     origin: 'http://localhost:3000',
-// };
-app.use(cors({ origin: '*' }));
-app.options('*', cors());
+// app.use(cors({ origin: '*' }));
+// app.options('*', cors());
+
+// Define allowed origins
+const allowedOrigins = ['http://localhost:3000/', 'http://192.168.0.103/'];
+
+// Define CORS options
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: 'GET,HEAD,OPTIONS,POST,PUT,DELETE',
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  credentials: true, // Enable this if you need to send cookies or authentication headers with requests
+};
+
+// Use CORS middleware with specified options
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
