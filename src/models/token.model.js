@@ -52,14 +52,10 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Token.associate = function (models) {
-    if (models.User) {
-      Token.belongsTo(models.User, {
-        foreignKey: 'userId',
-        as: 'user',
-      });
-    } else {
-      console.error('User model not found for association');
-    }
+    Token.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
   };
 
   return Token;

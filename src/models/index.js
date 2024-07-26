@@ -21,6 +21,13 @@ const sequelize = new Sequelize(config.mysql.dbString, {
     }
     return null;
   },
+  dialectOptions: {
+    ssl: {
+      require: isDev ? false : true,
+      rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
+    },
+    connectTimeout: 60000, // Increase overall connection timeout
+  },
   // timezone: '+05:30', // for writing to database
   // dialectOptions: {
   //   connectTimeout: 6000, // Increase timeout to 20000ms (20 seconds)

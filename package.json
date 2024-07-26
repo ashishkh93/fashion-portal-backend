@@ -11,6 +11,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "cross-env NODE_ENV=development nodemon src/app.js",
+    "prod": "cross-env NODE_ENV=production nodemon src/app.js",
     "test": "jest -i",
     "test:watch": "jest -i --watchAll",
     "coverage": "jest -i --coverage",

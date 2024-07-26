@@ -40,16 +40,16 @@ const envVarsSchema = Joi.object()
     COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
-    FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
-      .required()
-      .default(6)
-      .description('Firebase admin service account credentials base64'),
+    // FIREBASE_ADMIN_SERVICE_ACCOUNT_CREDENTIALS_BASE64: Joi.string()
+    //   .required()
+    //   .default(6)
+    //   .description('Firebase admin service account credentials base64'),
 
-    AWS_ACCOUNT_ID: Joi.string().required().description('Aws IAM account id'),
-    AWS_ACCESS_KEY_ID: Joi.string().required().description('Aws access key'),
-    AWS_SECRET_ACCESS_KEY: Joi.string().required().description('Aws secret key'),
-    AWS_REGION: Joi.string().required().description('Aws region'),
-    AWS_BUCKET_NAME: Joi.string().required().description('Aws bucket'),
+    // AWS_ACCOUNT_ID: Joi.string().required().description('Aws IAM account id'),
+    // AWS_ACCESS_KEY_ID: Joi.string().required().description('Aws access key'),
+    // AWS_SECRET_ACCESS_KEY: Joi.string().required().description('Aws secret key'),
+    // AWS_REGION: Joi.string().required().description('Aws region'),
+    // AWS_BUCKET_NAME: Joi.string().required().description('Aws bucket'),
   })
   .unknown();
 
@@ -154,12 +154,12 @@ module.exports = {
     host: envVars.DB_HOST,
     dialect: 'postgres',
     seederStorage: 'sequelize',
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000, // Increase acquire timeout
-      idle: 10000,
-    },
+    // pool: {
+    //   max: 5,
+    //   min: 0,
+    //   acquire: 30000, // Increase acquire timeout
+    //   idle: 10000,
+    // },
   },
   production: {
     username: envVars.DB_USER,
@@ -174,6 +174,14 @@ module.exports = {
       acquire: 30000, // Increase acquire timeout
       idle: 10000,
     },
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
+      },
+      connectTimeout: 60000, // Increase overall connection timeout
+    },
   },
+
   // connectDbBackgroundUrl: envVars.DB_CONNECT_APP_URL,
 };
