@@ -44,7 +44,10 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-app.use(cors());
+// const corsOptions = {
+//     origin: 'http://localhost:3000',
+// };
+app.use(cors({ origin: '*' }));
 app.options('*', cors());
 
 // jwt authentication
