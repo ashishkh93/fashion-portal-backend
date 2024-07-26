@@ -14,7 +14,6 @@ const isDev = config.env !== 'production';
 const sequelize = new Sequelize(config.mysql.dbString, {
   dialect: 'postgres',
   dialectModule: pg,
-  // operatorsAliases: false,
   logging: (msg) => {
     if (isDev) {
       return logger.info(msg);
@@ -41,8 +40,7 @@ sequelize
     logger.info('Connection has been established successfully.');
   })
   .catch((err) => {
-    logger.info('Unable to connect to the database due to ' + err);
-    console.error('Unable to connect to the database:', err.message || err);
+    logger.error('Unable to connect to the database due to ' + err);
   });
 
 const db = {};
