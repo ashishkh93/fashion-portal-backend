@@ -10,7 +10,14 @@ const errorConverter = (err, req, res, next) => {
   if (!(error instanceof ApiError)) {
     const statusCode =
       error.statusCode || error instanceof Sequelize.Error ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
-    const message = error.message || httpStatus[statusCode];
+
+    let message = error.message || httpStatus[statusCode];
+
+    if (error instanceof Sequelize.ValidationError) {
+      const messages = error.errors.map((e) => e.message);
+      message = messages.join(', ');
+    }
+
     error = new ApiError(statusCode, message, false, err.stack);
   }
 
@@ -20,10 +27,10 @@ const errorConverter = (err, req, res, next) => {
 // eslint-disable-next-line no-unused-vars
 const errorHandler = async (err, _req, res, _next) => {
   let { statusCode, message } = err;
-  if (config.env === 'production' && !err.isOperational) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message = httpStatus[httpStatus.INTERNAL_SERVER_ERROR];
-  }
+  // if (config.env === 'production' && !err.isOperational) {
+  //   statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+  //   message = httpStatus[httpStatus.INTERNAL_SERVER_ERROR];
+  // }
 
   res.locals.errorMessage = err.message;
 
@@ -31,12 +38,13 @@ const errorHandler = async (err, _req, res, _next) => {
     status: false,
     message,
     code: err?.errorCode || 'Error',
-    ...(config.env === 'development' && { stack: err.stack }),
+    stack: err.stack,
+    // ...(config.env === 'development' && { stack: err.stack }),
   };
 
-  if (config.env === 'development') {
-    logger.error(err);
-  }
+  // if (config.env === 'development') {
+  logger.error(err);
+  // }
 
   // handle sequelize transaction rollback while having error
   // const transaction = namespace.get('transaction');

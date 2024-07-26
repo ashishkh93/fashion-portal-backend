@@ -8,7 +8,7 @@ const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
 const addArtistInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    artistId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
     fullName: Joi.string().required(),
