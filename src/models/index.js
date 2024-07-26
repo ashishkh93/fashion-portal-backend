@@ -24,9 +24,15 @@ const sequelize = new Sequelize(
       }
       return null;
     },
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000, // Increase acquire timeout
+      idle: 10000,
+    },
     dialectOptions: {
       ssl: {
-        require: isDev ? false : true,
+        require: true,
         rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
       },
       connectTimeout: 60000, // Increase overall connection timeout
