@@ -1,7 +1,7 @@
 const serverless = require('serverless-http');
 const app = require('../../src/app');
 const { initializeDatabaseConnectionForProd } = require('../../src/utils/database');
-// const { initializeDatabaseConnectionForProd } = require('../../src/utils/database');
+const db = require('../../src/models');
 
 // Initialize database connection once at startup
 initializeDatabaseConnectionForProd()
@@ -13,5 +13,15 @@ initializeDatabaseConnectionForProd()
     process.exit(1);
   });
 
-// No need to define routes here since they are already defined in app.js
+// Ensure Sequelize models are ready
+db.sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Sequelize models are ready');
+  })
+  .catch((error) => {
+    console.log('Sequelize models initialization failed:', error.message);
+    process.exit(1);
+  });
+
 module.exports.handler = serverless(app);

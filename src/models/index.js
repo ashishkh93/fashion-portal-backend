@@ -1,49 +1,13 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const pg = require('pg');
+// models/index.js
+
 const fs = require('fs');
 const path = require('path');
-const config = require('../config/config');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../utils/database');
 const logger = require('../config/logger');
 
 const basename = path.basename(__filename);
-const isDev = config.env !== 'production';
-
-// const namespace = cls.createNamespace('fashion-portal');
-// Sequelize.useCLS(namespace);
-
-// const sequelize = new Sequelize(config.mysql.dbString, {
-const sequelize = new Sequelize(
-  'postgresql://app:8WdE036dTFUQF6nBw08324mQ@commonly-cosmic-katydid.a1.pgedge.io/fashion_portal?sslmode=require',
-  {
-    dialect: 'postgres',
-    dialectModule: pg,
-    // operatorsAliases: false,
-    logging: (msg) => {
-      if (isDev) {
-        return logger.info(msg);
-      }
-      return null;
-    },
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000, // Increase acquire timeout
-      idle: 10000,
-    },
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
-      },
-      connectTimeout: 60000, // Increase overall connection timeout
-    },
-    // timezone: '+05:30', // for writing to database
-    // dialectOptions: {
-    //   connectTimeout: 6000, // Increase timeout to 20000ms (20 seconds)
-    //   decimalNumbers: true, // To return all decimal strings into number
-    // },
-  }
-);
+const db = {};
 
 sequelize
   .authenticate()
@@ -51,11 +15,8 @@ sequelize
     logger.info('Connection has been established successfully.');
   })
   .catch((err) => {
-    logger.info('Unable to connect to the database due to ' + err);
-    console.error('Unable to connect to the database:', err.message || err);
+    logger.error('Unable to connect to the database:', err.message || err);
   });
-
-const db = {};
 
 // Load each model file
 fs.readdirSync(__dirname)
@@ -74,8 +35,7 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
-db.Sequelize = Sequelize;
+db.Sequelize = sequelize.Sequelize;
 db.sequelize = sequelize;
-// db.namespace = namespace;
 
 module.exports = db;

@@ -1,7 +1,33 @@
 // src/utils/database.js
 
-// const fetch = require('node-fetch');
+const { Sequelize } = require('sequelize');
+const pg = require('pg');
+const config = require('../config/config');
 const logger = require('../config/logger');
+
+const sequelize = new Sequelize(config.mysql.dbString, {
+  dialect: 'postgres',
+  dialectModule: pg,
+  logging: (msg) => {
+    if (config.env !== 'production') {
+      return logger.info(msg);
+    }
+    return null;
+  },
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+    connectTimeout: 60000,
+  },
+});
 
 const initializeDatabaseConnectionForProd = async () => {
   try {
@@ -13,30 +39,24 @@ const initializeDatabaseConnectionForProd = async () => {
     });
 
     if (!response.ok) {
-      // Log the response status and text for debugging
       const text = await response.text();
-      console.log(`Failed to fetch: ${response.status} ${response.statusText}`);
       logger.error(`Failed to fetch: ${response.status} ${response.statusText}`);
       logger.error(`Response body: ${text}`);
       throw new Error('Failed to fetch database connection status');
     }
 
     const result = await response.json();
-
     logger.info('Database connection result: ' + result.message);
 
     if (result.message === 'Database connection established') {
       logger.info('Database connection initialized');
-      console.log('Database connection initialized');
     } else {
-      console.log('Failed to initialize database connection');
       throw new Error('Failed to initialize database connection');
     }
   } catch (error) {
-    console.log('Error connecting to database: ', error.message);
     logger.error('Error connecting to database: ', error.message);
     throw error;
   }
 };
 
-module.exports = { initializeDatabaseConnectionForProd };
+module.exports = { sequelize, initializeDatabaseConnectionForProd };
