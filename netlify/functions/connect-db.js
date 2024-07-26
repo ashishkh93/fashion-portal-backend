@@ -12,6 +12,12 @@ const connectToDatabase = async () => {
     sequelize = new Sequelize(config.mysql.dbString, {
       dialect: 'postgres',
       dialectModule: pg,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000, // Increase acquire timeout
+        idle: 10000,
+      },
       dialectOptions: {
         ssl: {
           require: true,
