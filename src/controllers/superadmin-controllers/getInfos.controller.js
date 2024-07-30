@@ -26,9 +26,24 @@ const getSingleArt = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Art fetched successfully', entity: singleArt });
 });
 
+
+const getAllCustomers = catchAsync(async (req, res) => {
+  const { page, size, searchToken } = req.query;
+  const allArtists = await superAdminServices.infoService.getAllCustomersService(page, size, searchToken);
+  res.status(httpStatus.OK).send({ status: true, message: 'Customers fetched successfully', entity: allArtists });
+});
+
+const getCustomerInfo = catchAsync(async (req, res) => {
+  const { customerId } = req.params;
+  const artistInfo = await superAdminServices.infoService.getCustomerInfoService(customerId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Customer info fetched successfully', entity: artistInfo });
+});
+
 module.exports = {
   getAllArtist,
   getArtistInfo,
   getAllArts,
   getSingleArt,
+  getAllCustomers,
+  getCustomerInfo,
 };

@@ -1,14 +1,20 @@
 const httpStatus = require('http-status');
 const { Op } = require('sequelize');
-const { User, ArtistInfo, ArtistBankingInfo, Service, Category, Art } = require('../../models');
+const { User, ArtistInfo, CustomerInfo, ArtistBankingInfo, Service, Category, Art } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
-const { getSignature } = require('../../utils/cashfree.util');
-const { getAuthenticationTokenAPICallback, verifyUPICallback } = require('../../utils/cashfree-payout-api.util');
+const {
+  verifyUPICallback,
+  getCFAuthToken,
+  verifyPANCallback,
+  getAuthenticationTokenAPICallback,
+} = require('../../utils/cashfree-payout-api.util');
 const { getPlainData } = require('../../utils/common.util');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
 const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-queries/get-all-arts-search-query copy');
+const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all-customers-search-query');
+const { getSignature } = require('../../utils/cashfree.util');
 
 /**
  * Get artist information for admin to check artist's status
@@ -25,7 +31,7 @@ const getArtistForAdmin = async (artistId) => {
 };
 
 /**
- * Get all services
+ * Get all artists
  * @param {Number} page
  * @param {Number} size
  * @param {String} searchToken
@@ -83,20 +89,16 @@ const getArtistInfoService = async (artistId) => {
 
   const artistInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'services'] };
 
-  const artistInfo = await ArtistInfo.findOne({
+  let artistInfo = await ArtistInfo.findOne({
     where: [artistCondoition],
     attributes: artistInfoAttrs,
     include: includeModel,
   });
 
   if (artistInfo) {
-    // const decipherAcc = decrypt(artistInfo.bankAccountNumber);
-    // const decipherUpi = decrypt(artistInfo.upi);
-    const artistInfoWithBankAcc = { ...artistInfo.dataValues };
-    return artistInfoWithBankAcc;
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Artist does'n added information yet");
+    return getPlainData(artistInfo);
   }
+  return {};
 };
 
 /**
@@ -137,6 +139,64 @@ const getAllArtsForAdminService = async (artistId, query) => {
 
   const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, include, {}, orderByKey, orderBy);
   return allArts;
+};
+
+/**
+ * Get all customeres
+ * @param {Number} page
+ * @param {Number} size
+ * @param {String} searchToken
+ * @returns {User}
+ */
+
+const getAllCustomersService = async (page, size, searchToken) => {
+  const includeModel = [
+    {
+      model: CustomerInfo,
+      as: 'customerInfo',
+      attributes: ['status', 'fullName', 'email', 'dob', 'gender', 'profilePic', 'createdAt'],
+    },
+  ];
+
+  let customerCondition = { role: 'customer' };
+
+  if (searchToken) {
+    searchToken = searchToken.trim();
+    customerCondition = {
+      ...customerCondition,
+      ...GET_ALL_CUSTOMERS_SEARCH_QUERY(searchToken),
+    };
+  }
+
+  const userAttributes = { exclude: ['role', 'fcmToken', 'otp', 'otpExpire', 'deletedAt'] };
+
+  const allCustomers = await getPaginationDataFromModel(User, customerCondition, page, size, includeModel, userAttributes);
+
+  return allCustomers;
+};
+
+/**
+ * Get single customer informations
+ * @param {String} customerId
+ * @returns {User}
+ */
+const getCustomerInfoService = async (customerId) => {
+  const customerInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt'] };
+
+  const customerInfo = await CustomerInfo.findOne({
+    where: { customerId },
+    attributes: customerInfoAttrs,
+    include: [
+      {
+        model: User,
+        as: 'customerInfo',
+        attributes: ['phone', 'fcmToken'],
+      },
+    ],
+  });
+
+  if (customerInfo) return getPlainData(customerInfo);
+  else return {};
 };
 
 /**
@@ -205,11 +265,7 @@ const updateLatLongService = async (body, artistId) => {
  * @returns
  */
 const verifyUpiCallback = async (upi) => {
-  const cfSignature = getSignature();
-
-  const authenticationTokenRes = await getAuthenticationTokenAPICallback(cfSignature);
-  const { token } = authenticationTokenRes.data;
-
+  const token = await getCFAuthToken();
   const validateUpiResult = await verifyUPICallback(token, upi);
   return validateUpiResult;
 };
@@ -250,6 +306,43 @@ const verifyUPIService = async (artistId) => {
   }
 };
 
+/**
+ * Verify artist's PAN via cashfree pan verification API
+ * @param {String} artistId
+ * @param {String} pan
+ * @returns {object}
+ */
+const verifyPANService = async (artistId, pan) => {
+  try {
+    let artist = await ArtistInfo.findOne({
+      where: { artistId },
+      attributes: [],
+      include: [
+        {
+          model: ArtistBankingInfo,
+          as: 'artistBankingInfo',
+          attributes: ['pan'],
+          where: { pan },
+        },
+      ],
+    });
+
+    if (artist) {
+      artist = getPlainData(artist);
+      const {
+        artistBankingInfo: { pan },
+      } = artist;
+
+      const panVerificationResult = await verifyPANCallback(pan);
+      return panVerificationResult;
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, 'The pan does not link with the artist');
+    }
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getAllArtistService,
   getArtistInfoService,
@@ -259,4 +352,7 @@ module.exports = {
   updateLatLongService,
   verifyUPIService,
   verifyUpiCallback,
+  verifyPANService,
+  getAllCustomersService,
+  getCustomerInfoService,
 };

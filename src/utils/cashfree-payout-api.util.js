@@ -3,13 +3,24 @@ const config = require('../config/config');
 const ApiError = require('./ApiError');
 const logger = require('../config/logger');
 const httpStatus = require('http-status');
+const { getSignature } = require('./cashfree.util');
 
 const payoutBaseUrl = config.cashfree.payoutBaseUrl;
+const panVerificationUrl = config.cashfree.panVerificationUrl;
+
 const payoutClientId = config.cashfree.payoutClientId;
 const payoutClientSecret = config.cashfree.payoutClientSecret;
 const payoutApiVersion = config.cashfree.payoutApiVersion;
 
 const payoutGammaUrl = config.cashfree.payoutGammaUrl;
+
+const getCFAuthToken = async () => {
+  const cfSignature = getSignature(payoutClientId);
+
+  const authenticationTokenRes = await getAuthenticationTokenAPICallback(cfSignature);
+  const { token } = authenticationTokenRes.data;
+  return token;
+};
 
 const payoutAPICallback = async (method, body, endPoint) => {
   try {
@@ -87,7 +98,7 @@ const verifyUPICallback = async (token, upi) => {
       return result;
     } else {
       logger.error('upi validation failed due to: ', result?.message);
-      throw new ApiError(result?.status || authorizeResponse.status, result?.message || 'Internal server error');
+      throw new ApiError(result?.status || upiVerifyResponse.status, result?.message || 'Internal server error');
     }
   } catch (error) {
     logger.error('upi validation failed due to: ' + error.message);
@@ -95,8 +106,45 @@ const verifyUPICallback = async (token, upi) => {
   }
 };
 
+const verifyPANCallback = async (pan) => {
+  try {
+    const signature = getSignature(payoutClientId);
+    const panBody = { pan };
+
+    let options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'x-client-id': payoutClientId,
+        'x-client-secret': payoutClientSecret,
+        'x-cf-signature': signature,
+      },
+      body: JSON.stringify(panBody),
+    };
+
+    const panVerifyResponse = await fetch(panVerificationUrl, options);
+    const panVerifyresult = await panVerifyResponse.json();
+
+    if (panVerifyresult) {
+      return panVerifyresult;
+    } else {
+      logger.error('PAN verification failed due to: ', panVerifyresult?.message);
+      throw new ApiError(
+        panVerifyresult?.status || panVerifyResponse.status,
+        panVerifyresult?.message || 'Internal server error'
+      );
+    }
+  } catch (error) {
+    logger.error('PAN verification failed due to: ' + error.message);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  }
+};
+
 module.exports = {
+  getCFAuthToken,
   payoutAPICallback,
   getAuthenticationTokenAPICallback,
   verifyUPICallback,
+  verifyPANCallback,
 };

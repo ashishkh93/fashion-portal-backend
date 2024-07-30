@@ -4,6 +4,7 @@ const ApiError = require('../../utils/ApiError');
 const { Op } = require('sequelize');
 const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
+const { getPlainData } = require('../../utils/common.util');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -127,17 +128,7 @@ const getArtistInfoService = async (artistId) => {
   });
 
   if (artist) {
-    const plainDataArtist = artist.get({ plain: true });
-    // const { upi } = plainDataArtist;
-
-    // const decipherUpi = decrypt(upi);
-
-    // if (artist.status !== 'APPROVED') {
-    //   await checkArtistStatus(artist.dataValues);
-    //   return null;
-    // } else {
-    //   return artist;
-    // }
+    const plainDataArtist = getPlainData(artist);
     return plainDataArtist;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
@@ -225,10 +216,19 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
   }
 };
 
+/**
+ * Get artist status based on their info added
+ * @param {String} artistId
+ */
+const getArtistStatusService = async (artistId) => {
+  const curArtist = await getArtistInfoService();
+};
+
 module.exports = {
   addArtistInfoService,
   getArtistInfoService,
   editArtistInfoService,
   getApprovedArtist,
   editArtistUPIService,
+  getArtistStatusService,
 };

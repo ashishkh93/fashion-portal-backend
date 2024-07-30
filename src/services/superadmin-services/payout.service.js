@@ -87,8 +87,6 @@ const payoutToArtistsService = async (body) => {
 
       const orderIds = plainOrders?.map((order) => order.id);
 
-      const artistIds = [];
-
       // to store this json as artist with their all orders as payout detail json
       const artistWithOrderIds = {};
       const curDateTime = moment().format('DD_MM_YYYY_HH_mm_ss');
@@ -101,7 +99,6 @@ const payoutToArtistsService = async (body) => {
       const reducedOrderArray = _.chain(plainOrders)
         .groupBy('artistId')
         .map((groupedOrder, artistId) => {
-          artistIds.push(artistId);
           const {
             fullName,
             email,
@@ -203,9 +200,7 @@ const payoutToArtistsService = async (body) => {
           batchTransferId: batch_transfer_id,
           fromDate: body.fromDate,
           toDate: body.toDate,
-          artistIds,
           status: data.status || 'initiated',
-          orderDetail: artistWithOrderIds,
           totalBatchPayoutAmount,
         };
 
@@ -227,21 +222,36 @@ const payoutToArtistsService = async (body) => {
 
           const bulkTransfers = await Transfer.bulkCreate(reducedTransfers);
           if (bulkTransfers) {
-            await Promise.all(
-              bulkTransfers.map(async (transfer) => {
-                const { orderIds } = transfer;
-                await Promise.all(
-                  orderIds.map((orderId) => {
-                    const orderTransferEntry = {
-                      orderId,
-                      transferId: transfer.id,
-                    };
-                    return ArtistTransferOrder.create(orderTransferEntry);
-                  })
-                );
-              })
-            );
+            const orderTransferEntries = bulkTransfers.reduce((acc, transfer) => {
+              const { orderIds, id } = transfer;
+              const tOrders = orderIds.map((orderId) => {
+                return { orderId, transferId: id };
+              });
+
+              acc.push(...tOrders);
+              return acc;
+            }, []);
+            await ArtistTransferOrder.bulkCreate(orderTransferEntries);
           }
+
+
+
+          // if (bulkTransfers) {
+          //   await Promise.all(
+          //     bulkTransfers.map(async (transfer) => {
+          //       const { orderIds } = transfer;
+          //       await Promise.all(
+          //         orderIds.map((orderId) => {
+          //           const orderTransferEntry = {
+          //             orderId,
+          //             transferId: transfer.id,
+          //           };
+          //           return ArtistTransferOrder.create(orderTransferEntry);
+          //         })
+          //       );
+          //     })
+          //   );
+          // }
         }
 
         return data;

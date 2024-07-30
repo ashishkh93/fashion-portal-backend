@@ -37,5 +37,12 @@ router.get(
   validate(artistValidation.verifyUpi),
   superAdminControllers.verifyStatusController.verifyUPI
 );
+router.post(
+  '/:artistId/pan',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(artistValidation.verifyPAN),
+  superAdminControllers.verifyStatusController.verifyPAN
+);
 
 module.exports = router;

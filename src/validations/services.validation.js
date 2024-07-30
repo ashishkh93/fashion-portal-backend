@@ -86,11 +86,25 @@ const getArts = {
   }),
 };
 
+const getSingleArtist = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+    artistId: Joi.string().required().uuid(),
+  }),
+};
+
+const getSingleCustomer = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+    customerId: Joi.string().required().uuid(),
+  }),
+};
+
 const getSingleArt = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artId: Joi.string().required(),
-    artistId: Joi.string().required(),
+    adminId: Joi.string().required().uuid(),
+    artId: Joi.string().required().uuid(),
+    artistId: Joi.string().required().uuid(),
   }),
 };
 
@@ -105,5 +119,7 @@ module.exports = {
   getAllService,
   getArtists,
   getArts,
+  getSingleArtist,
   getSingleArt,
+  getSingleCustomer,
 };

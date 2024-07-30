@@ -26,9 +26,16 @@ const editUpi = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Upi updated!', entity: req.body });
 });
 
+const getArtistStatus = catchAsync(async (req, res) => {
+  const artistId = req.params.artistId;
+  await artistServices.artistInfoService.getArtistStatusService(artistId, req.artist);
+  res.status(httpStatus.OK).send({ status: true, message: 'Upi updated!', entity: req.body });
+});
+
 module.exports = {
   addArtistInfo,
   getArtistInfo,
   editArtistInfo,
   editUpi,
+  getArtistStatus,
 };

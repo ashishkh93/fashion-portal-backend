@@ -23,7 +23,16 @@ const updateLatLong = catchAsync(async (req, res) => {
 const verifyUPI = catchAsync(async (req, res) => {
   const { artistId } = req.params;
   const upiValidateResponse = await superAdminServices.infoService.verifyUPIService(artistId);
-  res.status(httpStatus.OK).send({ status: true, message: 'Upi verification done!', entity: upiValidateResponse || null });
+  res
+    .status(httpStatus.OK)
+    .send({ status: true, message: 'Upi verification successfully!', entity: upiValidateResponse || null });
+});
+
+const verifyPAN = catchAsync(async (req, res) => {
+  const { artistId } = req.params;
+  const { pan } = req.body;
+  const panValidateResponse = await superAdminServices.infoService.verifyPANService(artistId, pan);
+  res.status(httpStatus.OK).send({ status: true, message: 'PAN verification done!', entity: panValidateResponse || null });
 });
 
 module.exports = {
@@ -31,4 +40,5 @@ module.exports = {
   changeArtistStatus,
   updateLatLong,
   verifyUPI,
+  verifyPAN,
 };

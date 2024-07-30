@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const validate = require('../../../middlewares/validate');
-const { artistControllers, superAdminControllers, commonControllers } = require('../../../controllers');
+const { artistControllers, commonControllers } = require('../../../controllers');
 const { artistValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
@@ -56,6 +56,14 @@ router.get(
   auth(),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
   commonControllers.uploadController.getPrivateImage
+);
+
+// get artist status based on their added info
+router.get(
+  '/:artistId/get-status',
+  validate(artistValidation.getArtistInfo),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
+  artistControllers.artistInfoController.getArtistStatus
 );
 
 module.exports = router;

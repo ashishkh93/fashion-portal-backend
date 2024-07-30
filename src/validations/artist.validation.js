@@ -95,7 +95,7 @@ const editUpi = {
 
 const getArtistInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    artistId: Joi.string().required().uuid(),
   }),
 };
 
@@ -114,6 +114,19 @@ const verifyUpi = {
   params: Joi.object().keys({
     adminId: Joi.string().required(),
     artistId: Joi.string().required(),
+  }),
+};
+
+const verifyPAN = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+    artistId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    pan: Joi.string().pattern(panRegex).required().messages({
+      'string.empty': 'PAN number is required',
+      'string.pattern.base': 'PAN number is invalid, please provide valid PAN number',
+    }),
   }),
 };
 
@@ -159,4 +172,5 @@ module.exports = {
   getReviewsForSingleArtist,
   getAllReviews,
   getOrdersForSingleCustomer,
+  verifyPAN,
 };

@@ -18,7 +18,7 @@ const login = catchAsync(async (req, res) => {
 
 const verifyOtp = catchAsync(async (req, res) => {
   const role = req.role;
-  const tokens = await commonServices.userService.verifyUserOtp(req.body, role);
+  const tokens = await commonServices.userService.verifyArtistOtp(req.body, role);
   res.status(httpStatus.CREATED).send({ status: true, message: 'Otp verified', entity: { ...tokens } });
 });
 

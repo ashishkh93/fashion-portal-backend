@@ -6,8 +6,8 @@ Cashfree.XClientId = config.cashfree.clientId;
 Cashfree.XClientSecret = config.cashfree.clientSecret;
 Cashfree.XEnvironment = Cashfree.Environment[config.cashfree.env];
 
-const getSignature = () => {
-  return generateXCFSignature(config.cashfree.payoutClientId);
+const getSignature = (clientId) => {
+  return generateXCFSignature(clientId);
 };
 
 module.exports = { CashfreeUtil: Cashfree, getSignature };

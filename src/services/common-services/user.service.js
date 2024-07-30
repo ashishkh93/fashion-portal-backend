@@ -3,13 +3,12 @@ const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const tokenService = require('./token.service');
 const { FirebaseAdminUtil } = require('../../utils/firebase-admin.util');
-const { FirebaseInstance } = require('../../firebase-admin/admin');
-const logger = require('../../config/logger');
+const { getPlainData } = require('../../utils/common.util');
 
 // to remove path from cahche, when all imports are okay, and still you are getting an errpr
 // delete require.cache[require.resolve('./token.service')];
 
-const { User } = db;
+const { User, ArtistInfo, ArtistBankingInfo } = db;
 
 /**
  * Create a user
@@ -46,44 +45,12 @@ const createUserPhoneAuth = async (userBody) => {
 };
 
 /**
- * Query for users
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
- * @param {number} [options.limit] - Maximum number of results per page (default = 10)
- * @param {number} [options.page] - Current page (default = 1)
- * @returns {Promise<QueryResult>}
- */
-const queryUsers = async (filter, options) => {
-  const users = await customers.paginate(filter, options);
-  return users;
-};
-
-/**
  * Get user by id
  * @param {ObjectId} id
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
   return User.findByPk(id);
-};
-
-/**
- * Get user by referId
- * @param {ObjectId} referralCode
- * @returns {Promise<User>}
- */
-const getUserByReferId = async (referralCode) => {
-  return await User.find({ referralCode });
-};
-
-/**
- * Get user by email
- * @param {string} email
- * @returns {Promise<User>}
- */
-const getUserByEmail = async (email) => {
-  return User.findOne({ email });
 };
 
 /**
@@ -96,21 +63,7 @@ const getUserByPhoneAndRole = async (phone, role) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  return user;
-};
-
-/**
- * Delete user by id
- * @param {ObjectId} userId
- * @returns {Promise<customers>}
- */
-const deleteUserById = async (userId) => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'customers not found');
-  }
-  await user.remove();
-  return user;
+  return getPlainData(user);
 };
 
 /**
@@ -150,6 +103,65 @@ const verifyUserOtp = async (body, role) => {
         const tokens = await tokenService.generateAuthTokens(user);
 
         const resToSend = { id: user.id, phone: user.phone, role: user.role };
+        return { ...user, ...tokens };
+      } else {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
+      }
+    } else throw new ApiError(httpStatus.BAD_REQUEST, 'OTP did not match');
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'No User registered with this phone number');
+};
+
+/**
+ * Verify User Otp and create user in firebase if not exist
+ * @param {Object} body
+ * @returns {Promise<customers>}
+ */
+const verifyArtistOtp = async (body, role) => {
+  const { phone, otp } = body;
+
+  const artist = await User.findOne({
+    where: { phone, role },
+    include: [
+      {
+        model: ArtistInfo,
+        as: 'artistInfos',
+        include: [
+          {
+            model: ArtistBankingInfo,
+            as: 'artistBankingInfo',
+          },
+        ],
+      },
+    ],
+  });
+
+  const validOtpForDev = otp === 123456;
+
+  if (artist) {
+    const plainArtist = getPlainData(artist);
+    if (otp === plainArtist.otp || validOtpForDev) {
+      if (Date.now() < plainArtist.otpExpire || validOtpForDev) {
+        const updateBody = { otp: null, otpExpire: null };
+
+        /**
+         * Check if user is exist in firebase, if not then create it with phoneNumber
+         */
+        const fb_admin = new FirebaseAdminUtil();
+        await fb_admin.checkUserAndCreate(phone);
+
+        await updateUserById(updateBody, plainArtist.id);
+        const tokens = await tokenService.generateAuthTokens(plainArtist);
+
+        let isProfileAdded = !!plainArtist.artistInfos;
+        let isBankingAdded = !!plainArtist.artistInfos?.artistBankingInfo;
+
+        const resToSend = {
+          id: plainArtist.id,
+          phone: plainArtist.phone,
+          role: plainArtist.role,
+          isProfileAdded,
+          isBankingAdded,
+        };
         return { ...resToSend, ...tokens };
       } else {
         throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
@@ -161,13 +173,10 @@ const verifyUserOtp = async (body, role) => {
 module.exports = {
   createUser,
   createUserPhoneAuth,
-  queryUsers,
   getUserById,
-  getUserByReferId,
-  getUserByEmail,
   getUserByPhoneAndRole,
   updateUserById,
-  deleteUserById,
   verifyUserOtp,
+  verifyArtistOtp,
   generateFcmToken,
 };

@@ -12,17 +12,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(40),
         allowNull: false,
       },
-      artistIds: {
-        type: DataTypes.ARRAY(DataTypes.UUID),
-        allowNull: false,
-      },
       totalBatchPayoutAmount: {
         type: DataTypes.FLOAT,
         allowNull: false,
-      },
-      orderDetail: {
-        type: DataTypes.JSON,
-        allowNull: true,
       },
       transactionId: {
         type: DataTypes.UUID,

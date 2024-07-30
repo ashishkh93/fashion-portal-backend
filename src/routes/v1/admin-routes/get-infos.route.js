@@ -18,7 +18,7 @@ router.get(
   '/:artistId/get-artist-info',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(serviceValidation.getArts),
+  validate(serviceValidation.getSingleArtist),
   superAdminControllers.infoController.getArtistInfo
 );
 router.get(
@@ -28,6 +28,22 @@ router.get(
   validate(serviceValidation.getArts),
   superAdminControllers.infoController.getAllArts
 );
+
+router.get(
+  '/get-all-customers',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(serviceValidation.getArtists),
+  superAdminControllers.infoController.getAllCustomers
+);
+router.get(
+  '/:customerId/customer-info',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(serviceValidation.getSingleCustomer),
+  superAdminControllers.infoController.getCustomerInfo
+);
+
 router.get(
   '/:artistId/:artId',
   auth(),
