@@ -5,35 +5,35 @@ const { artValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:artistId')
+  .route('/')
   .get(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     validate(artValidation.getArts),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     artistControllers.artController.getAllArts
   )
   .post(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     validate(artValidation.addArt),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     artistControllers.artController.addArt
   );
 
 router
-  .route('/:artistId/:artId')
+  .route('/:artId')
   .get(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     validate(artValidation.getSingleArt),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     artistControllers.artController.getSingleArt
   )
   .patch(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     validate(artValidation.editArt),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
     artistControllers.artController.editArt
   );
 

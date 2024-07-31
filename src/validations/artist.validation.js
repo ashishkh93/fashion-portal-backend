@@ -162,6 +162,24 @@ const getAllReviews = {
   }),
 };
 
+const uplodPrivateImage = {
+  params: Joi.object().keys({
+    artistId: Joi.string().required().uuid(),
+  }),
+  // body: Joi.object().keys({
+  //   file: Joi.binary().required(),
+  // }),
+};
+
+const getPrivateImage = {
+  params: Joi.object().keys({
+    artistId: Joi.string().required().uuid(),
+  }),
+  body: Joi.object().keys({
+    key: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   addArtistInfo,
   getArtistInfo,
@@ -173,4 +191,6 @@ module.exports = {
   getAllReviews,
   getOrdersForSingleCustomer,
   verifyPAN,
+  uplodPrivateImage,
+  getPrivateImage,
 };

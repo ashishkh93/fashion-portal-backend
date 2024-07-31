@@ -6,37 +6,37 @@ const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.get(
-  '/:artistId',
+  '/',
   auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
   validate(orderValidation.getOrdersForArtist),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
   artistControllers.orderController.getAllOrders
 );
 
 router
-  .route('/:artistId/:orderId')
+  .route('/:orderId')
   .get(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
     validate(orderValidation.getSingleOrderForArtist),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
     artistControllers.orderController.getSingleOrder
   )
   .patch(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
     validate(orderValidation.updateOrderStatusForArtist),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
     transactionMiddleware,
     artistControllers.orderController.updateOrderStatus
   );
 
 router.patch(
-  '/:artistId/edit-order/:orderId',
+  '/:orderId/edit-order',
   auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
   validate(orderValidation.discountAndAddAddOnAmountInOrder),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'order' })),
   artistControllers.orderController.addDiscountAndAddOnInOrder
 );
 

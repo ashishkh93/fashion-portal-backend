@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const config = require('../../config/config');
 const ApiError = require('../../utils/ApiError');
 const httpStatus = require('http-status');
-// const db = require('./db'); // Assuming you have a database module
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 let cachedCredentials = null;
 let credentialsExpiry = null;
@@ -74,7 +74,7 @@ const assumeRoleWithPolicy = async (userId, isAdmin) => {
 
   const params = {
     RoleArn: `arn:aws:iam::${accountId}:role/private-s3-access-role`,
-    RoleSessionName: 'session1',
+    RoleSessionName: 'private-s3-session',
     Policy: policy,
     DurationSeconds: 3600,
   };
@@ -127,7 +127,7 @@ const getPrivateImageUrl = async (userId, s3Key, isAdmin) => {
     credentials: {
       accessKeyId: credentials.accessKeyId,
       secretAccessKey: credentials.secretAccessKey,
-      sessionToken: credentials.sessionxToken,
+      sessionToken: credentials.sessionToken,
     },
   });
 
@@ -138,27 +138,55 @@ const getPrivateImageUrl = async (userId, s3Key, isAdmin) => {
 
   try {
     const command = new GetObjectCommand(params);
-    const response = await s3Client.send(command);
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 * 24 }); // URL expires in 24 hour
 
-    // Read the stream data
-    const streamToBuffer = (stream) => {
-      return new Promise((resolve, reject) => {
-        const chunks = [];
-        stream.on('data', (chunk) => chunks.push(chunk));
-        stream.on('error', reject);
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-      });
-    };
-
-    const imageBuffer = await streamToBuffer(response.Body);
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
-    const imageUrl = `data:image/jpeg;base64,${base64Image}`;
-
-    return imageUrl;
+    return url;
   } catch (err) {
     throw new ApiError(err?.statusCode || httpStatus.NOT_FOUND, err.message || 'Image not found');
   }
 };
+
+// const getPrivateImageUrl = async (userId, s3Key, isAdmin) => {
+//   const credentials = await assumeRoleWithPolicy(userId, isAdmin);
+
+//   // Configure S3Client with temporary credentials
+//   const s3Client = new S3Client({
+//     region,
+//     credentials: {
+//       accessKeyId: credentials.accessKeyId,
+//       secretAccessKey: credentials.secretAccessKey,
+//       sessionToken: credentials.sessionToken,
+//     },
+//   });
+
+//   const params = {
+//     Bucket: bucket,
+//     Key: s3Key,
+//   };
+
+//   try {
+//     const command = new GetObjectCommand(params);
+//     const response = await s3Client.send(command);
+
+//     // Read the stream data
+//     const streamToBuffer = (stream) => {
+//       return new Promise((resolve, reject) => {
+//         const chunks = [];
+//         stream.on('data', (chunk) => chunks.push(chunk));
+//         stream.on('error', reject);
+//         stream.on('end', () => resolve(Buffer.concat(chunks)));
+//       });
+//     };
+
+//     const imageBuffer = await streamToBuffer(response.Body);
+//     const base64Image = Buffer.from(imageBuffer).toString('base64');
+//     const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+
+//     return imageUrl;
+//   } catch (err) {
+//     throw new ApiError(err?.statusCode || httpStatus.NOT_FOUND, err.message || 'Image not found');
+//   }
+// };
 
 const uploadPublicFileToBucket = async (req) => {
   const file = req.file;

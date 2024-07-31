@@ -114,7 +114,7 @@ module.exports = {
     apiVersion: envVars.CASHFREE_X_API_VERSION, // cashfree x-api-version
     payoutBaseUrl: envVars.CASHFREE_PAYOUT_API_BASE_URL, // cashfree x-api-version
     payoutGammaUrl: envVars.CASHFREE_PAYOUT_GAMMA_API_BASE_URL, // cashfree old api(gamma) base url
-    panVerificationUrl: envVars.CASHFREE_VERIFY_PAN_API_URL, // cashfree old api(gamma) base url
+    panVerificationUrl: envVars.CASHFREE_VERIFY_PAN_API_URL,
     payoutClientId: envVars.CASHFREE_PAYOUT_CLIENT_ID, // cashfree x-api-version
     payoutClientSecret: envVars.CASHFREE_PAYOUT_CLIENT_SECRET, // cashfree x-api-version
     payoutApiVersion: envVars.CASHFREE_PAYOUT_X_API_VERSION, // cashfree x-api-version

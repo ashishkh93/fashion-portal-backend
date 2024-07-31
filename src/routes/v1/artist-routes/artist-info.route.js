@@ -1,66 +1,48 @@
 const express = require('express');
-const multer = require('multer');
 const validate = require('../../../middlewares/validate');
-const { artistControllers, commonControllers } = require('../../../controllers');
+const { artistControllers } = require('../../../controllers');
 const { artistValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
-const fileUpload = require('../../../middlewares/multerUpload');
 
-const router = express.Router();
-
-const uploadImage = multer({ storage: fileUpload() });
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:artistId')
+  .route('/')
   .post(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     validate(artistValidation.addArtistInfo),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     transactionMiddleware,
     artistControllers.artistInfoController.addArtistInfo
   )
   .get(
-    auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
+    auth('manageArtistProfile'),
     validate(artistValidation.getArtistInfo),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     artistControllers.artistInfoController.getArtistInfo
   )
   .patch(
     auth(),
-    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     validate(artistValidation.editArtistInfo),
+    artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
     transactionMiddleware,
     artistControllers.artistInfoController.editArtistInfo
   );
 
 router.patch(
-  '/:artistId/update-upi',
+  '/update-upi',
   auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
   validate(artistValidation.editUpi),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
   artistControllers.artistInfoController.editUpi
-);
-
-router.post(
-  '/:artistId/upload-private-image',
-  auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  uploadImage.single('file'),
-  commonControllers.uploadController.uploadPrivateFile
-);
-
-router.get(
-  '/:artistId/get-private-image',
-  auth(),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  commonControllers.uploadController.getPrivateImage
 );
 
 // get artist status based on their added info
 router.get(
-  '/:artistId/get-status',
+  '/get-status',
+  auth(),
   validate(artistValidation.getArtistInfo),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
   artistControllers.artistInfoController.getArtistStatus

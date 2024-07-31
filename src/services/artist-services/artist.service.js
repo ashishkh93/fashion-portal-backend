@@ -119,7 +119,7 @@ const getArtistInfoService = async (artistId) => {
     },
   ];
 
-  const artistInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'bankAccountNumber', 'services'] };
+  const artistInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'services'] };
 
   const artist = await ArtistInfo.findOne({
     where: [artistCondoition],
@@ -209,8 +209,12 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
     // const upiCipher = encrypt(body.upi);
     const artist = await ArtistBankingInfo.findOne({ where: { artistId } });
 
-    const updateUpiBody = { upi: body.upi };
-    await artist.update(updateUpiBody);
+    if (artist) {
+      const updateUpiBody = { upi: body.upi };
+      await artist.update(updateUpiBody);
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, "You haven't added the banking info yet");
+    }
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, apiResult?.message || 'Invalid UPI');
   }
@@ -221,7 +225,27 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
  * @param {String} artistId
  */
 const getArtistStatusService = async (artistId) => {
-  const curArtist = await getArtistInfoService();
+  let curArtist = await ArtistInfo.findOne({
+    where: { artistId },
+    include: [
+      {
+        model: ArtistBankingInfo,
+        as: 'artistBankingInfo',
+        attributes: ['upi', 'bankName', 'pan', 'panImage'],
+      },
+    ],
+  });
+
+  let profileInfoAdded = false;
+  let bankInfoAdded = false;
+
+  if (curArtist) {
+    curArtist = getPlainData(curArtist);
+    profileInfoAdded = !!curArtist;
+    bankInfoAdded = !!curArtist.artistBankingInfo;
+  }
+
+  return { profileInfoAdded, bankInfoAdded };
 };
 
 module.exports = {

@@ -1,6 +1,7 @@
 const express = require('express');
 const authRoutes = require('./auth.route');
 const artistInfoRoutes = require('./artist-info.route');
+const uploadRoutes = require('./upload.route');
 const artRoutes = require('./art.route');
 const orderRoutes = require('./order.route');
 
@@ -12,15 +13,19 @@ const defaultUserRoutes = [
     route: authRoutes,
   },
   {
-    path: '/info',
+    path: '/:artistId/info',
     route: artistInfoRoutes,
   },
   {
-    path: '/art',
+    path: '/:artistId/upload',
+    route: uploadRoutes,
+  },
+  {
+    path: '/:artistId/art',
     route: artRoutes,
   },
   {
-    path: '/order',
+    path: '/:artistId/order',
     route: orderRoutes,
   },
 ];
