@@ -37,7 +37,7 @@ const pgWebhookTransaction = async (req, res) => {
     const createTransactionBody = {
       cfOrderId: actualOrderId,
       cfPaymentId: webhookReqBody.payment.cf_payment_id?.toString(),
-      userId: webhookReqBody.customer_details.customer_id,
+      customerId: webhookReqBody.customer_details.customer_id,
       paymentStatus: webhookReqBody.payment.payment_status,
       paymentAmount: webhookReqBody.payment.payment_amount,
       paymentCurrency: webhookReqBody.payment.payment_currency,

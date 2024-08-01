@@ -63,7 +63,6 @@ module.exports = (sequelize, DataTypes) => {
 
   RefundTransaction.associate = function (models) {
     RefundTransaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'orderTransactions' });
-    // Transaction.hasOne(models.Order, { foreignKey: 'transactionId' });
   };
 
   return RefundTransaction;

@@ -19,9 +19,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      userId: {
+      customerId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: {
+          model: 'User',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       },
       paymentStatus: {
         type: DataTypes.STRING,
@@ -75,7 +81,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Transaction.associate = function (models) {
     Transaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'orderTransactions' });
-    // Transaction.hasOne(models.Order, { foreignKey: 'transactionId' });
+    Transaction.belongsTo(models.CustomerInfo, { foreignKey: 'customerId', as: 'customer', targetKey: 'customerId' });
   };
 
   return Transaction;

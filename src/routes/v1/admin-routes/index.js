@@ -10,6 +10,7 @@ const payoutRoutes = require('./payout.route');
 const refundRoutes = require('./refund.route');
 const reviewRoutes = require('./review.route');
 const orderRoutes = require('./order.route');
+const transactionsRoutes = require('./transactions.route');
 
 const router = express.Router();
 
@@ -57,6 +58,10 @@ const defaultUserRoutes = [
   {
     path: '/:adminId/orders',
     route: orderRoutes,
+  },
+  {
+    path: '/:adminId/transactions',
+    route: transactionsRoutes,
   },
 ];
 

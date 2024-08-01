@@ -3,16 +3,16 @@ const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
 const { adminValidate } = require('../../../middlewares/userValidate');
 const validate = require('../../../middlewares/validate');
-const { artistValidation, orderValidation } = require('../../../validations');
+const { artistValidation, orderValidation, transactionsValidation } = require('../../../validations');
 
 const router = express.Router({ mergeParams: true });
 
 router.get(
-  '/',
+  '/customer/:customerId',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.getAllReviews),
-  superAdminControllers.orderController.getAllOrders
+  validate(transactionsValidation.getTransactionsForCustomersInAdmin),
+  superAdminControllers.transactionsController.getAllTransactionForCustomer
 );
 router.get(
   '/artist/:artistId',
@@ -20,22 +20,6 @@ router.get(
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artistValidation.getReviewsForSingleArtist),
   superAdminControllers.orderController.getAllOrdersForSingleArtist
-);
-router.get(
-  '/customer/:customerId',
-  auth(),
-  adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.getOrdersForSingleCustomer),
-  superAdminControllers.orderController.getAllOrdersForSingleCustomer
-);
-
-// Get single entity
-router.get(
-  '/:orderId',
-  auth(),
-  adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(orderValidation.getSingleOrderInAdmin),
-  superAdminControllers.orderController.getSingleOrderByOrderId
 );
 
 module.exports = router;

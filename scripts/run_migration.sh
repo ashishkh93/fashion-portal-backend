@@ -1,18 +1,20 @@
 #!/bin/bash
 
+# Check if the correct number of arguments is provided
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 <environment> <migration_name>"
+  exit 1
+fi
+
+# Get the arguments
+environment=$1
+migration_name=$2
+
 # Get the current directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Set the path to the configuration file
 CONFIG_FILE="$SCRIPT_DIR/../src/config/config.js"
-
-# Prompt for the NODE_ENV
-echo "Please enter the environment (e.g., development, production):"
-read environment
-
-# Prompt for the migration file name
-echo "Please enter the migration file name (e.g., 20240706053012-rename-category-table.js):"
-read migration_name
 
 # Check if the migration file exists
 MIGRATION_FILE="$SCRIPT_DIR/../src/migrations/$migration_name"

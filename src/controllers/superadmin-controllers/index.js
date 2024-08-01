@@ -8,3 +8,4 @@ module.exports.payoutController = require('./payout.controller');
 module.exports.refundController = require('./refund.controller');
 module.exports.reviewController = require('./review.controller');
 module.exports.orderController = require('./order.controller');
+module.exports.transactionsController = require('./transactions.controller');
