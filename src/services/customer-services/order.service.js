@@ -23,7 +23,7 @@ const { createRefunRequestForOrderService } = require('../superadmin-services/re
 const { getTransaction } = require('../../middlewares/asyncHooks');
 
 const getAverageRatingForArtistInOrderQuery = () => {
-  return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artist"."id")';
+  return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artistId")';
 };
 
 /**
@@ -86,7 +86,6 @@ const getOrderById = async (orderCondition) => {
           as: 'artist',
           attributes: ['id', 'phone'],
           required: true,
-          include: [],
         },
         {
           model: Review,
@@ -199,8 +198,8 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
  * @param {string} orderId
  * @returns {Promise<Order>}
  */
-const fetchOrderService = async (customerId, orderId) => {
-  const order = await getOrderById({ id: orderId, customerId });
+const fetchOrderService = async (orderId) => {
+  const order = await getOrderById({ id: orderId });
   return {
     ...order,
     createdAt: convertDateBasedOnTZ(order.createdAt),
@@ -222,6 +221,7 @@ const fetchOrdersService = async (customerId, page, size) => {
   const mainModelAttributes = [
     'id',
     'artistId',
+    'customerId',
     'orderIdentity',
     'status',
     'date',
@@ -240,7 +240,7 @@ const fetchOrdersService = async (customerId, page, size) => {
           model: Service,
           as: 'service',
           attributes: ['name'],
-          required: true,
+          required: false,
         },
       ],
       through: {
@@ -248,15 +248,15 @@ const fetchOrdersService = async (customerId, page, size) => {
       },
     },
     {
-      model: User,
-      as: 'artist',
-      attributes: [],
+      model: ArtistInfo,
+      as: 'orderArtist',
+      attributes: ['artistId', 'profilePic', 'fullName', 'location'],
       required: true,
       include: [
         {
-          model: ArtistInfo,
-          as: 'artistInfos',
-          attributes: ['fullName', 'location'],
+          model: User,
+          as: 'artist',
+          attributes: [],
           required: true,
         },
       ],

@@ -84,15 +84,15 @@ const getOrdersForArtist = {
 
 const getOrderForUser = {
   params: Joi.object().keys({
-    customerId: Joi.string().required(),
-    orderId: Joi.string().required(),
+    customerId: Joi.string().required().uuid(),
+    orderId: Joi.string().required().uuid(),
   }),
 };
 
 const cancelOrderByUser = {
   params: Joi.object().keys({
-    customerId: Joi.string().required(),
-    orderId: Joi.string().required(),
+    customerId: Joi.string().required().uuid(),
+    orderId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
     status: Joi.string().required().valid('CANCELLED_BY_CUSTOMER'),
@@ -153,7 +153,6 @@ const getSingleOrderInAdmin = {
     orderId: Joi.string().required().uuid(),
   }),
 };
-
 
 module.exports = {
   orderInitiate,

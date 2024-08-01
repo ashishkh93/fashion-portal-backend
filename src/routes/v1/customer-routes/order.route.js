@@ -6,37 +6,37 @@ const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-router.route('/:customerId/:artistId').post(
+router.route('/:artistId').post(
   auth(),
-  customerValidate((req) => req.params.customerId),
   validate(orderValidation.orderInitiate),
+  customerValidate((req) => req.params.customerId),
   transactionMiddleware,
   customerController.orderController.orderInitiate
 );
 
 router
-  .route('/:customerId/:orderId')
+  .route('/:orderId')
   .get(
     auth(),
-    customerValidate((req) => req.params.customerId),
     validate(orderValidation.getOrderForUser),
+    customerValidate((req) => req.params.customerId),
     customerController.orderController.fetchOrder
   )
   .patch(
     auth(),
-    customerValidate((req) => req.params.customerId),
     validate(orderValidation.cancelOrderByUser),
+    customerValidate((req) => req.params.customerId),
     transactionMiddleware,
     customerController.orderController.cancelOrderByUser
   );
 
 router.get(
-  '/:customerId',
+  '/',
   auth(),
-  customerValidate((req) => req.params.customerId),
   validate(orderValidation.getOrdersForUser),
+  customerValidate((req) => req.params.customerId),
   customerController.orderController.fetchOrders
 );
 

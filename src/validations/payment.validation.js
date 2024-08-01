@@ -2,11 +2,18 @@ const Joi = require('joi');
 
 const paymentInitate = {
   params: Joi.object().keys({
-    customerId: Joi.string().required().messages({ 'any.messge': 'Required' }),
+    customerId: Joi.string().required().uuid().messages({ 'any.messge': 'Required' }),
     orderId: Joi.string().required(),
   }),
   body: Joi.object().keys({
     isAdvance: Joi.boolean().required().messages({ 'any.required': 'isAdvance required' }),
+  }),
+};
+
+const getPaymentOrder = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required().messages({ 'any.messge': 'Required' }),
+    orderId: Joi.string().required(),
   }),
 };
 
@@ -29,4 +36,5 @@ module.exports = {
   paymentInitate,
   paymentVerify,
   getPayment,
+  getPaymentOrder,
 };

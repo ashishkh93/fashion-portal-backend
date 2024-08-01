@@ -5,10 +5,10 @@ const { paymentValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:customerId/:orderId')
+  .route('/:orderId')
   .post(
     auth(),
     customerValidate((req) => req.params.customerId),
@@ -18,12 +18,12 @@ router
   .get(
     auth(),
     customerValidate((req) => req.params.customerId),
-    validate(paymentValidation.paymentVerify),
+    validate(paymentValidation.getPaymentOrder),
     customerController.paymentController.getPaymentOrder
   );
 
 router.post(
-  '/verify/:customerId/:cfOrderId',
+  '/verify/:cfOrderId',
   auth(),
   customerValidate((req) => req.params.customerId),
   validate(paymentValidation.paymentVerify),
@@ -31,7 +31,7 @@ router.post(
 );
 
 router.get(
-  '/:customerId/:cfOrderId/:cfPaymentId',
+  '/:cfOrderId/:cfPaymentId',
   auth(),
   customerValidate((req) => req.params.customerId),
   validate(paymentValidation.getPayment),

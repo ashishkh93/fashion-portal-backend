@@ -15,27 +15,27 @@ const defaultUserRoutes = [
     route: authRoutes,
   },
   {
-    path: '/info',
+    path: '/:customerId/info',
     route: customerInfoRoutes,
   },
   {
-    path: '/order',
+    path: '/:customerId/order',
     route: orderRoutes,
   },
   {
-    path: '/payment',
+    path: '/:customerId/payment',
     route: paymentRoutes,
   },
   {
-    path: '/review',
+    path: '/:customerId/review',
     route: reviewRoutes,
   },
   {
-    path: '/get-artists',
+    path: '/:customerId/get-artists',
     route: getArtistsRoutes,
   },
   {
-    path: '/services',
+    path: '/:customerId/services',
     route: servicesRoutes,
   },
 ];

@@ -10,8 +10,8 @@ const createReviewForOrder = catchAsync(async (req, res) => {
 
 const updateReviewForOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
-  const reviewResponse = await customerServices.reviewService.updateReviewForOrderService(orderId, req.body);
-  res.status(httpStatus.OK).send({ status: true, message: 'Review updated!', entity: reviewResponse });
+  await customerServices.reviewService.updateReviewForOrderService(orderId, req.body);
+  res.status(httpStatus.OK).send({ status: true, message: 'Review updated!' });
 });
 
 const getOrderReview = catchAsync(async (req, res) => {

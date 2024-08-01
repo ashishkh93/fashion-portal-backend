@@ -5,21 +5,21 @@ const { customerValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.post(
-  '/:customerId',
+  '/',
   auth(),
-  customerValidate((req) => req.params.customerId),
   validate(customerValidation.getFilteredArtists),
+  customerValidate((req) => req.params.customerId),
   customerController.getArtistsController.getFilteredArtists
 );
 
 router.get(
-  '/:customerId/:artistId',
+  '/:artistId',
   auth(),
-  customerValidate((req) => req.params.customerId),
   validate(customerValidation.getSingleArtist),
+  customerValidate((req) => req.params.customerId),
   customerController.getArtistsController.getSingleArtist
 );
 

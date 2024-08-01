@@ -5,10 +5,10 @@ const { customerValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.get(
-  '/:customerId',
+  '/',
   auth(),
   customerValidate((req) => req.params.customerId),
   validate(customerValidation.getServices),

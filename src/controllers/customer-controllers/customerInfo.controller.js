@@ -17,7 +17,7 @@ const getCustomerInfo = catchAsync(async (req, res) => {
 const editCustomerInfo = catchAsync(async (req, res) => {
   const customerId = req.params.customerId;
   await customerServices.customerInfoService.editCustomerInfoService(customerId, req.body);
-  res.status(httpStatus.OK).send({ status: true, message: 'Successfully updated profile!', entity: req.body });
+  res.status(httpStatus.OK).send({ status: true, message: 'Profile updated!', entity: req.body });
 });
 
 module.exports = {

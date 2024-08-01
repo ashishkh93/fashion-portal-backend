@@ -36,9 +36,13 @@ const getCustomerInfoService = async (customerId) => {
     {
       model: CustomerInfo,
       as: 'customerInfo',
+      attributes: { exclude: ['id', 'customerId'] },
     },
   ];
-  const curCustomer = await User.findOne({ where: condition, include });
+
+  const attributes = ['id', 'role', 'phone', 'fcmToken', 'isActive'];
+
+  const curCustomer = await User.findOne({ where: condition, include, attributes });
   if (curCustomer) {
     if (curCustomer.isActive && curCustomer?.customerInfo?.status === 'APPROVED') {
       return curCustomer;

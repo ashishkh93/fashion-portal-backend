@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { ArtistInfo, User, Sequelize } = require('../../models');
+const { ArtistInfo, User, Service, Art, Sequelize } = require('../../models');
 const { getPagination, getPagingData } = require('../../utils/paginate');
 const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
 
@@ -109,6 +109,44 @@ module.exports = class GetFilteredArtists {
   //   }
   // }
 
+  // QUERY WITH EXTRA ATTRIBUTES ->
+  // const query = {
+  //     attributes: [
+  //       'artistId',
+  //       [Sequelize.literal('"ArtistInfo"."fullName"'), 'fullName'],
+  //       [Sequelize.literal('"artist"."role"'), 'role'],
+  //       [Sequelize.literal('"ArtistInfo"."location"'), 'location'],
+  //       [Sequelize.literal('"ArtistInfo"."city"'), 'city'],
+  //       [Sequelize.literal('"ArtistInfo"."state"'), 'state'],
+  //       [Sequelize.literal('"ArtistInfo"."country"'), 'country'],
+  //       [Sequelize.literal('"ArtistInfo"."latitude"'), 'latitude'],
+  //       [Sequelize.literal('"ArtistInfo"."longitude"'), 'longitude'],
+  //       [Sequelize.literal('"ArtistInfo"."status"'), 'status'],
+  //       [Sequelize.literal('"ArtistInfo"."services"'), 'services'],
+  //       [Sequelize.literal('"ArtistInfo"."createdAt"'), 'createdAt'],
+  //       [Sequelize.literal('"artist"."phone"'), 'phone'],
+  //       [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
+  //     ],
+  //     include: [
+  //       {
+  //         model: User,
+  //         attributes: [],
+  //         as: 'artist',
+  //         required: true,
+  //         duplicating: false,
+  //       },
+  //     ],
+  //     // where: Sequelize.and({ status: 'APPROVED' }, Sequelize.literal(locationFilter), Sequelize.literal(ratingFilter)),
+  //     where: {
+  //       status: 'APPROVED',
+  //       [Op.and]: [Sequelize.literal(locationFilter), Sequelize.literal(ratingFilter)],
+  //     },
+  //     order: [],
+  //     limit,
+  //     offset,
+  //     // raw: true,
+  //   };
+
   async get() {
     let { page, size, latitude: userLat, longitude: userLong, minRating, services, maxDistance } = this.details;
 
@@ -144,17 +182,17 @@ module.exports = class GetFilteredArtists {
     const query = {
       attributes: [
         'artistId',
-        [Sequelize.literal('"ArtistInfo"."fullName"'), 'fullName'],
-        [Sequelize.literal('"artist"."role"'), 'role'],
-        [Sequelize.literal('"ArtistInfo"."location"'), 'location'],
-        [Sequelize.literal('"ArtistInfo"."city"'), 'city'],
-        [Sequelize.literal('"ArtistInfo"."state"'), 'state'],
-        [Sequelize.literal('"ArtistInfo"."country"'), 'country'],
-        [Sequelize.literal('"ArtistInfo"."latitude"'), 'latitude'],
-        [Sequelize.literal('"ArtistInfo"."longitude"'), 'longitude'],
-        [Sequelize.literal('"ArtistInfo"."status"'), 'status'],
-        [Sequelize.literal('"ArtistInfo"."services"'), 'services'],
-        [Sequelize.literal('"ArtistInfo"."createdAt"'), 'createdAt'],
+        'businessName',
+        'fullName',
+        'location',
+        'city',
+        'state',
+        'country',
+        'latitude',
+        'longitude',
+        'longitude',
+        'status',
+        'createdAt',
         [Sequelize.literal('"artist"."phone"'), 'phone'],
         [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
       ],
@@ -166,6 +204,22 @@ module.exports = class GetFilteredArtists {
           required: true,
           duplicating: false,
         },
+        {
+          model: Service,
+          attributes: ['name'],
+          as: 'artistServices',
+          through: {
+            attributes: [],
+          },
+          required: true,
+        },
+        {
+          model: Art,
+          where: { status: 'APPROVED' }, // We only fetch the artists who actually have added their arts, in order to avoid confusion for customers
+          attributes: [],
+          as: 'arts',
+          required: true,
+        },
       ],
       // where: Sequelize.and({ status: 'APPROVED' }, Sequelize.literal(locationFilter), Sequelize.literal(ratingFilter)),
       where: {
@@ -175,7 +229,8 @@ module.exports = class GetFilteredArtists {
       order: [],
       limit,
       offset,
-      raw: true,
+      distinct: true,
+      // raw: true,
     };
 
     if (userLat && userLong) {

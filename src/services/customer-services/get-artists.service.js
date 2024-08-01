@@ -3,6 +3,7 @@ const ApiError = require('../../utils/ApiError');
 const GetFilteredArtists = require('./get-artists.query');
 const { ArtistInfo, User, Service, Art, CustomerInfo, Review, Sequelize } = require('../../models');
 const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
+const { required } = require('joi');
 
 /**
  * ************* VERY IMPORTANT API CONTROLLER *************
@@ -105,7 +106,17 @@ const getSingleArtistService = async (artistId) => {
       model: Art,
       where: { status: 'APPROVED' },
       as: 'arts',
-      attributes: ['name', 'description', 'images', 'price', 'advanceAmount', 'timeToCompleteInMinutes', 'renderIndex'],
+      attributes: [
+        'name',
+        'status',
+        'description',
+        'images',
+        'price',
+        'advanceAmount',
+        'timeToCompleteInMinutes',
+        'renderIndex',
+      ],
+      required: true,
       // order: [['renderIndex', 'ASC']],
     },
     {
@@ -148,6 +159,7 @@ const getSingleArtistService = async (artistId) => {
   };
 
   const artist = await ArtistInfo.findOne(artistQuery);
+  console.log(artist, 'artist==');
   if (artist) {
     return artist;
   } else {

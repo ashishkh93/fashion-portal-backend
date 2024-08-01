@@ -5,26 +5,26 @@ const { customerValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { customerValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:customerId')
+  .route('/')
   .post(
     auth(),
-    customerValidate((req) => req.params.customerId),
     validate(customerValidation.addCustomerInfo),
+    customerValidate((req) => req.params.customerId),
     customerController.customerInfoController.addCustomerInfo
   )
   .get(
     auth(),
-    customerValidate((req) => req.params.customerId),
     validate(customerValidation.getCustomerInfo),
+    customerValidate((req) => req.params.customerId),
     customerController.customerInfoController.getCustomerInfo
   )
   .patch(
     auth(),
-    customerValidate((req) => req.params.customerId),
     validate(customerValidation.editCustomerInfo),
+    customerValidate((req) => req.params.customerId),
     customerController.customerInfoController.editCustomerInfo
   );
 
