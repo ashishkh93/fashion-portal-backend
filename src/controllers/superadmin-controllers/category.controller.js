@@ -3,8 +3,7 @@ const catchAsync = require('../../utils/catchAsync');
 const { categoryService } = require('../../services/superadmin-services');
 
 const getAllCategories = catchAsync(async (req, res) => {
-  const { page, size, searchToken } = req.query;
-  const cats = await categoryService.getAllCategorieService(page, size, searchToken);
+  const cats = await categoryService.getAllCategorieService(req.query);
   res.status(httpStatus.OK).send({ status: true, message: 'Categories fetched successfully', entity: cats });
 });
 
@@ -25,6 +24,12 @@ const editCategory = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Category updated successfully', entity: req.body });
 });
 
+const updateCategoryStatus = catchAsync(async (req, res) => {
+  const catId = req.params.catId;
+  await categoryService.editCatService(req.body, catId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Category updated successfully', entity: req.body });
+});
+
 const deleteCategory = catchAsync(async (req, res) => {
   const catId = req.params.catId;
   await categoryService.deleteCatService(catId);
@@ -36,5 +41,6 @@ module.exports = {
   createCategory,
   getOneCategory,
   editCategory,
+  updateCategoryStatus,
   deleteCategory,
 };

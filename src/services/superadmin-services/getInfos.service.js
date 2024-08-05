@@ -32,28 +32,39 @@ const getArtistForAdmin = async (artistId) => {
 
 /**
  * Get all artists
- * @param {Number} page
- * @param {Number} size
- * @param {String} searchToken
+ * @param {Object} query
  * @returns {User}
  */
 
-const getAllArtistService = async (page, size, searchToken) => {
+const getAllArtistService = async (query) => {
+  let { page, size, searchToken, status } = query;
+
   const includeModel = [
     {
       model: ArtistInfo,
       as: 'artistInfos',
-      attributes: ['status', 'fullName', 'businessName', 'email', 'dob', 'gender', 'profilePic', 'workingTime', 'location'],
+      attributes: [
+        'status',
+        'fullName',
+        'businessName',
+        'email',
+        'dob',
+        'gender',
+        'profilePic',
+        'workingTime',
+        'location',
+        'pincode',
+      ],
     },
   ];
 
   let artistCondition = { role: 'artist' };
 
-  if (searchToken) {
-    searchToken = searchToken.trim();
+  if (searchToken || status) {
+    searchToken = searchToken && searchToken.trim();
     artistCondition = {
       ...artistCondition,
-      ...GET_ALL_ARTISTS_SEARCH_QUERY(searchToken),
+      ...GET_ALL_ARTISTS_SEARCH_QUERY(searchToken, status),
     };
   }
 
@@ -101,55 +112,28 @@ const getArtistInfoService = async (artistId) => {
   return {};
 };
 
-/**
- * Get all arts
- * @param {String} artistId
- * @param {Number} page
- * @param {Number} size
- * @param {String} searchToken
- * @param {String} sortKey
- * @returns {Promise<Art>}
- */
-const getAllArtsForAdminService = async (artistId, query) => {
-  let { page, size, searchToken, sortKey } = query;
-  const include = [
-    {
-      model: Service,
-      as: 'service',
-      attributes: ['name', 'isActive'],
-    },
-    {
-      model: Category,
-      as: 'category',
-      attributes: ['name', 'isActive'],
-    },
-  ];
-
-  let artCondition = { artistId };
-
-  if (searchToken) {
-    searchToken = searchToken.trim();
-    artCondition = {
-      ...artCondition,
-      ...GET_ALL_ARTS_SEARCH_QUERY(searchToken),
-    };
-  }
-
-  const { orderByKey, orderBy } = getPriceOrdeConfig(sortKey);
-
-  const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, include, {}, orderByKey, orderBy);
-  return allArts;
-};
+const artIncludes = [
+  {
+    model: Service,
+    as: 'service',
+    attributes: ['name', 'isActive'],
+  },
+  {
+    model: Category,
+    as: 'category',
+    attributes: ['name', 'isActive'],
+  },
+];
 
 /**
  * Get all customeres
- * @param {Number} page
- * @param {Number} size
- * @param {String} searchToken
+ * @param {Object} query
  * @returns {User}
  */
 
-const getAllCustomersService = async (page, size, searchToken) => {
+const getAllCustomersService = async (query) => {
+  let { page, size, searchToken, status } = query;
+
   const includeModel = [
     {
       model: CustomerInfo,
@@ -160,11 +144,11 @@ const getAllCustomersService = async (page, size, searchToken) => {
 
   let customerCondition = { role: 'customer' };
 
-  if (searchToken) {
-    searchToken = searchToken.trim();
+  if (searchToken || status) {
+    searchToken = searchToken && searchToken.trim();
     customerCondition = {
       ...customerCondition,
-      ...GET_ALL_CUSTOMERS_SEARCH_QUERY(searchToken),
+      ...GET_ALL_CUSTOMERS_SEARCH_QUERY(searchToken, status),
     };
   }
 
@@ -212,7 +196,7 @@ const updateArtistStatusService = async (body, artistId) => {
   if (currentArtist) {
     const artistUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
     const artistInfoUpdateBody = { status: body.status };
-    await User.update(artistUpdateBody, { where: { id: artistId }, transaction });
+    await currentArtist.update(artistUpdateBody, { transaction });
     await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
@@ -226,7 +210,7 @@ const updateArtistStatusService = async (body, artistId) => {
  * @param {String} artId
  * @returns {Promise}
  */
-const approveArtStatusService = async (body, artistId, artId) => {
+const updateArtStatusService = async (body, artistId, artId) => {
   const artist = await getArtistForAdmin(artistId);
 
   if (artist.dataValues.status === 'APPROVED') {
@@ -235,10 +219,9 @@ const approveArtStatusService = async (body, artistId, artId) => {
     if (singleArt) {
       const artUpdateBody = {
         ...body,
-        status: !!body.isActive ? 'APPROVED' : 'REJECTED',
-        reasonToDeclineArt: !!body.isActive ? null : body.reasonToDeclineArt,
+        reasonToDeclineArt: body.status === 'APPROVED' ? null : body.reasonToDeclineArt,
       };
-      await Art.update(artUpdateBody, { where: artCondition });
+      await singleArt.update(artUpdateBody);
     } else {
       throw new ApiError(httpStatus.NOT_FOUND, 'Art not found');
     }
@@ -343,16 +326,77 @@ const verifyPANService = async (artistId, pan) => {
   }
 };
 
+const getAllArts = async (query, condition, include) => {
+  let { page, size, searchToken, sortKey, status } = query;
+
+  let artCondition = { ...condition };
+  if (searchToken || status) {
+    searchToken = searchToken && searchToken.trim();
+    artCondition = {
+      ...artCondition,
+      ...GET_ALL_ARTS_SEARCH_QUERY(searchToken, status),
+    };
+  }
+
+  const { orderByKey, orderBy } = getPriceOrdeConfig(sortKey);
+
+  const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, include, {}, orderByKey, orderBy);
+  return allArts;
+};
+
+/**
+ * Get all arts
+ * @param {String} artistId
+ * @param {Number} page
+ * @param {Number} size
+ * @param {String} searchToken
+ * @param {String} sortKey
+ * @returns {Promise<Art>}
+ */
+const getAllArtsForSingleArtistInAdminService = async (artistId, query) => {
+  const include = [
+    ...artIncludes,
+    {
+      model: ArtistInfo,
+      as: 'artistArt',
+      attributes: ['fullName'],
+    },
+  ];
+
+  const allArtsForSingleArtist = await getAllArts(query, { artistId }, include);
+  return allArtsForSingleArtist;
+};
+
+/**
+ * Get all arts
+ * @param {Object} query
+ * @returns {User}
+ */
+const getAllArtsService = async (query) => {
+  const include = [
+    ...artIncludes,
+    {
+      model: ArtistInfo,
+      as: 'artistArt',
+      attributes: ['fullName', 'businessName'],
+    },
+  ];
+
+  const allArts = await getAllArts(query, {}, include);
+  return allArts;
+};
+
 module.exports = {
   getAllArtistService,
   getArtistInfoService,
-  getAllArtsForAdminService,
+  getAllArtsForSingleArtistInAdminService,
   updateArtistStatusService,
-  approveArtStatusService,
+  updateArtStatusService,
   updateLatLongService,
   verifyUPIService,
   verifyUpiCallback,
   verifyPANService,
   getAllCustomersService,
   getCustomerInfoService,
+  getAllArtsService,
 };

@@ -91,6 +91,13 @@ module.exports = (sequelize, DataTypes) => {
       as: 'payoutArtistInfo',
       targetKey: 'artistId',
     });
+    Transfer.hasMany(models.PayoutTransaction, {
+      foreignKey: 'payoutTransferId',
+      sourceKey: 'payoutTransferId',
+    });
+    // Transfer.belongsTo(models.PayoutTransaction, {
+    //   foreignKey: 'transactionId',
+    // });
   };
 
   return Transfer;

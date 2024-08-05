@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User, Transaction, CustomerInfo, ArtistInfo } = require('../../models');
+const { User, Transaction, CustomerInfo, Transfer, ArtistInfo, PayoutTransaction } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPlainData } = require('../../utils/common.util');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
@@ -14,7 +14,7 @@ const { includeModelForOrderFetch } = require('../artist-services/order.service'
  * @returns {Promise<Transaction>}
  */
 const getAllTransactionsForCustomerService = async (customerId, page, size) => {
-  const customer = await User.findByPk(customerId);
+  const customer = await User.findOne({ where: { id: customerId, role: 'customer' } });
 
   if (!customer) {
     throw new ApiError(
@@ -61,6 +61,46 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
   return allTxnForCustomer;
 };
 
+/**
+ * Get all transactions for artist
+ * @param {String} artistId
+ * @param {Number} page
+ * @param {Number} size
+ * @returns {Promise<Transaction>}
+ */
+const getAllTransactionsForArtistService = async (artistId, page, size) => {
+  const artist = await User.findOne({ where: { id: artistId, role: 'artist' } });
+
+  if (!artist) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Artist not exists in the system for whom you are trying to fetch transactions'
+    );
+  }
+
+  const include = [
+    {
+      model: Transfer,
+      as: 'payoutTransfer',
+      where: { artistId },
+      required: true,
+      attributes: ['payoutId', 'artistId', 'transactionId', 'transferAmount', 'createdAt'],
+      include: [
+        {
+          model: ArtistInfo,
+          as: 'payoutArtistInfo',
+          attributes: ['status', 'fullName', 'businessName', 'email', 'profilePic'],
+        },
+      ],
+    },
+  ];
+
+  const allTxnForArtist = await getPaginationDataFromModel(PayoutTransaction, {}, page, size, include);
+
+  return allTxnForArtist;
+};
+
 module.exports = {
   getAllTransactionsForCustomerService,
+  getAllTransactionsForArtistService,
 };

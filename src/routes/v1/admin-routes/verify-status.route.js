@@ -17,11 +17,11 @@ router.patch(
   superAdminControllers.verifyStatusController.changeArtistStatus
 );
 router.patch(
-  '/:artistId/:artId/approve-art',
+  '/:artistId/:artId/update-art-status',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artValidation.udpateArtStatus),
-  superAdminControllers.verifyStatusController.approveArt
+  validate(artValidation.updateArtStatus),
+  superAdminControllers.verifyStatusController.updateArtStatus
 );
 router.patch(
   '/:artistId/update-lat-long',

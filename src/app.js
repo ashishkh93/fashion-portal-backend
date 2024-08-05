@@ -43,11 +43,7 @@ app.use(xss());
 // gzip compression
 app.use(compression());
 
-// enable cors
-// app.use(cors({ origin: '*' }));
-// app.options('*', cors());
-
-// Define CORS options
+// enable cors options
 app.use(cors({ origin: '*' }));
 app.options('*', cors());
 
@@ -66,9 +62,6 @@ app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
 app.get('/', (req, res) => res.send('Welcome to the fashion portal APIs!'));
-
-// Apply transaction middleware to all routes
-// app.use(transactionMiddleware);
 
 // limit repeated failed requests to auth endpoints
 // if (config.env === 'production') {

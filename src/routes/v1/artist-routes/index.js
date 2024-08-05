@@ -4,6 +4,7 @@ const artistInfoRoutes = require('./artist-info.route');
 const uploadRoutes = require('./upload.route');
 const artRoutes = require('./art.route');
 const orderRoutes = require('./order.route');
+const vacationRoutes = require('./vacation.route');
 
 const router = express.Router();
 
@@ -27,6 +28,10 @@ const defaultUserRoutes = [
   {
     path: '/:artistId/order',
     route: orderRoutes,
+  },
+  {
+    path: '/:artistId/vacation',
+    route: vacationRoutes,
   },
 ];
 

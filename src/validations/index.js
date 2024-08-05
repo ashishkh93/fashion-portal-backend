@@ -9,3 +9,4 @@ module.exports.paymentValidation = require('./payment.validation');
 module.exports.beneficiaryValidation = require('./beneficiary.validation');
 module.exports.refundValidation = require('./refund.validation');
 module.exports.transactionsValidation = require('./transactions.validation');
+module.exports.vacationValidation = require('./vacation.validation');

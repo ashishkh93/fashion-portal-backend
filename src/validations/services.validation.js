@@ -33,20 +33,33 @@ const getCategories = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
-    searchToken: Joi.string().allow(''),
+    searchToken: Joi.string().allow('').allow(null),
+    isActive: Joi.bool().allow('').allow(null),
   }),
 };
 
 const getEditDeleteCategory = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    catId: Joi.string().required(),
+    adminId: Joi.string().required().uuid(),
+    catId: Joi.string().required().uuid(),
+  }),
+};
+
+const editCategory = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required().uuid(),
+    catId: Joi.string().required().uuid(),
+  }),
+  body: Joi.object().keys({
+    name: Joi.string(),
+    serviceId: Joi.string().uuid(),
   }),
 };
 
 const editCategoryStatus = {
   params: Joi.object().keys({
-    catId: Joi.string().required(),
+    adminId: Joi.string().required().uuid(),
+    catId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
     isActive: Joi.boolean().required(),
@@ -62,24 +75,27 @@ const editServiceStatus = {
   }),
 };
 
-const getArtists = {
-  query: Joi.object().keys({
-    page: Joi.number(),
-    size: Joi.number(),
-    searchToken: Joi.string().allow(''),
-  }),
+const artQueryParams = {
+  page: Joi.number(),
+  size: Joi.number(),
+  searchToken: Joi.string().allow(''),
+  sortKey: Joi.string().allow(''),
+  status: Joi.string()
+    .valid('PENDING', 'APPROVED', 'REJECTED')
+    .allow('')
+    .allow(null)
+    .messages({ 'any.only': 'Invalid stauts' }),
+};
+
+const getAllArtsArts = {
+  query: Joi.object().keys(artQueryParams),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
   }),
 };
 
-const getArts = {
-  query: Joi.object().keys({
-    page: Joi.number(),
-    size: Joi.number(),
-    searchToken: Joi.string().allow(''),
-    sortKey: Joi.string().allow(''),
-  }),
+const getArtsForSingleArtist = {
+  query: Joi.object().keys(artQueryParams),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
     artistId: Joi.string().required(),
@@ -115,10 +131,11 @@ module.exports = {
   addCategory,
   getCategories,
   editServiceStatus,
+  editCategory,
   editCategoryStatus,
   getAllService,
-  getArtists,
-  getArts,
+  getAllArtsArts,
+  getArtsForSingleArtist,
   getSingleArtist,
   getSingleArt,
   getSingleCustomer,

@@ -5,11 +5,11 @@ const advanceAmountPT = config.pt.advanceAmountPT;
 
 const addArt = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    artistId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
-    serviceId: Joi.string().required(),
-    categoryId: Joi.string().required(),
+    serviceId: Joi.string().required().uuid(),
+    categoryId: Joi.string().required().uuid(),
     name: Joi.string().required(),
     images: Joi.array().items(Joi.string().required()).min(1).required(),
     description: Joi.string().required(),
@@ -77,16 +77,16 @@ const getSingleArt = {
   }),
 };
 
-const udpateArtStatus = {
+const updateArtStatus = {
   params: Joi.object().keys({
     adminId: Joi.string().required(),
     artistId: Joi.string().required(),
     artId: Joi.string().required(),
   }),
   body: Joi.object().keys({
-    isActive: Joi.boolean().required(),
-    reasonToDeclineArt: Joi.string().when('isActive', {
-      is: false,
+    status: Joi.string().required().valid('APPROVED', 'REJECTED'),
+    reasonToDeclineArt: Joi.string().when('status', {
+      is: 'REJECTED',
       then: Joi.required(),
       otherwise: Joi.forbidden(),
     }),
@@ -108,5 +108,5 @@ module.exports = {
   editArt,
   getArts,
   getSingleArt,
-  udpateArtStatus,
+  updateArtStatus,
 };

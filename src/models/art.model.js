@@ -98,6 +98,7 @@ module.exports = (sequelize, DataTypes) => {
     Art.belongsTo(models.ArtistInfo, {
       foreignKey: 'artistId',
       targetKey: 'artistId',
+      as: 'artistArt'
     });
     Art.belongsTo(models.Service, {
       foreignKey: 'serviceId',

@@ -8,9 +8,9 @@ const changeArtistStatus = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Artist Status updated', entity: null });
 });
 
-const approveArt = catchAsync(async (req, res) => {
+const updateArtStatus = catchAsync(async (req, res) => {
   const { artistId, artId } = req.params;
-  await superAdminServices.infoService.approveArtStatusService(req.body, artistId, artId);
+  await superAdminServices.infoService.updateArtStatusService(req.body, artistId, artId);
   res.status(httpStatus.OK).send({ status: true, message: 'Art status updated', entity: null });
 });
 
@@ -36,7 +36,7 @@ const verifyPAN = catchAsync(async (req, res) => {
 });
 
 module.exports = {
-  approveArt,
+  updateArtStatus,
   changeArtistStatus,
   updateLatLong,
   verifyUPI,

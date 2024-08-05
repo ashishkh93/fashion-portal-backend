@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# COMMAND TO RUN THIS MIGRATION
+# npm run migrate -- development 20240706053012-rename-category-table.js
+
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <environment> <migration_name>"

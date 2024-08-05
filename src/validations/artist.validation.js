@@ -180,6 +180,54 @@ const getPrivateImage = {
   }),
 };
 
+const getArtists = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    status: Joi.string()
+      .valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED')
+      .allow('')
+      .allow(null)
+      .messages({ 'any.only': 'Invalid stauts' }),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+  }),
+};
+
+const getCustomers = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    status: Joi.string()
+      .valid('PENDING', 'APPROVED', 'BLOCKED')
+      .allow('')
+      .allow(null)
+      .messages({ 'any.only': 'Invalid stauts' }),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+  }),
+};
+
+const getArts = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    status: Joi.string()
+      .valid('PENDING', 'APPROVED', 'REJECTED')
+      .allow('')
+      .allow(null)
+      .messages({ 'any.only': 'Invalid stauts' }),
+  }),
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   addArtistInfo,
   getArtistInfo,
@@ -193,4 +241,7 @@ module.exports = {
   verifyPAN,
   uplodPrivateImage,
   getPrivateImage,
+  getArtists,
+  getCustomers,
+  getArts,
 };

@@ -63,7 +63,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  PayoutTransaction.associate = function (models) {};
+  PayoutTransaction.associate = function (models) {
+    PayoutTransaction.belongsTo(models.Transfer, {
+      foreignKey: 'payoutTransferId',
+      targetKey: 'payoutTransferId',
+      as: 'payoutTransfer',
+    });
+  };
 
   return PayoutTransaction;
 };

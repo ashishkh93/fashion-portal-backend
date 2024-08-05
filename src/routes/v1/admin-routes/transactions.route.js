@@ -3,7 +3,7 @@ const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
 const { adminValidate } = require('../../../middlewares/userValidate');
 const validate = require('../../../middlewares/validate');
-const { artistValidation, orderValidation, transactionsValidation } = require('../../../validations');
+const { transactionsValidation } = require('../../../validations');
 
 const router = express.Router({ mergeParams: true });
 
@@ -18,8 +18,8 @@ router.get(
   '/artist/:artistId',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.getReviewsForSingleArtist),
-  superAdminControllers.orderController.getAllOrdersForSingleArtist
+  validate(transactionsValidation.getTransactionsForArtistInAdmin),
+  superAdminControllers.transactionsController.getAllTransactionForArtist
 );
 
 module.exports = router;

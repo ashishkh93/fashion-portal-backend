@@ -30,7 +30,16 @@ const getArtist = async (artistId) => {
  * @returns {Art}
  */
 const addArtService = async (artistId, body) => {
-  // await getApprovedArtist(artistId);
+  const promises = [];
+  promises.push(Category.findOne({ where: { id: body.categoryId, isActive: true } }));
+  promises.push(Service.findOne({ where: { id: body.serviceId, isActive: true } }));
+
+  const catSer = await Promise.all(promises);
+
+  if (catSer.some((res) => !res)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category or Service is not valid, please provide valid one');
+  }
+
   const artBody = { ...body, artistId, status: 'PENDING', isActive: false };
   const art = await Art.create(artBody);
   return art;

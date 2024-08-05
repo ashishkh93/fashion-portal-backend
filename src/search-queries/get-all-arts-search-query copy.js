@@ -18,7 +18,7 @@ const getPriceOrdeConfig = (sortKey) => {
   };
 };
 
-const GET_ALL_ARTS_SEARCH_QUERY = (searchToken) => {
+const searchQueryForArts = (searchToken) => {
   return {
     [Op.or]: [
       {
@@ -41,8 +41,36 @@ const GET_ALL_ARTS_SEARCH_QUERY = (searchToken) => {
           [Op.iLike]: `%${searchToken}%`,
         },
       },
+      {
+        '$artistArt.fullName$': {
+          [Op.iLike]: `%${searchToken}%`,
+        },
+      },
+      {
+        '$artistArt.businessName$': {
+          [Op.iLike]: `%${searchToken}%`,
+        },
+      },
     ],
   };
+};
+
+const statusWiseQueryForArts = (status) => {
+  return {
+    status: {
+      [Op.eq]: status,
+    },
+  };
+};
+
+const GET_ALL_ARTS_SEARCH_QUERY = (searchToken, status) => {
+  if (searchToken && status) {
+    return { [Op.and]: [searchQueryForArts(searchToken), statusWiseQueryForArts(status)] };
+  } else if (searchToken) {
+    return searchQueryForArts(searchToken);
+  } else if (status) {
+    return statusWiseQueryForArts(status);
+  }
 };
 
 module.exports = { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig };

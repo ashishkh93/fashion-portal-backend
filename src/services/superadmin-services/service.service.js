@@ -24,7 +24,7 @@ const addService = async (body) => {
  * Get all services
  * @returns {Promise<Service>}
  */
-const getServices = async (body) => {
+const getServices = async () => {
   // To override the default scope to include excluded fields
   // Service.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } }).findAll();
   const allService = await Service.findAll();
@@ -45,7 +45,7 @@ const getServicesForCustomer = async () => {
 
 /**
  * Get Single services
- * @param {string} serviceId
+ * @param {String} serviceId
  * @returns {Promise<Service>}
  */
 const getSingleService = async (serviceId) => {
@@ -59,14 +59,14 @@ const getSingleService = async (serviceId) => {
 
 /**
  * Edit Service
- * @param {object} updateServiceBody
- * @param {string} serviceId
+ * @param {Object} updateServiceBody
+ * @param {String} serviceId
  * @returns {Promise}
  */
 const editService = async (updateServiceBody, serviceId) => {
   const currentService = await Service.findByPk(serviceId);
   if (currentService) {
-    await Service.update(updateServiceBody, { where: { id: serviceId } });
+    await currentService.update(updateServiceBody);
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
   }

@@ -32,7 +32,7 @@ router
   .patch(
     auth('manageServices'),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
-    validate(serviceValidation.getEditDeleteCategory),
+    validate(serviceValidation.editCategory),
     superAdminControllers.categoryController.editCategory
   )
   .delete(
@@ -41,5 +41,13 @@ router
     validate(serviceValidation.getEditDeleteCategory),
     superAdminControllers.categoryController.deleteCategory
   );
+
+router.patch(
+  '/:adminId/:catId/update-status',
+  auth('manageServices'),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(serviceValidation.editCategoryStatus),
+  superAdminControllers.categoryController.updateCategoryStatus
+);
 
 module.exports = router;

@@ -23,13 +23,15 @@ const addCategory = async (body) => {
 
 /**
  * Get all Categories
- * @param {Number} page
- * @param {Number} size
- * @param {String} searchToken
+ * @param {Number} query.page
+ * @param {Number} query.size
+ * @param {String} query.searchToken
  * @returns {Category}
  */
 
-const getAllCategorieService = async (page, size, searchToken) => {
+const getAllCategorieService = async (query) => {
+  let { page, size, searchToken, isActive } = query;
+
   let include = [
     {
       model: Service,
@@ -40,10 +42,12 @@ const getAllCategorieService = async (page, size, searchToken) => {
   ];
 
   let whereCondition = {};
-  if (searchToken) {
-    searchToken = searchToken.trim();
+  const isActiveCondition = isActive !== undefined && isActive !== null && isActive !== '';
+
+  if (searchToken || isActiveCondition) {
+    searchToken = searchToken && searchToken.trim();
     whereCondition = {
-      ...GET_ALL_CATS_SEARCH_QUERY(searchToken),
+      ...GET_ALL_CATS_SEARCH_QUERY(searchToken, isActive, isActiveCondition),
     };
   }
 
@@ -68,14 +72,14 @@ const getSingleCategory = async (catId) => {
 
 /**
  * Edit Category
- * @param {string} catId
- * @param {object} catBody
+ * @param {String} catId
+ * @param {Object} catBody
  * @returns {Category}
  */
 const editCatService = async (catBody, catId) => {
   const currentCat = await Category.findByPk(catId);
   if (currentCat) {
-    await Category.update(catBody, { where: { id: catId } });
+    await currentCat.update(catBody);
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
   }
@@ -89,7 +93,7 @@ const editCatService = async (catBody, catId) => {
 const deleteCatService = async (catId) => {
   const currentCat = await Category.findByPk(catId);
   if (currentCat) {
-    await Category.destroy({ where: { id: catId } });
+    await currentCat.destroy();
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found');
   }
