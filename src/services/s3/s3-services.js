@@ -93,7 +93,7 @@ const assumeRoleWithPolicy = async (userId, isAdmin) => {
   return cachedCredentials;
 };
 
-const uploadPrivateImage = async (file, userId, isAdmin) => {
+const uploadPrivateImage = async (file, userId, isAdmin, privateDocKey) => {
   const credentials = await assumeRoleWithPolicy(userId, isAdmin);
   const s3Client = new S3Client({
     region: region,
@@ -105,7 +105,7 @@ const uploadPrivateImage = async (file, userId, isAdmin) => {
   });
 
   const fileContent = fs.readFileSync(file.path);
-  const s3Key = `private/${userId}/${uuidv4()}_${file.originalname}`;
+  const s3Key = `private/${userId}/${privateDocKey}_${uuidv4()}_${file.originalname}`;
   const params = {
     Bucket: bucket,
     Key: s3Key,

@@ -5,11 +5,9 @@ const { generateOtp } = require('../../utils/common.util');
 
 const login = catchAsync(async (req, res) => {
   const { phone } = req.body;
-
-  const { otp, otpExpire } = await generateOtp();
   const isActive = req.role === 'artist' ? false : true;
 
-  const userBody = { phone, otp, otpExpire, role: req.role, isActive };
+  const userBody = { phone, role: req.role, isActive };
   const userId = await commonServices.userService.createUserPhoneAuth(userBody);
   res
     .status(httpStatus.CREATED)
@@ -18,7 +16,7 @@ const login = catchAsync(async (req, res) => {
 
 const verifyOtp = catchAsync(async (req, res) => {
   const role = req.role;
-  const tokens = await commonServices.userService.verifyArtistOtp(req.body, role);
+  const tokens = await commonServices.userService.verifyUserOtp(req.body, role, req.userId);
   res.status(httpStatus.CREATED).send({ status: true, message: 'Otp verified', entity: { ...tokens } });
 });
 
@@ -30,7 +28,9 @@ const updateFcmToken = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (req, res) => {
-  await commonServices.authService.logout(req.body.refreshToken);
+  const { userId } = req.params;
+  const { token } = req.body;
+  await commonServices.authService.logout(userId, token);
   res.status(httpStatus.NO_CONTENT).send();
 });
 

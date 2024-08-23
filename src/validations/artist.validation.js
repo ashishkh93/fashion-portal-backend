@@ -1,10 +1,17 @@
 const Joi = require('joi');
 
 // Define the UPI regex pattern
-const upiRegex = /^[\w.-]+@[\w.-]+$/;
+// const upiRegex = /^[\w.-]+@[\w.-]+$/;
+// const upiRegex = /^[a-zA-Z0-9.-]{2,256}@[a-zA-Z.-]{2,64}$/;
+const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z]{2,64}$/;
 const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-// const upiRegex = /^[a-zA-Z0-9.-]{2,256}@[a-zA-Z.-]{2,64}$/;
+const upiValidationWithJoi = () => {
+  return Joi.string().pattern(upiRegex).required().messages({
+    'string.empty': 'UPI is required',
+    'string.pattern.base': 'UPI is invalid, please enter a valid UPI',
+  });
+};
 
 const addArtistInfo = {
   params: Joi.object().keys({
@@ -13,26 +20,7 @@ const addArtistInfo = {
   body: Joi.object().keys({
     fullName: Joi.string().required(),
     businessName: Joi.string(),
-    bankName: Joi.string().required(),
-    upi: Joi.string().pattern(upiRegex).required().messages({
-      'string.empty': 'UPI is required',
-      'string.pattern.base': 'UPI is invalid, please enter a valid UPI',
-    }),
-    pan: Joi.string().pattern(panRegex).required().messages({
-      'string.empty': 'PAN number is required',
-      'string.pattern.base': 'PAN number is invalid, please enter a valid PAN number',
-    }),
-    panImage: Joi.string().required(),
-    // bankAccountHolderName: Joi.string().required(),
-    // bankAccountNumber: Joi.string().required(),
-    // bankIfscCode: Joi.string().required(),
-    // cancelChequeImage: Joi.string().required(),
-    // aadharCardNumber: Joi.string() // aadhar card number validation pattern
-    //   .length(12)
-    //   .pattern(/^[0-9]+$/)
-    //   .required(),
-    // aadharCardFrontImage: Joi.string().required(),
-    // aadharCardBackImage: Joi.string().required(),
+    // upi: upiValidationWithJoi(),
     email: Joi.string().email().required(),
     dob: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
@@ -56,7 +44,7 @@ const addArtistInfo = {
 
 const editArtistInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required(),
+    artistId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
     fullName: Joi.string(),
@@ -81,18 +69,6 @@ const editArtistInfo = {
   }),
 };
 
-const editUpi = {
-  params: Joi.object().keys({
-    artistId: Joi.string().required(),
-  }),
-  body: Joi.object().keys({
-    upi: Joi.string().pattern(upiRegex).required().messages({
-      'string.empty': 'UPI is required',
-      'string.pattern.base': 'UPI is invalid, please enter a valid UPI',
-    }),
-  }),
-};
-
 const getArtistInfo = {
   params: Joi.object().keys({
     artistId: Joi.string().required().uuid(),
@@ -107,26 +83,6 @@ const updateLatLong = {
   body: Joi.object().keys({
     latitude: Joi.number().required(),
     longitude: Joi.number().required(),
-  }),
-};
-
-const verifyUpi = {
-  params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
-  }),
-};
-
-const verifyPAN = {
-  params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
-  }),
-  body: Joi.object().keys({
-    pan: Joi.string().pattern(panRegex).required().messages({
-      'string.empty': 'PAN number is required',
-      'string.pattern.base': 'PAN number is invalid, please provide valid PAN number',
-    }),
   }),
 };
 
@@ -167,7 +123,7 @@ const uplodPrivateImage = {
     artistId: Joi.string().required().uuid(),
   }),
   // body: Joi.object().keys({
-  //   file: Joi.binary().required(),
+  //   privateDocKey: Joi.string().required(),
   // }),
 };
 
@@ -189,7 +145,7 @@ const getArtists = {
       .valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED')
       .allow('')
       .allow(null)
-      .messages({ 'any.only': 'Invalid stauts' }),
+      .messages({ 'any.only': 'Invalid status' }),
   }),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
@@ -232,13 +188,10 @@ module.exports = {
   addArtistInfo,
   getArtistInfo,
   editArtistInfo,
-  editUpi,
   updateLatLong,
-  verifyUpi,
   getReviewsForSingleArtist,
   getAllReviews,
   getOrdersForSingleCustomer,
-  verifyPAN,
   uplodPrivateImage,
   getPrivateImage,
   getArtists,

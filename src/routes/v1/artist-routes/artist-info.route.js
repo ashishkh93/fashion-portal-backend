@@ -31,14 +31,6 @@ router
     artistControllers.artistInfoController.editArtistInfo
   );
 
-router.patch(
-  '/update-upi',
-  auth(),
-  validate(artistValidation.editUpi),
-  artistValidate((req) => ({ artistId: req.params.artistId, route: 'artistInfo' })),
-  artistControllers.artistInfoController.editUpi
-);
-
 // get artist status based on their added info
 router.get(
   '/get-status',

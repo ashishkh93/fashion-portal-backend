@@ -28,4 +28,12 @@ router
     customerController.customerInfoController.editCustomerInfo
   );
 
+router.get(
+  '/get-profile-status',
+  auth(),
+  validate(customerValidation.getCustomerInfo),
+  customerValidate((req) => req.params.customerId),
+  customerController.customerInfoController.getCustomerProfileStatus
+);
+
 module.exports = router;

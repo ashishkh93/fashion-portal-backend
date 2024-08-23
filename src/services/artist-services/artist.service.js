@@ -1,10 +1,10 @@
 const httpStatus = require('http-status');
-const { User, ArtistInfo, ArtistBankingInfo, ArtistInfoService, Service } = require('../../models');
+const { User, ArtistInfo, ArtistVacation, ArtistBankingInfo, ArtistInfoService, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { Op } = require('sequelize');
 const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
-const { getPlainData } = require('../../utils/common.util');
+const { getPlainData, getUniqueTempId } = require('../../utils/common.util');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -37,19 +37,20 @@ const getApprovedArtist = async (artistId) => {
         model: ArtistInfo,
         as: 'artistInfos',
         where: { status: 'APPROVED' },
+        attributes: ['artistId', 'status'],
+        required: true,
         include: [
           {
-            model: ArtistBankingInfo,
-            as: 'artistBankingInfo',
-            attributes: ['beneficiaryId', 'upi', 'pan'],
-            where: { upi: { [Op.ne]: null } },
+            model: ArtistVacation,
+            as: 'vacations',
+            attributes: ['startDate', 'endDate'],
           },
         ],
       },
     ],
   });
   if (artist) {
-    return artist;
+    return getPlainData(artist);
   } else {
     throw new ApiError(httpStatus.NOT_FOUND, 'Artist is not approved yet');
   }
@@ -69,19 +70,8 @@ const addArtistInfoService = async (artistId, body) => {
     // safe side checking and giving the response based on the artist status
     await checkArtistStatus(artist, 'add');
   } else {
-    // const upiCipher = encrypt(body.upi);
-    const artistBankingBody = {
-      artistId,
-      bankName: body.bankName,
-      upi: body.upi,
-      pan: body.pan,
-      panImage: body.panImage,
-    };
-
     const artistInfoEntry = { ...body, artistId, status: 'PENDING' };
-
     let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry, { transaction });
-    await ArtistBankingInfo.create(artistBankingBody, { transaction });
 
     const artistInfoServiceEntries = body?.services?.map((serviceId) => ({
       artistInfoId: tmpArtistInfo.dataValues.id,
@@ -97,6 +87,22 @@ const addArtistInfoService = async (artistId, body) => {
 };
 
 /**
+ * Add artist banking info
+ * @param {String} artistId
+ * @param {Object} body
+ */
+const addArtistBankingInfoService = async (artistId, body) => {
+  const artistBanking = await ArtistBankingInfo.findOne({ where: { artistId } });
+  if (artistBanking) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Banking informations already added');
+  } else {
+    const bankingBody = { ...body, artistId };
+    await ArtistBankingInfo.create(bankingBody);
+    return body;
+  }
+};
+
+/**
  * Get artist info
  * @param {string} artistId
  * @returns {Promise<ArtistInfo>}
@@ -107,7 +113,7 @@ const getArtistInfoService = async (artistId) => {
     {
       model: ArtistBankingInfo,
       as: 'artistBankingInfo',
-      attributes: ['beneficiaryId', 'upi', 'bankName', 'pan', 'panImage'],
+      attributes: ['beneficiaryId', 'upi'],
     },
     {
       model: Service,
@@ -203,20 +209,23 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
    * consider to send & verify otp before update
    */
 
-  const apiResult = await verifyUpiCallback(body.upi);
+  // const apiResult = await verifyUpiCallback(body.upi);
+  
+  const verificationId = getUniqueTempId(artistId);
+  const apiResult = await verifyUpiCallback(body.upi, null, verificationId);
 
-  if (apiResult?.status === 'SUCCESS' && apiResult?.data?.accountExists === 'YES') {
-    // const upiCipher = encrypt(body.upi);
+  if (apiResult.status === 'VALID') {
     const artist = await ArtistBankingInfo.findOne({ where: { artistId } });
 
     if (artist) {
       const updateUpiBody = { upi: body.upi };
       await artist.update(updateUpiBody);
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, "You haven't added the banking info yet");
+      throw new ApiError(httpStatus.BAD_REQUEST, "You haven't provided the banking info yet");
     }
   } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, apiResult?.message || 'Invalid UPI');
+    logger.error('Invalid UPI: ' + JSON.stringify(apiResult));
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UPI');
   }
 };
 
@@ -231,7 +240,7 @@ const getArtistStatusService = async (artistId) => {
       {
         model: ArtistBankingInfo,
         as: 'artistBankingInfo',
-        attributes: ['upi', 'bankName', 'pan', 'panImage'],
+        attributes: ['upi'],
       },
     ],
   });
@@ -250,6 +259,7 @@ const getArtistStatusService = async (artistId) => {
 
 module.exports = {
   addArtistInfoService,
+  addArtistBankingInfoService,
   getArtistInfoService,
   editArtistInfoService,
   getApprovedArtist,

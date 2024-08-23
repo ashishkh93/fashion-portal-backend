@@ -5,6 +5,8 @@ const uploadRoutes = require('./upload.route');
 const artRoutes = require('./art.route');
 const orderRoutes = require('./order.route');
 const vacationRoutes = require('./vacation.route');
+const verificationRoutes = require('./verification.route');
+const bankingRoutes = require('./banking.route');
 
 const router = express.Router();
 
@@ -32,6 +34,14 @@ const defaultUserRoutes = [
   {
     path: '/:artistId/vacation',
     route: vacationRoutes,
+  },
+  {
+    path: '/:artistId/verification',
+    route: verificationRoutes,
+  },
+  {
+    path: '/:artistId/banking',
+    route: bankingRoutes,
   },
 ];
 

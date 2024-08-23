@@ -14,6 +14,12 @@ const getCustomerInfo = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Profile fetched successfully', entity: customerInfo });
 });
 
+const getCustomerProfileStatus = catchAsync(async (req, res) => {
+  const customerId = req.params.customerId;
+  const profileStatus = await customerServices.customerInfoService.getCustomerProfileStatusService(customerId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Profile status fetched', entity: profileStatus });
+});
+
 const editCustomerInfo = catchAsync(async (req, res) => {
   const customerId = req.params.customerId;
   await customerServices.customerInfoService.editCustomerInfoService(customerId, req.body);
@@ -23,5 +29,6 @@ const editCustomerInfo = catchAsync(async (req, res) => {
 module.exports = {
   addCustomerInfo,
   getCustomerInfo,
+  getCustomerProfileStatus,
   editCustomerInfo,
 };

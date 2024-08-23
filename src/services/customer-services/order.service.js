@@ -17,7 +17,7 @@ const { getApprovedArtist } = require('../artist-services/artist.service');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
-const { checkIsRefundEligible, getPlainData, getOrderIdentity } = require('../../utils/common.util');
+const { checkIsRefundEligible, getPlainData, getOrderIdentity, artistIsOnVacation } = require('../../utils/common.util');
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
@@ -120,9 +120,14 @@ const getOrderById = async (orderCondition) => {
 const orderInitiateService = async (customerId, artistId, body, customer) => {
   const transaction = getTransaction();
   const artist = await getApprovedArtist(artistId);
+  const vacations = artist.artistInfos.vacations;
+
+  const artistIsonVacation = vacations?.length && artistIsOnVacation(body.date, vacations);
 
   if (artist.phone === customer.phone) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'You cannot create an order for your self');
+  } else if (artistIsonVacation) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'The artist is on vacation on the selected booking date');
   } else {
     const existOrder = await Order.findOne({ where: { customerId, artistId, status: 'PENDING' } });
     if (existOrder) {
@@ -305,7 +310,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
 
     throw new ApiError(httpStatus.FORBIDDEN, msg);
   } else if (order.status === 'COMPLETED') {
-    throw new ApiError(httpStatus.FORBIDDEN, 'You cannot cancel this order, it is already completed');
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can not cancel this order, it is already completed');
   } else if (userCanCancleOrder) {
     const cancelOrderBody = {
       status: body.status,

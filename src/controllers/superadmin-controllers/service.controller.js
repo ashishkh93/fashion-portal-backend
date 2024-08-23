@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { mainArtService } = require('../../services/superadmin-services');
-const { uploadPrivateImage, getPrivateImageUrl } = require('../../services/s3/s3-services');
 
 const createService = catchAsync(async (req, res) => {
   const addedService = await mainArtService.addService(req.body);

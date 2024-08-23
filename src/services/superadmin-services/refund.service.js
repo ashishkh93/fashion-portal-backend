@@ -54,7 +54,7 @@ const getRefunRequestsService = async (page, size) => {
     {
       model: User,
       as: 'customerData',
-      attributes: { exclude: ['otp', 'otpExpire', 'reasonToDecline', 'createdAt', 'updatedAt'] },
+      attributes: { exclude: ['reasonToDecline', 'createdAt', 'updatedAt'] },
       include: [
         {
           model: CustomerInfo,
@@ -120,7 +120,7 @@ const initiateRefundService = async (orderId, customerId) => {
     let curRefundRequest = await RefundRequest.findOne({ where: { orderId, customerId, status: 'PENDING' } });
     if (curRefundRequest) {
       curRefundRequest = getPlainData(curRefundRequest);
-      
+
       const parsedArtistId = curRefundRequest.orderId.split('-')[0];
       const curDateTime = moment().format('DD_MM_YYYY_HH_mm_ss');
 

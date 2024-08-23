@@ -35,13 +35,13 @@ const artistValidate = (getUserId) => async (req, _res, next) => {
 
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
-    if (route !== 'artistInfo') {
+    if (route !== 'artistInfo' && route !== 'verification') {
       if (artist.status === 'PENDING') {
         throw new ApiError(httpStatus.FORBIDDEN, 'You have not been approved yet by the admin');
       } else if (artist.status === 'BLOCKED' || artist.status === 'SUSPENDED' || artist.status === 'REJECTED') {
         throw new ApiError(
           httpStatus.FORBIDDEN,
-          `Your account has been ${artist.status}. Please contact admin ASAP`,
+          `Your account has been ${artist.status}. you can't access any resource now, Please contact admin to recover your account ASAP`,
           artist.status
         );
       }
@@ -58,6 +58,7 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
   try {
     const userId = getUserId(req);
     const activeUser = req.user;
+
     if (!activeUser) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
     } else if (!activeUser?.isActive) {
@@ -84,6 +85,8 @@ const userValidateWhileVerifyOTP = (getUserId) => async (req, _res, next) => {
     } else if (user.phone !== phone) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
     }
+    
+    req.userId = userId;
     next();
   } catch (error) {
     next(error);

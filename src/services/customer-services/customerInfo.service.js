@@ -58,9 +58,19 @@ const getCustomerInfoService = async (customerId) => {
 };
 
 /**
+ * Get customer profile status, if he/she added the profile info or not
+ * @param {String} customerId
+ */
+const getCustomerProfileStatusService = async (customerId) => {
+  const customerInfo = await CustomerInfo.findOne({ where: { customerId } });
+  const infoAdded = !!customerInfo;
+  return { infoAdded };
+};
+
+/**
  * Edit customer info
- * @param {string} customerId
- * @param {object} body
+ * @param {String} customerId
+ * @param {Object} body
  * @returns {Promise}
  */
 const editCustomerInfoService = async (customerId, body) => {
@@ -75,5 +85,6 @@ const editCustomerInfoService = async (customerId, body) => {
 module.exports = {
   addCustomerInfoService,
   editCustomerInfoService,
+  getCustomerProfileStatusService,
   getCustomerInfoService,
 };

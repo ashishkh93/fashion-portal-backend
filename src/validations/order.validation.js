@@ -95,7 +95,7 @@ const cancelOrderByUser = {
     orderId: Joi.string().required().uuid(),
   }),
   body: Joi.object().keys({
-    status: Joi.string().required().valid('CANCELLED_BY_CUSTOMER'),
+    status: Joi.string().required().valid('CANCELLED_BY_CUSTOMER').messages({ 'any.only': 'Invalid status' }),
     cancelReason: Joi.string().required(),
   }),
 };

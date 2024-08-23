@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const { password } = require('./custom.validation');
+const { validateUUID } = require('./common.validation');
 
 const register = {
   body: Joi.object().keys({
@@ -27,7 +28,7 @@ const login = {
 const phoneVerify = {
   body: Joi.object().keys({
     phone: Joi.string().alphanum().max(10).min(10),
-    otp: Joi.number().required(),
+    otp: Joi.string().required().length(6),
   }),
 };
 
@@ -37,7 +38,7 @@ const artistPhoneVerify = {
   }),
   body: Joi.object().keys({
     phone: Joi.string().alphanum().max(10).min(10),
-    otp: Joi.number().required(),
+    otp: Joi.string().required().length(6),
   }),
 };
 
@@ -48,8 +49,11 @@ const phoneLogin = {
 };
 
 const logout = {
+  params: Joi.object().keys({
+    userId: validateUUID(),
+  }),
   body: Joi.object().keys({
-    refreshToken: Joi.string().required(),
+    token: Joi.string().required(),
   }),
 };
 

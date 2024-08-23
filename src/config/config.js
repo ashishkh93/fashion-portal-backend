@@ -115,6 +115,7 @@ module.exports = {
     payoutBaseUrl: envVars.CASHFREE_PAYOUT_API_BASE_URL, // cashfree x-api-version
     payoutGammaUrl: envVars.CASHFREE_PAYOUT_GAMMA_API_BASE_URL, // cashfree old api(gamma) base url
     panVerificationUrl: envVars.CASHFREE_VERIFY_PAN_API_URL,
+    upiVerificationUrl: 'https://sandbox.cashfree.com/verification/upi',
     payoutClientId: envVars.CASHFREE_PAYOUT_CLIENT_ID, // cashfree x-api-version
     payoutClientSecret: envVars.CASHFREE_PAYOUT_CLIENT_SECRET, // cashfree x-api-version
     payoutApiVersion: envVars.CASHFREE_PAYOUT_X_API_VERSION, // cashfree x-api-version
@@ -185,5 +186,8 @@ module.exports = {
     },
   },
 
-  // connectDbBackgroundUrl: envVars.DB_CONNECT_APP_URL,
+  /** Upi verification api rate limit number */
+  upiVerificationLimit: 2,
+  maxBankingOTPAttempts: 3,
+  upiVerificationTimeLimit: 10, // in minutes
 };

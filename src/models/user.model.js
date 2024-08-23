@@ -22,17 +22,13 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         unique: true,
       },
-      otp: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      otpExpire: {
-        type: DataTypes.BIGINT,
-        allowNull: true,
-      },
       isActive: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
+      },
+      tokenVersion: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
       reasonToDecline: {
         type: DataTypes.TEXT,

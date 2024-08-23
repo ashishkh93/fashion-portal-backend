@@ -8,6 +8,7 @@ const {
   getCFAuthToken,
   verifyPANCallback,
   getAuthenticationTokenAPICallback,
+  verifyUPICallbackV2,
 } = require('../../utils/cashfree-payout-api.util');
 const { getPlainData } = require('../../utils/common.util');
 const { getTransaction } = require('../../middlewares/asyncHooks');
@@ -15,6 +16,7 @@ const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-a
 const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-queries/get-all-arts-search-query copy');
 const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all-customers-search-query');
 const { getSignature } = require('../../utils/cashfree.util');
+const logger = require('../../config/logger');
 
 /**
  * Get artist information for admin to check artist's status
@@ -68,7 +70,7 @@ const getAllArtistService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['fcmToken', 'otp', 'otpExpire', 'deletedAt'] };
+  const userAttributes = { exclude: ['fcmToken', 'deletedAt'] };
 
   const allArtists = await getPaginationDataFromModel(User, artistCondition, page, size, includeModel, userAttributes);
 
@@ -86,7 +88,7 @@ const getArtistInfoService = async (artistId) => {
     {
       model: ArtistBankingInfo,
       as: 'artistBankingInfo',
-      attributes: ['beneficiaryId', 'upi', 'bankName', 'pan', 'panImage'],
+      attributes: ['beneficiaryId', 'upi'],
     },
     {
       model: Service,
@@ -152,7 +154,7 @@ const getAllCustomersService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['role', 'fcmToken', 'otp', 'otpExpire', 'deletedAt'] };
+  const userAttributes = { exclude: ['role', 'fcmToken', 'deletedAt'] };
 
   const allCustomers = await getPaginationDataFromModel(User, customerCondition, page, size, includeModel, userAttributes);
 
@@ -247,9 +249,16 @@ const updateLatLongService = async (body, artistId) => {
  * @param {String} upi
  * @returns
  */
-const verifyUpiCallback = async (upi) => {
-  const token = await getCFAuthToken();
-  const validateUpiResult = await verifyUPICallback(token, upi);
+//  ------------ OLD WITH GAMA URL ------------
+// const verifyUpiCallback = async (upi) => {
+//   const token = await getCFAuthToken();
+//   const validateUpiResult = await verifyUPICallback(token, upi);
+//   return validateUpiResult;
+// };
+
+//  ------------ NEW URL V2 ------------
+const verifyUpiCallback = async (upi, name, verificationId) => {
+  const validateUpiResult = await verifyUPICallbackV2(upi, name, verificationId);
   return validateUpiResult;
 };
 
@@ -262,7 +271,7 @@ const verifyUPIService = async (artistId) => {
   try {
     let artist = await ArtistInfo.findOne({
       where: { artistId },
-      attributes: [],
+      attributes: ['fullName'],
       include: [
         {
           model: ArtistBankingInfo,
@@ -276,12 +285,25 @@ const verifyUPIService = async (artistId) => {
     if (artist) {
       artist = getPlainData(artist);
       const {
+        fullName,
         artistBankingInfo: { upi },
       } = artist;
 
-      const apiResult = await verifyUpiCallback(upi);
-      return apiResult;
+      const parseArtistId = artistId.split('-')[0];
+      const curDate = Date.now();
+      const verificationId = parseArtistId + '_' + curDate;
+
+      const apiResult = await verifyUpiCallback(upi, fullName, verificationId);
+
+      if (apiResult.status === 'VALID') {
+        return apiResult;
+      } else {
+        logger.error('Invalid UPI: ' + JSON.stringify(apiResult));
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UPI');
+      }
     } else {
+      console.log(apiResult, 'apiResult==');
+
       throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
     }
   } catch (error) {

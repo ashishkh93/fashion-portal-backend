@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { v4: uuid } = require('uuid');
 const config = require('../config/config');
 const ApiError = require('./ApiError');
 const logger = require('../config/logger');
@@ -13,6 +14,7 @@ const payoutClientSecret = config.cashfree.payoutClientSecret;
 const payoutApiVersion = config.cashfree.payoutApiVersion;
 
 const payoutGammaUrl = config.cashfree.payoutGammaUrl;
+const upiVerificationUrl = config.cashfree.upiVerificationUrl;
 
 const getCFAuthToken = async () => {
   const cfSignature = getSignature(payoutClientId);
@@ -106,6 +108,46 @@ const verifyUPICallback = async (token, upi) => {
   }
 };
 
+const verifyUPICallbackV2 = async (upi, name, verificationId) => {
+  try {
+    const signature = getSignature(payoutClientId);
+
+    let upiVerifyBody = {
+      verification_id: verificationId,
+      vpa: upi,
+    };
+
+    if (name) {
+      upiVerifyBody.name = name;
+    }
+
+    const options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'x-cf-signature': signature,
+        'content-type': 'application/json',
+        'x-client-id': payoutClientId,
+        'x-client-secret': payoutClientSecret,
+      },
+      body: JSON.stringify(upiVerifyBody),
+    };
+
+    const upiVerifyResponse = await fetch(upiVerificationUrl, options);
+    const result = await upiVerifyResponse.json();
+
+    if (upiVerifyResponse.status === 200) {
+      return result;
+    } else {
+      logger.error('upi validation failed due to: ', result?.message);
+      throw new ApiError(result?.status || upiVerifyResponse.status, result?.message || 'Internal server error');
+    }
+  } catch (error) {
+    logger.error('upi validation failed due to: ' + error.message);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  }
+};
+
 const verifyPANCallback = async (pan) => {
   try {
     const signature = getSignature(payoutClientId);
@@ -146,5 +188,6 @@ module.exports = {
   payoutAPICallback,
   getAuthenticationTokenAPICallback,
   verifyUPICallback,
+  verifyUPICallbackV2,
   verifyPANCallback,
 };

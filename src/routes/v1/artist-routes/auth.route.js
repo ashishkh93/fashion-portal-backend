@@ -4,6 +4,7 @@ const authValidation = require('../../../validations/auth.validation');
 const { commonControllers } = require('../../../controllers');
 const addRoleToLoginRoute = require('../../../middlewares/addRole');
 const { userValidateWhileVerifyOTP } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.post(
   '/login',
   validate(authValidation.phoneLogin),
   addRoleToLoginRoute('artist'),
+  transactionMiddleware,
   commonControllers.authController.login
 );
 router.post(

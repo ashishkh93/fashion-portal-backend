@@ -4,10 +4,12 @@ const { uploadPrivateImage, getPrivateImageUrl } = require('../../services/s3/s3
 
 const uploadPrivateFile = catchAsync(async (req, res) => {
   const { artistId } = req.params;
+  const { privateDocKey } = req.body;
+  
   const file = req.file;
   // const fileRes = { fileName: file.originalname, url: file.path };
 
-  const fileRes = await uploadPrivateImage(file, artistId, false);
+  const fileRes = await uploadPrivateImage(file, artistId, false, privateDocKey);
 
   res.status(httpStatus.CREATED).send({ status: true, message: 'Image uploaded successfully', entity: fileRes });
 });

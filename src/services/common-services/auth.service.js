@@ -1,21 +1,40 @@
 const httpStatus = require('http-status');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
-const Token = require('../../models/token.model');
+const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
 
+const { Token, User } = db;
+
 /**
  * Logout
- * @param {string} refreshToken
+ * @param {String} userId
+ * @param {String} refreshToken
  * @returns {Promise}
  */
-const logout = async (refreshToken) => {
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+const logout = async (userId, refreshToken) => {
+  const refreshTokenDoc = await Token.findOne({
+    where: {
+      userId,
+      token: refreshToken,
+      type: tokenTypes.REFRESH,
+      blacklisted: false,
+    },
+  });
+
+  const user = await User.findByPk(userId);
+
   if (!refreshTokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Token Not found');
   }
-  await refreshTokenDoc.remove();
+
+  const userUpdateBody = { fcmToken: null, tokenVersion: user.tokenVersion + 1 };
+  const apiPromises = [];
+  apiPromises.push(refreshTokenDoc.destroy());
+  apiPromises.push(user.update(userUpdateBody));
+
+  await Promise.all(apiPromises);
 };
 
 /**

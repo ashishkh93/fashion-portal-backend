@@ -1,7 +1,7 @@
 const express = require('express');
 const validate = require('../../../middlewares/validate');
 const { artistControllers } = require('../../../controllers');
-const { orderValidation, vacationValidation } = require('../../../validations');
+const { vacationValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');

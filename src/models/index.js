@@ -11,12 +11,13 @@ const isDev = config.env !== 'production';
 const sequelize = new Sequelize(config.mysql.dbString, {
   dialect: 'postgres',
   dialectModule: pg,
-  logging: (msg) => {
-    if (isDev) {
-      return logger.info(msg);
-    }
-    return null;
-  },
+  logging: false,
+  // logging: (msg) => {
+  //   if (isDev) {
+  //     return logger.info(msg);
+  //   }
+  //   return null;
+  // },
   dialectOptions: {
     ssl: {
       require: isDev ? false : true,

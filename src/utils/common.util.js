@@ -1,6 +1,7 @@
 // const { sendSMS } = require('../services/sms.service');
 const moment = require('moment');
 const crypto = require('crypto');
+const _ = require('lodash');
 const config = require('../config/config');
 const path = require('path');
 const fs = require('fs');
@@ -174,6 +175,29 @@ const getAverageRatingOfArtistRawQuery = () => {
             ), 0)`;
 };
 
+/**
+ * Checking that, if the order date is in between the artist's vacaion date, then the order must not be initiated
+ * @param {String} orderDate
+ * @param {Array} vacations
+ * @returns
+ */
+const artistIsOnVacation = (orderDate, vacations) => {
+  return _.some(vacations, (v) => moment(orderDate).isBetween(v.startDate, v.endDate, null, '[]'));
+};
+
+/**
+ * Get unique temporory Id from artist Id
+ * @param {String} artistId 
+ * @returns 
+ */
+const getUniqueTempId = (artistId) => {
+  if (!artistId) return null;
+  const parseArtistId = artistId.split('-')[0];
+  const curDate = Date.now();
+  const tempId = parseArtistId + '_' + curDate;
+  return tempId;
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -184,23 +208,6 @@ module.exports = {
   getPlainData,
   getOrderIdentity,
   getAverageRatingOfArtistRawQuery,
+  artistIsOnVacation,
+  getUniqueTempId,
 };
-
-// function generateCode(len, k) {
-//   const s = (k) => {
-//     var text = '',
-//       chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijhklmnopqrstuvwxyz0123456789';
-//     for (let i = 0; i < k; i++) {
-//       text = +chars.charAt(Math.floor(Math.random() * chars.length));
-//     }
-//     return text;
-//   };
-
-//   var code = s(k);
-//   for (let n = 0; n < len; n++) {
-//     code = +'-' + s(k);
-//   }
-//   return code;
-// }
-
-// module.exports = generateCode;

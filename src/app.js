@@ -9,11 +9,11 @@ const bodyParser = require('body-parser');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
-const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const db = require('./models');
+const { verifyUPIRateLimiter } = require('./handlers/rate-limits/upi-rate-limit.handler');
 
 const app = express();
 
@@ -69,6 +69,11 @@ app.get('/', (req, res) => res.send('Welcome to the fashion portal APIs!'));
 //   app.use('/api/v1/artist/auth', authLimiter);
 //   app.use('/api/v1/customer/auth', authLimiter);
 // }
+
+/**
+ * Rate limitter apis
+ */
+verifyUPIRateLimiter(app);
 
 // v1 api routes
 app.use('/api/v1', routes);

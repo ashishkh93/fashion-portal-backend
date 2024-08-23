@@ -1,0 +1,114 @@
+{
+  "newOrderRequest": {
+    "messages": {
+      "fcm": {
+        "title": "New Order Requested",
+        "body": "You have a new order request from <customer> on <orderDate>."
+      }
+    }
+  },
+  "orderAccepted": {
+    "messages": {
+      "fcm": {
+        "title": "Order Accepted",
+        "body": "Dear <customer>, your order has been accepted by the artist <artist>."
+      }
+    }
+  },
+  "orderRejected": {
+    "messages": {
+      "fcm": {
+        "title": "Order Rejected",
+        "body": "Dear <customer>, your order has been rejected by the artist <artist> due to unavailability on your selected booking date. We apologize for the inconvenience. Please consider rescheduling or choosing another artist."
+      }
+    }
+  },
+  "orderCancelledByArtist": {
+    "messages": {
+      "fcm": {
+        "title": "Order Cancelled",
+        "body": "Dear <customer>, we regret to inform you that your order has been cancelled by the artist <artist>. Please initiate a new booking request for other appropriate artist from the app. We apologize for the inconvenience."
+      }
+    }
+  },
+  "orderCancelledByCustomerAndArtistWontGetAdvanceAmount": {
+    "messages": {
+      "fcm": {
+        "title": "Order Cancelled",
+        "body": "Dear <artist>, we regret to inform you that your upcoming booking on <date> has been cancelled by the customer. We apologize for any inconvenience this may cause and appreciate your understanding."
+      }
+    }
+  },
+  "orderCancelledByCustomerAndArtistWillGetAdvanceAmount": {
+    "messages": {
+      "fcm": {
+        "title": "Order Cancelled",
+        "body": "Dear <artist>, we regret to inform you that your upcoming booking on <date> has been cancelled by the customer. You will receive the advance amount for this booking in the next payment cycle. We apologize for any inconvenience this may cause and appreciate your understanding."
+      }
+    }
+  },
+  "autoOrderCancelledForNotRespondedRequest": {
+    "messages": {
+      "fcm": {
+        "title": "Order Automatically Cancelled",
+        "body": "Dear <customer>, we regret to inform you that the artist has not approved your order within the standard time period, and it has been automatically cancelled to ensure your timely service. Please initiate a new booking request for another available artist through the app. We apologize for any inconvenience this may cause and appreciate your understanding."
+      }
+    }
+  },
+  "autoOrderCancelledDueToUnpaidAdvanceAmount": {
+    "messages": {
+      "fcm": {
+        "title": "Order Automatically Cancelled",
+        "body": "Dear <artist>, we regret to inform you that the customer hasn't paid an advance amount for your upcoming booking within the standard time period. Therefore, the booking has been automatically cancelled to ensure efficient scheduling. We apologize for any inconvenience this may cause and appreciate your understanding."
+      }
+    }
+  },
+  "advanceAmountReceived": {
+    "messages": {
+      "fcm": {
+        "title": "Advance Amount Received",
+        "body": "Dear <customer>, we have received your advance payment for the order. Thank you for your payment. We look forward to serving you!"
+      }
+    }
+  },
+  "advanceAmountFailed": {
+    "messages": {
+      "fcm": {
+        "title": "Advance Payment Failed",
+        "body": "Dear <customer>, we were unable to process your advance payment for the booking. Please verify your payment details and try again. If the issue persists, contact our support team for assistance. We apologize for any inconvenience this may cause."
+      }
+    }
+  },
+  "finalAmountReceived": {
+    "messages": {
+      "fcm": {
+        "title": "Payment Received",
+        "body": "Dear <customer>, we have successfully received your full payment for the order. Thank you for completing the payment. We hope you enjoyed the artist’s service. If you have a moment, we would greatly appreciate it if you could leave a Review for the artist."
+      }
+    }
+  },
+  "finalAmountFailed": {
+    "messages": {
+      "fcm": {
+        "title": "Payment Failed",
+        "body": "Dear <customer>, we regret to inform you that we were unable to process your payment for the order. Please check your payment details or try again. If you need assistance, feel free to contact our support team. We apologize for any inconvenience this may cause."
+      }
+    }
+  },
+  "orderCompleted": {
+    "messages": {
+      "fcm": {
+        "title": "Order Completed",
+        "body": "Dear <artist>, your booking has been successfully completed. We hope you enjoyed providing the service. Please note that your payment will be processed in the next payment cycle. Thank you for your cooperation!"
+      }
+    }
+  },
+  "customFromAdmin": {
+    "messages": {
+      "fcm": {
+        "title": "<title>",
+        "body": "<body>"
+      }
+    }
+  }
+}

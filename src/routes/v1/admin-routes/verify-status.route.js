@@ -2,7 +2,7 @@ const express = require('express');
 const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
 const validate = require('../../../middlewares/validate');
-const { artValidation, authValidation, artistValidation } = require('../../../validations');
+const { artValidation, authValidation, artistValidation, bankingValidation } = require('../../../validations');
 const { adminValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
 
@@ -34,14 +34,14 @@ router.get(
   '/:artistId/upi',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.verifyUpi),
+  validate(bankingValidation.verifyUpi),
   superAdminControllers.verifyStatusController.verifyUPI
 );
 router.post(
   '/:artistId/pan',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.verifyPAN),
+  validate(bankingValidation.verifyPAN),
   superAdminControllers.verifyStatusController.verifyPAN
 );
 

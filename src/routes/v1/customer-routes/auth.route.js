@@ -5,6 +5,7 @@ const { commonControllers } = require('../../../controllers');
 const addRoleToLoginRoute = require('../../../middlewares/addRole');
 const { customerValidate, userValidateWhileVerifyOTP } = require('../../../middlewares/userValidate');
 const auth = require('../../../middlewares/auth');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.post(
   '/login',
   validate(authValidation.phoneLogin),
   addRoleToLoginRoute('customer'),
+  transactionMiddleware,
   commonControllers.authController.login
 );
 router.post(
@@ -30,7 +32,13 @@ router.post(
   commonControllers.authController.updateFcmToken
 );
 
-router.post('/logout', validate(authValidation.logout), commonControllers.authController.logout);
+router.post(
+  '/:userId/logout',
+  auth(),
+  validate(authValidation.logout),
+  customerValidate((req) => req.params.userId),
+  commonControllers.authController.logout
+);
 
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), commonControllers.authController.refreshTokens);
 

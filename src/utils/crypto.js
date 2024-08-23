@@ -11,6 +11,10 @@ const encryptionKey = config.encryptionKey;
 
 const key = Buffer.from(encryptionKey, 'base64');
 
+const hashString = (string) => {
+  return crypto.createHash('sha256').update(string).digest('hex');
+};
+
 const encrypt = (text) => {
   const iv = crypto.randomBytes(12); // Initialization vector.
   const cipher = crypto.createCipheriv(algo, key, iv);
@@ -44,4 +48,4 @@ const decrypt = (ciphertext) => {
   }
 };
 
-module.exports = { encrypt, decrypt };
+module.exports = { encrypt, decrypt, hashString };

@@ -13,13 +13,18 @@ const httpStatus = require('http-status');
  * @param {string} [secret]
  * @returns {string}
  */
-const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
+const generateToken = (user, expires, type, secret = config.jwt.secret) => {
   const payload = {
-    sub: userId,
+    sub: user.id,
     iat: moment().unix(),
     exp: expires.unix(),
     type,
   };
+
+  if (type === 'access') {
+    payload.v = user.tokenVersion; // add token version to the current siging token to validate the old token
+  }
+
   return jwt.sign(payload, secret);
 };
 
@@ -37,7 +42,7 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 
   if (curToken) {
     const tokenBody = { token, expires: expires.toDate() };
-    await Token.update(tokenBody, { where: { id: curToken.id } });
+    await curToken.update(tokenBody);
   } else {
     await Token.create({
       token,
@@ -72,10 +77,10 @@ const verifyToken = async (token, type) => {
 const generateAuthTokens = async (user) => {
   // const accessTokenExpires = moment().add(10, 'seconds');
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+  const accessToken = generateToken(user, accessTokenExpires, tokenTypes.ACCESS);
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
+  const refreshToken = generateToken(user, refreshTokenExpires, tokenTypes.REFRESH);
   await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
 
   return { accessToken, refreshToken };

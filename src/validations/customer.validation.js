@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { validateUUID } = require('./common.validation');
 
 const addCustomerInfo = {
   params: Joi.object().keys({
@@ -44,7 +45,7 @@ const editCustomerInfo = {
 
 const getCustomerInfo = {
   params: Joi.object().keys({
-    customerId: Joi.string().required(),
+    customerId: validateUUID(),
   }),
 };
 
