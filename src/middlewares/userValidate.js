@@ -64,7 +64,7 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
     } else if (!activeUser?.isActive) {
       throw new ApiError(httpStatus.NOT_FOUND, 'You may have been blocked, please contact support team');
     } else if (activeUser.role !== 'customer') {
-      new ApiError(httpStatus.UNAUTHORIZED, 'Access denied');
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Access denied');
     } else if (userId !== activeUser.id) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
     }
@@ -85,7 +85,7 @@ const userValidateWhileVerifyOTP = (getUserId) => async (req, _res, next) => {
     } else if (user.phone !== phone) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
     }
-    
+
     req.userId = userId;
     next();
   } catch (error) {
