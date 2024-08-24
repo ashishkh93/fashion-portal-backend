@@ -122,8 +122,8 @@ const readPublicKey = (filename) => {
  * generate certificate from cashfree's public key
  */
 const generateXCFSignature = (clientId) => {
-  const publicKeyFilename = config.cashfree.publicKeyPemPath;
-  const publicKey = readPublicKey(publicKeyFilename);
+  const publicKeyBase64 = config.cashfree.publicKeyPem;
+  const publicKey = Buffer.from(publicKeyBase64, 'base64').toString();
 
   const curTimeStamp = Math.floor(Date.now() / 1000); // Convert to seconds and round down
   const message = clientId + '.' + curTimeStamp.toString();
@@ -137,6 +137,23 @@ const generateXCFSignature = (clientId) => {
   );
   return encrypted.toString('base64');
 };
+
+// const generateXCFSignature = (clientId) => {
+//   const publicKeyFilename = config.cashfree.publicKeyPemPath;
+//   const publicKey = readPublicKey(publicKeyFilename);
+
+//   const curTimeStamp = Math.floor(Date.now() / 1000); // Convert to seconds and round down
+//   const message = clientId + '.' + curTimeStamp.toString();
+//   const buffer = Buffer.from(message, 'utf8'); // Convert string to buffer with 'utf8' encoding
+//   const encrypted = crypto.publicEncrypt(
+//     {
+//       key: publicKey,
+//       padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+//     },
+//     buffer
+//   );
+//   return encrypted.toString('base64');
+// };
 
 /**
  * Avoid getting data in dataValues instance from database.
@@ -187,8 +204,8 @@ const artistIsOnVacation = (orderDate, vacations) => {
 
 /**
  * Get unique temporory Id from artist Id
- * @param {String} artistId 
- * @returns 
+ * @param {String} artistId
+ * @returns
  */
 const getUniqueTempId = (artistId) => {
   if (!artistId) return null;

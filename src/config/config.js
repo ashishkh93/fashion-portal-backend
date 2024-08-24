@@ -37,7 +37,7 @@ const envVarsSchema = Joi.object()
     CASHFREE_PAYOUT_CLIENT_SECRET: Joi.string().required().description('Cashfree Payout client secret'),
     CASHFREE_PAYOUT_X_API_VERSION: Joi.string().required().description('Cashfree Payout x api version'),
     CASHFREE_PAYOUT_FUND_SOURCE_ID: Joi.string().required().description('Cashfree Payout fund source id'),
-    CASHFREE_PUBLIC_KEY_PEM_PATH: Joi.string().required().description('Cashfree public key pem path'),
+    CASHFREE_PUBLIC_KEY_PEM: Joi.string().required().description('Cashfree public key pem'),
     COMISSION: Joi.number().required().description('Commission percentage per order'),
     OTP_EXPIRATION_MINUTES: Joi.number().required().default(10).description('OTP expiration time in minutes'),
     MIN_TIME_TO_ORDER: Joi.number().required().default(6).description('Minumum time to order in hours'),
@@ -123,6 +123,7 @@ module.exports = {
 
     // public key pem path
     publicKeyPemPath: envVars.CASHFREE_PUBLIC_KEY_PEM_PATH, // cashfree x-api-version
+    publicKeyPem: envVars.CASHFREE_PUBLIC_KEY_PEM, // cashfree x-api-version
   },
   /**
    * This is our commision in percentage
