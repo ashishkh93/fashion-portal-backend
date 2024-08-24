@@ -23,10 +23,12 @@ const sequelize = new Sequelize(config.mysql.dbString, {
       ? false // Disable SSL in development
       : {
           require: true,
-          rejectUnauthorized: false, // Allows self-signed certificates
+          rejectUnauthorized: true, // Allows self-signed certificates
+          ca: fs.readFileSync(path.join(__dirname, '../../pem-config/aiven-ca.pem')).toString(), // Provide the path to your CA certificate
         },
     connectTimeout: 60000, // Increase overall connection timeout
   },
+
   timezone: '+05:30', // for writing to database
 });
 
