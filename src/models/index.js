@@ -12,19 +12,13 @@ const sequelize = new Sequelize(config.mysql.dbString, {
   dialect: 'postgres',
   dialectModule: pg,
   logging: false,
-  // logging: (msg) => {
-  //   if (isDev) {
-  //     return logger.info(msg);
-  //   }
-  //   return null;
-  // },
   dialectOptions: {
     ssl: isDev
       ? false // Disable SSL in development
       : {
           require: true,
-          rejectUnauthorized: true, // Allows self-signed certificates
-          ca: fs.readFileSync(path.join(__dirname, '../../pem-config/aiven-ca.pem')).toString(), // Provide the path to your CA certificate
+          rejectUnauthorized: false, // Allows self-signed certificates
+          // ca: fs.readFileSync(path.join(__dirname, '../../pem-config/ca.pem')).toString(), // Provide the path to your CA certificate
         },
     connectTimeout: 60000, // Increase overall connection timeout
   },
