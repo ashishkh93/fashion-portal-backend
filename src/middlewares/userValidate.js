@@ -3,6 +3,8 @@ const ApiError = require('../utils/ApiError');
 const { ArtistInfo } = require('../models');
 const { getUserById } = require('../services/common-services/user.service');
 
+const ARTIST_NOT_MANDATE_ROUTES = ['artistInfo', 'verification', 'auth'];
+
 const adminValidate = (getUserId) => async (req, _res, next) => {
   try {
     const { superAdminId } = getUserId(req);
@@ -35,7 +37,7 @@ const artistValidate = (getUserId) => async (req, _res, next) => {
 
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
-    if (route !== 'artistInfo' && route !== 'verification') {
+    if (!ARTIST_NOT_MANDATE_ROUTES.includes(route)) {
       if (artist.status === 'PENDING') {
         throw new ApiError(httpStatus.FORBIDDEN, 'You have not been approved yet by the admin');
       } else if (artist.status === 'BLOCKED' || artist.status === 'SUSPENDED' || artist.status === 'REJECTED') {
@@ -47,7 +49,7 @@ const artistValidate = (getUserId) => async (req, _res, next) => {
       }
     }
 
-    req.artist = artist;
+    if (artist) req.artist = artist;
     next();
   } catch (err) {
     next(err);

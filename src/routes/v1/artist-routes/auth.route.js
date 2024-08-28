@@ -23,6 +23,13 @@ router.post(
   userValidateWhileVerifyOTP((req) => req.params.artistId),
   commonControllers.authController.verifyOtp
 );
+router.patch(
+  '/:userId/fcm-token',
+  auth(),
+  artistValidate((req) => ({ artistId: req.params.userId, route: 'auth' })),
+  validate(authValidation.updateFcmToken),
+  commonControllers.authController.updateFcmToken
+);
 router.post(
   '/:userId/logout',
   auth(),

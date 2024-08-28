@@ -96,7 +96,7 @@ const changeArtistStatus = {
 
 const updateFcmToken = {
   params: Joi.object().keys({
-    customerId: Joi.string().required().uuid(),
+    userId: validateUUID(),
   }),
   body: Joi.object().keys({
     fcmToken: Joi.string().required(),

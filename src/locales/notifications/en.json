@@ -1,5 +1,5 @@
 {
-  "newOrderRequest": {
+  "new_order_request": {
     "messages": {
       "fcm": {
         "title": "New Order Requested",
@@ -7,7 +7,7 @@
       }
     }
   },
-  "orderAccepted": {
+  "order_accepted": {
     "messages": {
       "fcm": {
         "title": "Order Accepted",
@@ -15,7 +15,7 @@
       }
     }
   },
-  "orderRejected": {
+  "order_rejected": {
     "messages": {
       "fcm": {
         "title": "Order Rejected",
@@ -23,7 +23,7 @@
       }
     }
   },
-  "orderCancelledByArtist": {
+  "order_cancelled_by_artist": {
     "messages": {
       "fcm": {
         "title": "Order Cancelled",
@@ -31,7 +31,7 @@
       }
     }
   },
-  "orderCancelledByCustomerAndArtistWontGetAdvanceAmount": {
+  "order_cancelled_by_customer_and_artist_wont_get_advance_amount": {
     "messages": {
       "fcm": {
         "title": "Order Cancelled",
@@ -39,7 +39,7 @@
       }
     }
   },
-  "orderCancelledByCustomerAndArtistWillGetAdvanceAmount": {
+  "order_cancelled_by_customer_and_artist_will_get_advance_amount": {
     "messages": {
       "fcm": {
         "title": "Order Cancelled",
@@ -47,7 +47,7 @@
       }
     }
   },
-  "autoOrderCancelledForNotRespondedRequest": {
+  "auto_order_cancelled_due_to_not_responded_request": {
     "messages": {
       "fcm": {
         "title": "Order Automatically Cancelled",
@@ -55,7 +55,7 @@
       }
     }
   },
-  "autoOrderCancelledDueToUnpaidAdvanceAmount": {
+  "auto_order_cancelled_due_to_unpaid_advance_amount": {
     "messages": {
       "fcm": {
         "title": "Order Automatically Cancelled",
@@ -63,7 +63,7 @@
       }
     }
   },
-  "advanceAmountReceived": {
+  "advance_amount_payment_received": {
     "messages": {
       "fcm": {
         "title": "Advance Amount Received",
@@ -71,7 +71,7 @@
       }
     }
   },
-  "advanceAmountFailed": {
+  "advance_amount_payment_failed": {
     "messages": {
       "fcm": {
         "title": "Advance Payment Failed",
@@ -79,7 +79,7 @@
       }
     }
   },
-  "finalAmountReceived": {
+  "final_amount_payment_received": {
     "messages": {
       "fcm": {
         "title": "Payment Received",
@@ -87,7 +87,7 @@
       }
     }
   },
-  "finalAmountFailed": {
+  "final_amount_payment_failed": {
     "messages": {
       "fcm": {
         "title": "Payment Failed",
@@ -95,7 +95,7 @@
       }
     }
   },
-  "orderCompleted": {
+  "order_completed": {
     "messages": {
       "fcm": {
         "title": "Order Completed",
@@ -103,7 +103,7 @@
       }
     }
   },
-  "customFromAdmin": {
+  "custom_from_admin": {
     "messages": {
       "fcm": {
         "title": "<title>",

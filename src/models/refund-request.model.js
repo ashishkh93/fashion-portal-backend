@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       orderId: {
         type: DataTypes.UUID,
+        unique: true,
         allowNull: false,
         references: { model: 'Order', key: 'id' },
         onDelete: 'NO ACTION',

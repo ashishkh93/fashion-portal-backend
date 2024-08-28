@@ -24,13 +24,13 @@ const comission = Number(config.comission);
 
 /**
  * -------- VERY SENSITIVE API CONTROLLER ---------
- * Batch payout to the artists through cashfree payout api
+ * Batch payout to artists through cashfree payout api
  * @param {object} body
  * @returns {object}
  */
 const payoutToArtistsService = async (body) => {
   try {
-    const payouts = await Payout.findAll();
+    const payouts = await Payout.findAll({ order: [['createdAt', 'DESC']] });
     const plainPayouts = payouts.map((payout) => getPlainData(payout));
 
     // why did i do this? think on it
@@ -233,8 +233,6 @@ const payoutToArtistsService = async (body) => {
             }, []);
             await ArtistTransferOrder.bulkCreate(orderTransferEntries);
           }
-
-
 
           // if (bulkTransfers) {
           //   await Promise.all(

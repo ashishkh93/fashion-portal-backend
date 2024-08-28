@@ -24,10 +24,10 @@ router.post(
   commonControllers.authController.verifyOtp
 );
 
-router.post(
-  '/:customerId/fcm-token',
+router.patch(
+  '/:userId/fcm-token',
   auth(),
-  customerValidate((req) => req.params.customerId),
+  customerValidate((req) => req.params.userId),
   validate(authValidation.updateFcmToken),
   commonControllers.authController.updateFcmToken
 );

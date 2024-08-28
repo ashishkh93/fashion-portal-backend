@@ -37,7 +37,8 @@ const createUserPhoneAuth = async (userBody) => {
   const transaction = getTransaction();
   const { phone, role } = userBody;
   const user = await User.findOne({ where: { phone: phone, role: role } });
-  if (user && (await user.isPhoneNumberTaken(phone, role))) {
+  // if (user && (await user.isPhoneNumberTaken(phone, role))) {
+  if (user) {
     // const updateBody = { otp: userBody.otp, otpExpire: userBody.otpExpire };
     // await updateUserById(updateBody, user.id);
     await createOtpRequest(user.id, 'LOGIN');
@@ -85,9 +86,9 @@ const getUserByPhoneAndRole = async (phone, role, userId) => {
  * @param {string} fcmToken
  * @param {string} userId
  */
-const generateFcmToken = async (fcmToken, userId) => {
+const updateFcmTokenService = async (fcmToken, userId) => {
   const user = await getUserById(userId);
-  if (user) await updateUserById({ fcmToken }, userId);
+  if (user) await user.update({ fcmToken });
   else throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
 };
 
@@ -193,6 +194,5 @@ module.exports = {
   getUserByPhoneAndRole,
   updateUserById,
   verifyUserOtp,
-  // verifyArtistOtp,
-  generateFcmToken,
+  updateFcmTokenService,
 };

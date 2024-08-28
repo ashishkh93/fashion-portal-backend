@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { commonServices } = require('../../services');
-const { generateOtp } = require('../../utils/common.util');
 
 const login = catchAsync(async (req, res) => {
   const { phone } = req.body;
@@ -21,9 +20,9 @@ const verifyOtp = catchAsync(async (req, res) => {
 });
 
 const updateFcmToken = catchAsync(async (req, res) => {
-  const customerId = req.params.customerId;
+  const userId = req.params.userId;
   const fcmToken = req.body.fcmToken;
-  await commonServices.userService.generateFcmToken(fcmToken, customerId);
+  await commonServices.userService.updateFcmTokenService(fcmToken, userId);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
