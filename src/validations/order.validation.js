@@ -41,7 +41,7 @@ const orderInitiate = {
 
         // New order must be after 6 hours from current time
         if (orderDateTimeCombined.isAfter(minTimeToOrder)) {
-          logger.info('You can order');
+          logger.info('Customer can order');
         } else {
           logger.error(`Customer is trying to create an order within next ${minTimeToOrderInHours} hours, which is invalid`);
           return helpers.message('You cannot create an order for a date and time you selected');

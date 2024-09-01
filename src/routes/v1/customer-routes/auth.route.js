@@ -19,7 +19,7 @@ router.post(
 router.post(
   '/:customerId/verify-otp',
   addRoleToLoginRoute('customer'),
-  validate(authValidation.phoneVerify),
+  validate(authValidation.customerPhoneVerify),
   userValidateWhileVerifyOTP((req) => req.params.customerId),
   commonControllers.authController.verifyOtp
 );

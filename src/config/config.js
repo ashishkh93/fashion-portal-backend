@@ -178,13 +178,13 @@ module.exports = {
       acquire: 30000, // Increase acquire timeout
       idle: 10000,
     },
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
-      },
-      connectTimeout: 60000, // Increase overall connection timeout
-    },
+    // dialectOptions: {
+    //   ssl: {
+    //     require: true,
+    //     rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
+    //   },
+    //   connectTimeout: 60000, // Increase overall connection timeout
+    // },
   },
 
   /** Upi verification api rate limit number */

@@ -25,7 +25,20 @@ const login = {
   }),
 };
 
-const phoneVerify = {
+const adminPhoneVerify = {
+  params: Joi.object().keys({
+    adminId: validateUUID(),
+  }),
+  body: Joi.object().keys({
+    phone: Joi.string().alphanum().max(10).min(10),
+    otp: Joi.string().required().length(6),
+  }),
+};
+
+const customerPhoneVerify = {
+  params: Joi.object().keys({
+    customerId: validateUUID(),
+  }),
   body: Joi.object().keys({
     phone: Joi.string().alphanum().max(10).min(10),
     otp: Joi.string().required().length(6),
@@ -34,7 +47,7 @@ const phoneVerify = {
 
 const artistPhoneVerify = {
   params: Joi.object().keys({
-    artistId: Joi.string().required().uuid(),
+    artistId: validateUUID(),
   }),
   body: Joi.object().keys({
     phone: Joi.string().alphanum().max(10).min(10),
@@ -109,7 +122,8 @@ module.exports = {
   phoneLogin,
   login,
   artistPhoneVerify,
-  phoneVerify,
+  adminPhoneVerify,
+  customerPhoneVerify,
   logout,
   refreshTokens,
   forgotPassword,

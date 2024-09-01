@@ -21,6 +21,7 @@ const { checkIsRefundEligible, getPlainData, getOrderIdentity, artistIsOnVacatio
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
+// const { sendNewOrderRequestNotification } = require('../../handlers/notifications/get-notification-data.hanlder');
 
 const getAverageRatingForArtistInOrderQuery = () => {
   return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artistId")';
@@ -186,6 +187,11 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
       }));
       await ArtOrder.bulkCreate(artOrderEntries, { transaction });
       const { id, status, createdAt } = tmpOrder.dataValues;
+
+      /**
+       * Sending notification to artist about new order request
+       */
+      // sendNewOrderRequestNotification(customerId, artistId, orderId, body.date);
 
       /**
        * Cancel the order if order status is still pending after 24 hours

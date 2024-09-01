@@ -40,7 +40,7 @@ const getCustomerInfoService = async (customerId) => {
     },
   ];
 
-  const attributes = ['id', 'role', 'phone', 'fcmToken', 'isActive'];
+  const attributes = ['id', 'role', 'phone', 'isActive'];
 
   const curCustomer = await User.findOne({ where: condition, include, attributes });
   if (curCustomer) {

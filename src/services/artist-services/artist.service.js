@@ -37,7 +37,7 @@ const getApprovedArtist = async (artistId) => {
         model: ArtistInfo,
         as: 'artistInfos',
         where: { status: 'APPROVED' },
-        attributes: ['artistId', 'status'],
+        attributes: ['artistId', 'status', 'fullName'],
         required: true,
         include: [
           {

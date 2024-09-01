@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const OrderFinancialInfo = sequelize.define(
-    'OrderFinancialInfo',
+  const Notification = sequelize.define(
+    'Notification',
     {
       id: {
         type: DataTypes.UUID,
@@ -8,46 +8,34 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
-      orderId: {
+      userId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Order', key: 'id' },
+        references: { model: 'User', key: 'id' },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
-      totalAmount: {
-        type: DataTypes.FLOAT,
+      userType: {
+        type: DataTypes.ENUM('CUSTOMER', 'ARTIST', 'SUPER_ADMIN'),
         allowNull: false,
       },
-      advanceAmountForOrder: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
+      type: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-      advanceAmountPaid: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      discount: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0,
-      },
-      addOnAmount: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0,
-      },
-      artistAddOnNote: {
+      title: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        allowNull: false,
       },
-      advancePaidAt: {
-        type: DataTypes.DATE,
+      message: {
+        type: DataTypes.TEXT,
+        allowNull: false,
       },
-      paidToArtist: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+      additionalDetails: {
+        type: DataTypes.JSON,
+        allowNull: false,
       },
-      isRefunded: {
+      isRead: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
@@ -64,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'OrderFinancialInfo',
+      tableName: 'Notification',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
@@ -76,9 +64,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  OrderFinancialInfo.associate = function (models) {
-    OrderFinancialInfo.belongsTo(models.Order, { foreignKey: 'orderId' });
+  Notification.associate = function (models) {
+    Notification.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
   };
 
-  return OrderFinancialInfo;
+  return Notification;
 };
