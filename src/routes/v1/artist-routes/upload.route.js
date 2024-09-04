@@ -35,7 +35,7 @@ router.post(
   commonControllers.uploadController.uploadPublicFile
 );
 
-router.post(
+router.patch(
   '/recent-work',
   auth(),
   validate(artistValidation.uploadRecentWorkImage),
