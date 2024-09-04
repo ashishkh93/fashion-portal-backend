@@ -281,7 +281,10 @@ const uploadArtistRecentWorkImagesService = async (artistId, body, artistInfo) =
     );
   }
 
-  const newImages = [...recentWorkImages, ...body.recentWorkImages];
+  const newImages = Array.isArray(recentWorkImages)
+    ? [...recentWorkImages, ...body.recentWorkImages]
+    : [...body.recentWorkImages];
+
   await artistInfo.update({ recentWorkImages: newImages });
   return newImages;
 };
