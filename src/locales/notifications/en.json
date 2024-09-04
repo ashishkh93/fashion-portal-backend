@@ -2,7 +2,7 @@
   "new_order_request": {
     "messages": {
       "fcm": {
-        "title": "New Order Requested",
+        "title": "New Order Request",
         "body": "You have a new order request from <customer> on <orderDate>.",
         "screen": "order_screen"
       }

@@ -7,8 +7,8 @@ const { getUniqueTempId } = require('../../utils/common.util');
 
 /**
  * Verify Upi service
- * @param {String} artistId
- * @param {String} upi
+ * @param {string} artistId
+ * @param {string} upi
  * @returns {Object}
  */
 const verifyUpiService = async (artistId, upi) => {

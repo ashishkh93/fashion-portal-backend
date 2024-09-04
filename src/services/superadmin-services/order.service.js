@@ -20,7 +20,7 @@ const includeModel = [
 
 /**
  * Get all orders for single artist
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Number} page
  * @param {Number} size
  * @returns {Promise<Order>}
@@ -34,7 +34,7 @@ const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
 
 /**
  * Get all orders for single artist
- * @param {String} customerId
+ * @param {string} customerId
  * @param {Number} page
  * @param {Number} size
  * @returns {Promise<Order>}

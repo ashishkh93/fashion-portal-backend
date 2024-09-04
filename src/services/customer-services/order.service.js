@@ -21,7 +21,7 @@ const { checkIsRefundEligible, getPlainData, getOrderIdentity, artistIsOnVacatio
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
-// const { sendNewOrderRequestNotification } = require('../../handlers/notifications/get-notification-data.hanlder');
+const { sendNewOrderRequestNotification } = require('../../handlers/notifications/get-notification-data.hanlder');
 
 const getAverageRatingForArtistInOrderQuery = () => {
   return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artistId")';
@@ -95,6 +95,12 @@ const getOrderById = async (orderCondition) => {
           required: true,
         },
       ],
+    },
+    {
+      model: Review,
+      as: 'orderReview',
+      attributes: ['reviewCount', 'description'],
+      required: false,
     },
   ];
 

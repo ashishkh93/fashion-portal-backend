@@ -38,7 +38,9 @@ const artistValidate = (getUserId) => async (req, _res, next) => {
     const artist = await ArtistInfo.findOne({ where: { artistId } });
 
     if (!ARTIST_NOT_MANDATE_ROUTES.includes(route)) {
-      if (artist.status === 'PENDING') {
+      if (!artist) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Please complete your profile registration first');
+      } else if (artist.status === 'PENDING') {
         throw new ApiError(httpStatus.FORBIDDEN, 'You have not been approved yet by the admin');
       } else if (artist.status === 'BLOCKED' || artist.status === 'SUSPENDED' || artist.status === 'REJECTED') {
         throw new ApiError(

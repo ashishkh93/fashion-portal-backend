@@ -35,4 +35,12 @@ router.post(
   commonControllers.uploadController.uploadPublicFile
 );
 
+router.post(
+  '/recent-work',
+  auth(),
+  validate(artistValidation.uploadRecentWorkImage),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'uploadRecentWork' })),
+  artistControllers.artistInfoController.uploadArtistRecentWorkImages
+);
+
 module.exports = router;

@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { validateUUID } = require('./common.validation');
 
 // Define the UPI regex pattern
 // const upiRegex = /^[\w.-]+@[\w.-]+$/;
@@ -136,6 +137,27 @@ const getPrivateImage = {
   }),
 };
 
+// The Regex pattern for a valid S3 bucket URL
+const s3UrlPattern = /^https:\/\/[a-zA-Z0-9.-]+\.s3\.[a-zA-Z0-9-]+\.amazonaws\.com\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=%]+$/;
+
+const uploadRecentWorkImage = {
+  params: Joi.object().keys({
+    artistId: validateUUID(), // Assuming validateUUID is your custom UUID validation function
+  }),
+  body: Joi.object().keys({
+    recentWorkImages: Joi.array()
+      .items(
+        Joi.string().pattern(s3UrlPattern).required().messages({
+          'string.pattern.base': 'Invalid Image URL.',
+          'string.empty': 'Image URL is required.',
+          'any.required': 'Image URL is required.',
+        })
+      )
+      .min(1)
+      .required(),
+  }),
+};
+
 const getArtists = {
   query: Joi.object().keys({
     page: Joi.number(),
@@ -193,6 +215,7 @@ module.exports = {
   getAllReviews,
   getOrdersForSingleCustomer,
   uplodPrivateImage,
+  uploadRecentWorkImage,
   getPrivateImage,
   getArtists,
   getCustomers,

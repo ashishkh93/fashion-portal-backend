@@ -230,7 +230,6 @@ module.exports = class GetFilteredArtists {
       limit,
       offset,
       distinct: true,
-      // raw: true,
     };
 
     if (userLat && userLong) {

@@ -25,7 +25,7 @@ const addCategory = async (body) => {
  * Get all Categories
  * @param {Number} query.page
  * @param {Number} query.size
- * @param {String} query.searchToken
+ * @param {string} query.searchToken
  * @returns {Category}
  */
 
@@ -58,7 +58,7 @@ const getAllCategorieService = async (query) => {
 
 /**
  * Get one Category
- * @param {String} catId
+ * @param {string} catId
  * @returns {Category}
  */
 const getSingleCategory = async (catId) => {
@@ -72,7 +72,7 @@ const getSingleCategory = async (catId) => {
 
 /**
  * Edit Category
- * @param {String} catId
+ * @param {string} catId
  * @param {Object} catBody
  * @returns {Category}
  */

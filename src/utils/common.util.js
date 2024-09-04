@@ -194,7 +194,7 @@ const getAverageRatingOfArtistRawQuery = () => {
 
 /**
  * Checking that, if the order date is in between the artist's vacaion date, then the order must not be initiated
- * @param {String} orderDate
+ * @param {string} orderDate
  * @param {Array} vacations
  * @returns
  */
@@ -204,7 +204,7 @@ const artistIsOnVacation = (orderDate, vacations) => {
 
 /**
  * Get unique temporory Id from artist Id
- * @param {String} artistId
+ * @param {string} artistId
  * @returns
  */
 const getUniqueTempId = (artistId) => {

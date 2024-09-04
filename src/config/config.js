@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const path = require('path');
 const Joi = require('joi');
+const fs = require('fs');
 var envpath = process.env.NODE_ENV == 'development' ? '../../.env' : '../../.env.production';
 
 dotenv.config({ path: path.join(__dirname, envpath) });
@@ -170,6 +171,7 @@ module.exports = {
     password: envVars.DB_PASSWORD,
     database: envVars.DB_NAME,
     host: envVars.DB_HOST,
+    port: envVars.DB_PORT,
     dialect: 'postgres',
     seederStorage: 'sequelize',
     pool: {
@@ -178,17 +180,22 @@ module.exports = {
       acquire: 30000, // Increase acquire timeout
       idle: 10000,
     },
-    // dialectOptions: {
-    //   ssl: {
-    //     require: true,
-    //     rejectUnauthorized: false, // For self-signed certificates, set to true if using CA signed certs
-    //   },
-    //   connectTimeout: 60000, // Increase overall connection timeout
-    // },
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Enable this since you'll provide the CA certificate
+        // ca: fs.readFileSync(path.join(__dirname, '../../pem-config/ca.pem')).toString(),
+      },
+      connectTimeout: 60000,
+    },
   },
 
   /** Upi verification api rate limit number */
   upiVerificationLimit: 2,
   maxBankingOTPAttempts: 3,
   upiVerificationTimeLimit: 10, // in minutes
+
+  /** Artist Recent work images limitation */
+  defaultRecentWorkImagesLimit: 15, // will increase in future as per requirements
+  perOrderRecentWorkImagesLimit: 3, // will increase in future as per requirements
 };

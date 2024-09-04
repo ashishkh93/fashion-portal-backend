@@ -28,8 +28,8 @@ const updateFcmToken = catchAsync(async (req, res) => {
 
 const logout = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const { token } = req.body;
-  await commonServices.authService.logout(userId, token);
+  const { token, fcmToken } = req.body;
+  await commonServices.authService.logout(userId, token, fcmToken);
   res.status(httpStatus.NO_CONTENT).send();
 });
 

@@ -5,6 +5,8 @@ const { Op } = require('sequelize');
 const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 const { getPlainData, getUniqueTempId } = require('../../utils/common.util');
+const config = require('../../config/config');
+const { getNumberOfImagesArtistCanUpload } = require('../../utils/order.util');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -88,7 +90,7 @@ const addArtistInfoService = async (artistId, body) => {
 
 /**
  * Add artist banking info
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Object} body
  */
 const addArtistBankingInfoService = async (artistId, body) => {
@@ -210,7 +212,7 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
    */
 
   // const apiResult = await verifyUpiCallback(body.upi);
-  
+
   const verificationId = getUniqueTempId(artistId);
   const apiResult = await verifyUpiCallback(body.upi, null, verificationId);
 
@@ -231,7 +233,7 @@ const editArtistUPIService = async (artistId, body, artistInfo) => {
 
 /**
  * Get artist status based on their info added
- * @param {String} artistId
+ * @param {string} artistId
  */
 const getArtistStatusService = async (artistId) => {
   let curArtist = await ArtistInfo.findOne({
@@ -257,6 +259,33 @@ const getArtistStatusService = async (artistId) => {
   return { profileInfoAdded, bankInfoAdded };
 };
 
+/**
+ * Upload artist's recent work images
+ * @param {string} artistId
+ * @param {object} body
+ * @param {ArtistInfo} artistInfo
+ */
+const uploadArtistRecentWorkImagesService = async (artistId, body, artistInfo) => {
+  const { recentWorkImages } = artistInfo.dataValues;
+  const numberOfImagesArtistCanUpload = await getNumberOfImagesArtistCanUpload(artistId);
+
+  const currentImagesLength = recentWorkImages?.lenght ?? 0;
+  const totalImagesLength = currentImagesLength + body.recentWorkImages.length;
+
+  if (totalImagesLength > numberOfImagesArtistCanUpload) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'You can upload max ' +
+        numberOfImagesArtistCanUpload +
+        ' images, if you want to upload more images, please removee old images first'
+    );
+  }
+
+  const newImages = [...recentWorkImages, ...body.recentWorkImages];
+  await artistInfo.update({ recentWorkImages: newImages });
+  return newImages;
+};
+
 module.exports = {
   addArtistInfoService,
   addArtistBankingInfoService,
@@ -265,4 +294,5 @@ module.exports = {
   getApprovedArtist,
   editArtistUPIService,
   getArtistStatusService,
+  uploadArtistRecentWorkImagesService,
 };

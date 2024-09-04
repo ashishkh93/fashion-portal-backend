@@ -8,7 +8,7 @@ const { includeModelForOrderFetch } = require('../artist-services/order.service'
 
 /**
  * Get all transactions for customer
- * @param {String} customerId
+ * @param {string} customerId
  * @param {Number} page
  * @param {Number} size
  * @returns {Promise<Transaction>}
@@ -63,7 +63,7 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
 
 /**
  * Get all transactions for artist
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Number} page
  * @param {Number} size
  * @returns {Promise<Transaction>}

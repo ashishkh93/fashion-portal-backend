@@ -17,10 +17,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         // unique: true,
       },
-      fcmToken: {
-        type: DataTypes.STRING(256),
-        allowNull: true,
-        unique: true,
+      fcmTokens: {
+        type: DataTypes.ARRAY(DataTypes.STRING(256)),
+        defaultValue: [],
       },
       isActive: {
         type: DataTypes.BOOLEAN,

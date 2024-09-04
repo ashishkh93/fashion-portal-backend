@@ -270,7 +270,7 @@ const payoutToArtistsService = async (body) => {
 
 /**
  * Batch payout verify from batch transfer id
- * @param {String} batchTransferId
+ * @param {string} batchTransferId
  * @returns {Promise}
  */
 const batchPayoutVerifyService = async (batchTransferId) => {
@@ -322,7 +322,7 @@ const getAllPayoutsService = async (page, size) => {
 
 /**
  * Get payout by Id
- * @param {String} payoutId
+ * @param {string} payoutId
  * @returns {Promise<Payout>}
  */
 const getPayoutById = async (payoutId) => {

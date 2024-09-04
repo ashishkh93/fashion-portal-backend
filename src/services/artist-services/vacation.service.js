@@ -5,7 +5,7 @@ const ApiError = require('../../utils/ApiError');
 
 /**
  * Add vacation by artist
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Object} body
  * @returns {Promise<ArtistVacation>}
  */
@@ -46,7 +46,7 @@ const addVacationService = async (artistId, body) => {
 
 /**
  *
- * @param {String} vacationId
+ * @param {string} vacationId
  */
 const getVacationById = async (vacationId) => {
   const vacation = await ArtistVacation.findByPk(vacationId);
@@ -58,7 +58,7 @@ const getVacationById = async (vacationId) => {
 
 /**
  * Edit vacation by vacationId
- * @param {String} vacationId
+ * @param {string} vacationId
  * @param {Object} body
  * @returns {Promise<ArtistVacation>}
  */
@@ -69,7 +69,7 @@ const editVacationService = async (vacationId, body) => {
 
 /**
  * Delete vacation by vacationId
- * @param {String} vacationId
+ * @param {string} vacationId
  * @param {Object} body
  * @returns {Promise<ArtistVacation>}
  */
@@ -80,7 +80,7 @@ const deleteVacationService = async (vacationId) => {
 
 /**
  * Get all vacation for artist
- * @param {String} artistId
+ * @param {string} artistId
  * @returns {Promise<ArtistVacation>}
  */
 const getAllVacationsService = async (artistId) => {

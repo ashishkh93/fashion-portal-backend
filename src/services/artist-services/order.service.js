@@ -73,8 +73,8 @@ const getAllOrderForArtistService = async (artistId, page, size) => {
 
 /**
  * Get single order
- * @param {String} artistId
- * @param {String} orderId
+ * @param {string} artistId
+ * @param {string} orderId
  * @returns {Order}
  */
 const getSingleOrderService = async (orderId) => {

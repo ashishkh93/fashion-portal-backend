@@ -20,7 +20,7 @@ const logger = require('../../config/logger');
 
 /**
  * Get artist information for admin to check artist's status
- * @param {String} artistId
+ * @param {string} artistId
  * @returns
  */
 const getArtistForAdmin = async (artistId) => {
@@ -70,7 +70,7 @@ const getAllArtistService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['fcmToken', 'deletedAt'] };
+  const userAttributes = { exclude: ['fcmTokens', 'deletedAt'] };
 
   const allArtists = await getPaginationDataFromModel(User, artistCondition, page, size, includeModel, userAttributes);
 
@@ -79,7 +79,7 @@ const getAllArtistService = async (query) => {
 
 /**
  * Get single artist informations
- * @param {String} artistId
+ * @param {string} artistId
  * @returns {User}
  */
 const getArtistInfoService = async (artistId) => {
@@ -154,7 +154,7 @@ const getAllCustomersService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['role', 'fcmToken', 'deletedAt'] };
+  const userAttributes = { exclude: ['role', 'fcmTokens', 'deletedAt'] };
 
   const allCustomers = await getPaginationDataFromModel(User, customerCondition, page, size, includeModel, userAttributes);
 
@@ -163,7 +163,7 @@ const getAllCustomersService = async (query) => {
 
 /**
  * Get single customer informations
- * @param {String} customerId
+ * @param {string} customerId
  * @returns {User}
  */
 const getCustomerInfoService = async (customerId) => {
@@ -176,7 +176,7 @@ const getCustomerInfoService = async (customerId) => {
       {
         model: User,
         as: 'customerInfo',
-        attributes: ['phone', 'fcmToken'],
+        attributes: ['phone', 'fcmTokens'],
       },
     ],
   });
@@ -187,7 +187,7 @@ const getCustomerInfoService = async (customerId) => {
 
 /**
  * Update artist status
- * @param {String} artistId
+ * @param {string} artistId
  * @param {object} body
  * @returns {Promise}
  */
@@ -208,8 +208,8 @@ const updateArtistStatusService = async (body, artistId) => {
 /**
  * Update art status
  * @param {object} body
- * @param {String} artistId
- * @param {String} artId
+ * @param {string} artistId
+ * @param {string} artId
  * @returns {Promise}
  */
 const updateArtStatusService = async (body, artistId, artId) => {
@@ -235,7 +235,7 @@ const updateArtStatusService = async (body, artistId, artId) => {
 /**
  * Update Latitude and Longitude of Artist's location
  * @param {object} body
- * @param {String} artistId
+ * @param {string} artistId
  * @returns {Promise}
  */
 const updateLatLongService = async (body, artistId) => {
@@ -246,7 +246,7 @@ const updateLatLongService = async (body, artistId) => {
 
 /**
  * Verify UPI callback from cashfree
- * @param {String} upi
+ * @param {string} upi
  * @returns
  */
 //  ------------ OLD WITH GAMA URL ------------
@@ -264,7 +264,7 @@ const verifyUpiCallback = async (upi, name, verificationId) => {
 
 /**
  * Verify artist's UPI via cashfree APIs and methods
- * @param {String} artistId
+ * @param {string} artistId
  * @returns {object}
  */
 const verifyUPIService = async (artistId) => {
@@ -313,8 +313,8 @@ const verifyUPIService = async (artistId) => {
 
 /**
  * Verify artist's PAN via cashfree pan verification API
- * @param {String} artistId
- * @param {String} pan
+ * @param {string} artistId
+ * @param {string} pan
  * @returns {object}
  */
 const verifyPANService = async (artistId, pan) => {
@@ -368,11 +368,11 @@ const getAllArts = async (query, condition, include) => {
 
 /**
  * Get all arts
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Number} page
  * @param {Number} size
- * @param {String} searchToken
- * @param {String} sortKey
+ * @param {string} searchToken
+ * @param {string} sortKey
  * @returns {Promise<Art>}
  */
 const getAllArtsForSingleArtistInAdminService = async (artistId, query) => {

@@ -24,7 +24,7 @@ const searchQueryForCustomers = (searchToken) => {
 
 /**
  * We are filtering here based on the artist current status. If artist just loggedin and he/she doesn't create the profile, then there will be no entry in the ArtistInfo table, so we have put here 2 conditions in OR block
- * @param {String} status
+ * @param {string} status
  * @param {Boolean} active
  * @returns
  */

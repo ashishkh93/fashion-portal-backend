@@ -16,7 +16,7 @@ const includeModelForReview = [
 
 /**
  * Get all reviews for single artist
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Number} page
  * @param {Number} size
  * @returns {Promise<Review>}

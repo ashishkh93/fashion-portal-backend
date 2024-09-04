@@ -9,11 +9,11 @@ const { Token, User } = db;
 
 /**
  * Logout
- * @param {String} userId
- * @param {String} refreshToken
+ * @param {string} userId
+ * @param {string} refreshToken
  * @returns {Promise}
  */
-const logout = async (userId, refreshToken) => {
+const logout = async (userId, refreshToken, fcmToken) => {
   const refreshTokenDoc = await Token.findOne({
     where: {
       userId,
@@ -23,13 +23,14 @@ const logout = async (userId, refreshToken) => {
     },
   });
 
-  const user = await User.findByPk(userId);
-
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Token Not found');
   }
 
-  const userUpdateBody = { fcmToken: null, tokenVersion: user.tokenVersion + 1 };
+  const user = await User.findByPk(userId);
+  const updatedFcmTokensArr = user.dataValues.fcmTokens?.filter((ft) => ft !== fcmToken);
+
+  const userUpdateBody = { fcmTokens: updatedFcmTokensArr || [], tokenVersion: user.tokenVersion + 1 };
   const apiPromises = [];
   apiPromises.push(refreshTokenDoc.destroy());
   apiPromises.push(user.update(userUpdateBody));

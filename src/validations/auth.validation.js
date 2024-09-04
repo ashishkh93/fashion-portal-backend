@@ -67,6 +67,7 @@ const logout = {
   }),
   body: Joi.object().keys({
     token: Joi.string().required(),
+    fcmToken: Joi.string().required(),
   }),
 };
 

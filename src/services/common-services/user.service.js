@@ -88,8 +88,16 @@ const getUserByPhoneAndRole = async (phone, role, userId) => {
  */
 const updateFcmTokenService = async (fcmToken, userId) => {
   const user = await getUserById(userId);
-  if (user) await user.update({ fcmToken });
-  else throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+  if (user) {
+    const {
+      dataValues: { fcmTokens },
+    } = user;
+
+    if (!fcmTokens?.includes(fcmToken)) {
+      const newFcmTokens = [...fcmTokens, fcmToken];
+      await user.update({ fcmTokens: newFcmTokens });
+    }
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
 };
 
 /**
@@ -120,7 +128,7 @@ const verifyUserOtp = async (body, role, userId) => {
 
       const [tokens] = await Promise.all(updatePromises);
 
-      const resToSend = { id: user.id, phone: user.phone, role: user.role, fcmToken: user.fcmToken };
+      const resToSend = { id: user.id, phone: user.phone, role: user.role, fcmTokens: user.fcmTokens };
       return { ...resToSend, ...tokens };
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');

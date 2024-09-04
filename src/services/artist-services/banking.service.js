@@ -9,7 +9,7 @@ const upiVerificationTimeLimit = config.upiVerificationTimeLimit;
 
 /**
  * Add artist banking info
- * @param {String} artistId
+ * @param {string} artistId
  * @param {Object} body
  */
 const addArtistBankingInfoService = async (artistId, body) => {

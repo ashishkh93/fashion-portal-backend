@@ -45,7 +45,7 @@ const getServicesForCustomer = async () => {
 
 /**
  * Get Single services
- * @param {String} serviceId
+ * @param {string} serviceId
  * @returns {Promise<Service>}
  */
 const getSingleService = async (serviceId) => {
@@ -60,7 +60,7 @@ const getSingleService = async (serviceId) => {
 /**
  * Edit Service
  * @param {Object} updateServiceBody
- * @param {String} serviceId
+ * @param {string} serviceId
  * @returns {Promise}
  */
 const editService = async (updateServiceBody, serviceId) => {

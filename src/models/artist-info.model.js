@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       recentWorkImages: {
         type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
+        defaultValue: [],
       },
       userVisitedCount: {
         type: DataTypes.INTEGER,
