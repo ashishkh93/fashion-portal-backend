@@ -28,8 +28,15 @@ const updateFcmToken = catchAsync(async (req, res) => {
 
 const logout = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const { token, fcmToken } = req.body;
-  await commonServices.authService.logout(userId, token, fcmToken);
+  const { refreshToken, fcmToken } = req.body;
+  await commonServices.authService.logout(userId, refreshToken, fcmToken);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
+const adminLogout = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { refreshToken } = req.body;
+  await commonServices.authService.adminLogout(userId, refreshToken);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
@@ -43,5 +50,6 @@ module.exports = {
   verifyOtp,
   updateFcmToken,
   logout,
+  adminLogout,
   refreshTokens,
 };

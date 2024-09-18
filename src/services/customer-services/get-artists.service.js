@@ -107,6 +107,7 @@ const getSingleArtistService = async (artistId) => {
       where: { status: 'APPROVED' },
       as: 'arts',
       attributes: [
+        'id',
         'name',
         'status',
         'description',
@@ -117,7 +118,6 @@ const getSingleArtistService = async (artistId) => {
         'renderIndex',
       ],
       required: true,
-      // order: [['renderIndex', 'ASC']],
     },
     {
       model: Review,
@@ -159,7 +159,6 @@ const getSingleArtistService = async (artistId) => {
   };
 
   const artist = await ArtistInfo.findOne(artistQuery);
-  console.log(artist, 'artist==');
   if (artist) {
     return artist;
   } else {

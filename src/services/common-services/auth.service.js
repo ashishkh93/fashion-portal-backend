@@ -39,6 +39,36 @@ const logout = async (userId, refreshToken, fcmToken) => {
 };
 
 /**
+ * Logout
+ * @param {string} userId
+ * @param {string} refreshToken
+ * @returns {Promise}
+ */
+const adminLogout = async (userId, refreshToken) => {
+  const refreshTokenDoc = await Token.findOne({
+    where: {
+      userId,
+      token: refreshToken,
+      type: tokenTypes.REFRESH,
+      blacklisted: false,
+    },
+  });
+
+  if (!refreshTokenDoc) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Token Not found');
+  }
+
+  const user = await User.findByPk(userId);
+  const userUpdateBody = { tokenVersion: user.tokenVersion + 1 };
+
+  const apiPromises = [];
+  apiPromises.push(refreshTokenDoc.destroy());
+  apiPromises.push(user.update(userUpdateBody));
+
+  await Promise.all(apiPromises);
+};
+
+/**
  * Refresh auth tokens
  * @param {string} refreshToken
  * @returns {Promise<Object>}
@@ -59,5 +89,6 @@ const refreshAuth = async (refreshToken) => {
 
 module.exports = {
   logout,
+  adminLogout,
   refreshAuth,
 };

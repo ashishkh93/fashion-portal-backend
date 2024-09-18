@@ -48,6 +48,15 @@ const uploadArtistRecentWorkImages = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Recent work images added!', entity: newRecentWorkImages });
 });
 
+const removeArtistRecentWorkImages = catchAsync(async (req, res) => {
+  const artistId = req.params.artistId;
+  const newRecentWorkImages = await artistServices.artistInfoService.removeArtistRecentWorkImagesService(
+    req.body,
+    req.artist
+  );
+  res.status(httpStatus.OK).send({ status: true, message: 'Deleted!', entity: newRecentWorkImages });
+});
+
 module.exports = {
   addArtistInfo,
   addArtistBankingInfo,
@@ -56,4 +65,5 @@ module.exports = {
   editUpi,
   getArtistStatus,
   uploadArtistRecentWorkImages,
+  removeArtistRecentWorkImages,
 };

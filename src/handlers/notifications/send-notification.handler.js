@@ -1,7 +1,7 @@
 const { FirebaseAdminUtil } = require('../../utils/firebase-admin.util');
 const notificationJson = require('../../locales/notifications/en.json');
 const logger = require('../../config/logger');
-// const { Notification } = require('../../models');
+const { Notification } = require('../../models');
 
 /**
  * Replace message body with dynamic data
@@ -24,8 +24,6 @@ const replaceDynamicPlaceholders = (str = '', dataObj) => {
  * @param {string} userType
  */
 const sendNotificationToUser = async (type, deviceTokens, notificationPayload, additionalData = {}, userType) => {
-  if (!deviceTokens.length) return;
-
   const firebase = new FirebaseAdminUtil();
   const admin = firebase.fb_admin;
 
@@ -48,25 +46,28 @@ const sendNotificationToUser = async (type, deviceTokens, notificationPayload, a
   try {
     const notificationPromises = [];
 
-    // notificationPromises.push(Notification.create(notificationModelEntry));
-    deviceTokens.forEach((deviceToken) => {
-      const message = {
-        notification: {
-          title,
-          body,
-        },
-        data: additionalData,
-        token: deviceToken,
-      };
+    notificationPromises.push(Notification.create(notificationModelEntry));
 
-      notificationPromises.push(admin.messaging().send(message));
-    });
+    if (!!deviceTokens.length) {
+      deviceTokens.forEach((deviceToken) => {
+        const message = {
+          notification: {
+            title,
+            body,
+          },
+          data: additionalData,
+          token: deviceToken,
+        };
+
+        notificationPromises.push(admin.messaging().send(message));
+      });
+    }
 
     await Promise.all(notificationPromises);
-    logger.info(`Notification sent for type: ` + type + ' with data ' + JSON.stringify(notificationModelEntry));
+    logger.info('Notification sent for type: ' + type + ' with data ' + JSON.stringify(notificationModelEntry));
   } catch (error) {
     logger.error(
-      `Notification failed to sent due to : ` + error.message + ' with data ' + JSON.stringify({ ...notificationModelEntry })
+      'Notification failed to sent due to : ' + error.message + ' with data ' + JSON.stringify({ ...notificationModelEntry })
     );
   }
 };

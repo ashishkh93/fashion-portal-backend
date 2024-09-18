@@ -142,7 +142,7 @@ const s3UrlPattern = /^https:\/\/[a-zA-Z0-9.-]+\.s3\.[a-zA-Z0-9-]+\.amazonaws\.c
 
 const uploadRecentWorkImage = {
   params: Joi.object().keys({
-    artistId: validateUUID(), // Assuming validateUUID is your custom UUID validation function
+    artistId: validateUUID(),
   }),
   body: Joi.object().keys({
     recentWorkImages: Joi.array()
@@ -154,6 +154,7 @@ const uploadRecentWorkImage = {
         })
       )
       .min(1)
+      .max(10)
       .required(),
   }),
 };

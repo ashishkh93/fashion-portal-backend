@@ -66,8 +66,17 @@ const logout = {
     userId: validateUUID(),
   }),
   body: Joi.object().keys({
-    token: Joi.string().required(),
+    refreshToken: Joi.string().required(),
     fcmToken: Joi.string().required(),
+  }),
+};
+
+const adminLogout = {
+  params: Joi.object().keys({
+    userId: validateUUID(),
+  }),
+  body: Joi.object().keys({
+    refreshToken: Joi.string().required(),
   }),
 };
 
@@ -126,6 +135,7 @@ module.exports = {
   adminPhoneVerify,
   customerPhoneVerify,
   logout,
+  adminLogout,
   refreshTokens,
   forgotPassword,
   resetPassword,

@@ -40,4 +40,12 @@ router.get(
   artistControllers.artistInfoController.getArtistStatus
 );
 
+router.patch(
+  '/remove-recent-work',
+  auth(),
+  validate(artistValidation.uploadRecentWorkImage),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'removeRecentWork' })),
+  artistControllers.artistInfoController.removeArtistRecentWorkImages
+);
+
 module.exports = router;

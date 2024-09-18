@@ -289,6 +289,28 @@ const uploadArtistRecentWorkImagesService = async (artistId, body, artistInfo) =
   return newImages;
 };
 
+/**
+ * Remove artist's recent work images
+ * @param {string} artistId
+ * @param {object} body
+ * @param {ArtistInfo} artistInfo
+ */
+const removeArtistRecentWorkImagesService = async (body, artistInfo) => {
+  const { recentWorkImages } = artistInfo.dataValues;
+  const allPayloadImagesIncludedInCurrentRecentWorkImages = body.recentWorkImages.every((imageUrl) =>
+    recentWorkImages.includes(imageUrl)
+  );
+
+  if (!allPayloadImagesIncludedInCurrentRecentWorkImages) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid image urls');
+  }
+
+  const newImages = recentWorkImages.filter((imageUrl) => !body.recentWorkImages.includes(imageUrl));
+
+  await artistInfo.update({ recentWorkImages: newImages });
+  return newImages;
+};
+
 module.exports = {
   addArtistInfoService,
   addArtistBankingInfoService,
@@ -298,4 +320,5 @@ module.exports = {
   editArtistUPIService,
   getArtistStatusService,
   uploadArtistRecentWorkImagesService,
+  removeArtistRecentWorkImagesService,
 };
