@@ -52,15 +52,21 @@ const orderInitiate = {
       .messages({
         'string.empty': `"Date" is required`,
         'string.pattern.name': `"Date" must be in YYYY-MM-DD format`,
-        'any.required': `"Date" is a required`,
+        'any.required': `"Date" is required`,
       }),
     time: Joi.string()
-      .pattern(/^([1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/, 'HH:MM AM/PM')
+      .custom((value, helpers) => {
+        // Check if the time format is valid using moment
+        if (!moment(value, 'hh:mm A', true).isValid()) {
+          return helpers.error('string.pattern.name', { name: 'HH:MM AM/PM' });
+        }
+        return value;
+      })
       .required()
       .messages({
         'string.empty': `"Time" is required`,
         'string.pattern.name': `"Time" must be in 'HH:MM AM' or 'HH:MM PM' format`,
-        'any.required': `"Time" is a required field`,
+        'any.required': `"Time" is required`,
       }),
     status: Joi.string().required().valid('PENDING'),
     servicePrefix: Joi.string().required().max(2).messages({
