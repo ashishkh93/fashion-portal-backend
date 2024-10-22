@@ -11,8 +11,8 @@ const orderInitiate = catchAsync(async (req, res) => {
 });
 
 const fetchOrder = catchAsync(async (req, res) => {
-  const { orderId } = req.params;
-  const order = await customerServices.orderService.fetchOrderService(orderId);
+  const { orderId, customerId } = req.params;
+  const order = await customerServices.orderService.fetchOrderService(orderId, customerId);
 
   res.status(httpStatus.OK).send({ status: true, message: 'Order fetched!', entity: order || null });
 });

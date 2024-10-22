@@ -215,8 +215,8 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
  * @param {string} orderId
  * @returns {Promise<Order>}
  */
-const fetchOrderService = async (orderId) => {
-  const order = await getOrderById({ id: orderId });
+const fetchOrderService = async (orderId, customerId) => {
+  const order = await getOrderById({ id: orderId, customerId });
   return {
     ...order,
     createdAt: convertDateBasedOnTZ(order.createdAt),
