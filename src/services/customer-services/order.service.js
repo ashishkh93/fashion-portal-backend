@@ -22,9 +22,14 @@ const { getOrderWithFinancialInfoService } = require('../artist-services/order.s
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 const { sendNewOrderRequestNotification } = require('../../handlers/notifications/notification-data.hanlder');
+const { getTotalReviewsForArtistInOrderQuery } = require('../../utils/raw-sql.util');
 
 const getAverageRatingForArtistInOrderQuery = () => {
-  return '(SELECT AVG("reviewCount") FROM "Review" WHERE "Review"."artistId" = "artistId")';
+  return `(
+    SELECT COALESCE(AVG("reviewCount"), 0)
+    FROM "Review"
+    WHERE "Review"."artistId" = "Order"."artistId"
+  )`;
 };
 
 /**
@@ -267,7 +272,14 @@ const fetchOrdersService = async (customerId, page, size) => {
     {
       model: ArtistInfo,
       as: 'orderArtist',
-      attributes: ['artistId', 'profilePic', 'fullName', 'businessName', 'location'],
+      attributes: [
+        'artistId',
+        'profilePic',
+        'fullName',
+        'businessName',
+        'location',
+        [Sequelize.literal(getTotalReviewsForArtistInOrderQuery()), 'totalReviews'],
+      ],
       required: true,
       include: [
         {
