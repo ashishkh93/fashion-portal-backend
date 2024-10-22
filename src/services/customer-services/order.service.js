@@ -267,7 +267,7 @@ const fetchOrdersService = async (customerId, page, size) => {
     {
       model: ArtistInfo,
       as: 'orderArtist',
-      attributes: ['artistId', 'profilePic', 'fullName', 'location'],
+      attributes: ['artistId', 'profilePic', 'fullName', 'businessName', 'location'],
       required: true,
       include: [
         {
@@ -277,6 +277,11 @@ const fetchOrdersService = async (customerId, page, size) => {
           required: true,
         },
       ],
+    },
+    {
+      model: OrderFinancialInfo,
+      as: 'orderFinancialInfo',
+      attributes: ['totalAmount'],
     },
   ];
 
