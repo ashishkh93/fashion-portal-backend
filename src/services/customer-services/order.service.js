@@ -84,7 +84,7 @@ const getOrderById = async (orderCondition) => {
     {
       model: ArtistInfo,
       as: 'orderArtist',
-      attributes: ['profilePic', 'fullName', 'location'],
+      attributes: ['profilePic', 'fullName', 'location', 'businessName'],
       required: true,
       include: [
         {
