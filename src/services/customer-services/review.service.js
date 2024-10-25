@@ -17,7 +17,7 @@ const getApprovedArtistByStatus = async (artistId) => {
   if (artist) {
     return artist;
   } else {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Artist is not approved yet');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Artist may not found or not approved yet');
   }
 };
 
@@ -49,7 +49,7 @@ const createReviewForOrderService = async (customerId, orderId, body) => {
   const curReview = await getReviewByOrderId(orderId);
 
   if (!curReview) {
-    const reviewBody = { ...body, givenBy: customerId };
+    const reviewBody = { ...body, orderId, givenBy: customerId };
     const reviewResp = await Review.create(reviewBody);
     return reviewResp;
   } else {
@@ -95,4 +95,5 @@ module.exports = {
   createReviewForOrderService,
   updateReviewForOrderService,
   getOrderReview,
+  getApprovedArtistByStatus,
 };
