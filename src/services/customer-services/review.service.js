@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Review, Order, ArtistInfo, User } = require('../../models');
+const { Review, Order, ArtistInfo, User, CustomerInfo } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPlainData } = require('../../utils/common.util');
 
@@ -21,8 +21,11 @@ const getApprovedArtistByStatus = async (artistId) => {
   }
 };
 
-const getReviewByOrderId = async (orderId) => {
-  const review = await Review.findOne({ where: { orderId } });
+const getReviewByOrderId = async (orderId, include = []) => {
+  const review = await Review.findOne({
+    where: { orderId },
+    include,
+  });
   if (review) {
     return getPlainData(review);
   }
@@ -37,7 +40,7 @@ const getReviewByOrderId = async (orderId) => {
  */
 const createReviewForOrderService = async (customerId, orderId, body) => {
   await getApprovedArtistByStatus(body.artistId);
-  const order = await Order.findOne({ where: { id: orderId, artistId: body.artistId } });
+  const order = await Order.findByPk(orderId);
 
   if (!order) throw new ApiError(httpStatus.FORBIDDEN, `Order not found for the artist`);
   if (order.dataValues.status !== 'COMPLETED') {
@@ -83,7 +86,8 @@ const updateReviewForOrderService = async (orderId, body) => {
  * @returns {object}
  */
 const getOrderReview = async (orderId) => {
-  const review = await getReviewByOrderId(orderId);
+  const includeModel = [{ model: CustomerInfo, as: 'CustomerInformation', attributes: ['fullName', 'profilePic'] }];
+  const review = await getReviewByOrderId(orderId, includeModel);
   if (review) {
     return review;
   } else {
