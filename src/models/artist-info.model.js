@@ -146,6 +146,7 @@ module.exports = (sequelize, DataTypes) => {
     ArtistInfo.hasMany(models.Order, { foreignKey: 'artistId', sourceKey: 'artistId' });
     ArtistInfo.hasMany(models.Transfer, { foreignKey: 'artistId', sourceKey: 'artistId' });
     ArtistInfo.hasMany(models.ArtistVacation, { foreignKey: 'artistId', sourceKey: 'artistId', as: 'vacations' });
+    ArtistInfo.hasMany(models.FavoriteArtist, { foreignKey: 'artistId', sourceKey: 'artistId' });
   };
 
   return ArtistInfo;
