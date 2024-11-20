@@ -6,6 +6,7 @@ const paymentRoutes = require('./payment.route');
 const reviewRoutes = require('./review.route');
 const getArtistsRoutes = require('./get-artists.route');
 const servicesRoutes = require('./services.route');
+const favoriteRoutes = require('./favorite.route');
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ const defaultUserRoutes = [
   {
     path: '/:customerId/services',
     route: servicesRoutes,
+  },
+  {
+    path: '/:customerId/favorite',
+    route: favoriteRoutes,
   },
 ];
 
