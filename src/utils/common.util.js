@@ -183,12 +183,12 @@ const getOrderIdentity = (servicePrefix, currentOrderLength) => {
 /**
  * Get average rating of artist
  */
-const getAverageRatingOfArtistRawQuery = () => {
+const getAverageRatingOfArtistRawQuery = (artistAlias = 'ArtistInfo') => {
   return `COALESCE(
             (
               SELECT AVG("artistReview"."reviewCount")
               FROM "Review" AS "artistReview"
-              WHERE "artistReview"."artistId" = "ArtistInfo"."artistId"
+              WHERE "artistReview"."artistId" = "${artistAlias}"."artistId"
             ), 0)`;
 };
 
