@@ -5,8 +5,10 @@ const { Op } = require('sequelize');
 const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 const { getPlainData, getUniqueTempId } = require('../../utils/common.util');
-const config = require('../../config/config');
 const { getNumberOfImagesArtistCanUpload } = require('../../utils/order.util');
+const cacheUtil = require('../../cache/cache-util');
+const { CACHE_KEYS } = require('../../cache/cache-keys');
+const logger = require('../../config/logger');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -110,6 +112,14 @@ const addArtistBankingInfoService = async (artistId, body) => {
  * @returns {Promise<ArtistInfo>}
  */
 const getArtistInfoService = async (artistId) => {
+  const cacheKey = CACHE_KEYS.ARTIST.ARTIST_DETAILS;
+
+  const cachedArtistDetails = cacheUtil.getFromCache(cacheKey);
+  if (cachedArtistDetails) {
+    logger.info(`Cache Hit for ${cacheKey}`);
+    return cachedArtistDetails;
+  }
+
   const artistCondoition = { artistId };
   const includeModel = [
     {
@@ -137,6 +147,7 @@ const getArtistInfoService = async (artistId) => {
 
   if (artist) {
     const plainDataArtist = getPlainData(artist);
+    cacheUtil.setInCache(cacheKey, plainDataArtist);
     return plainDataArtist;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');

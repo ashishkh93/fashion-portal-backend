@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { validateUUID } = require('./common.validation');
 
 const addService = {
   body: Joi.object().keys({
@@ -24,8 +25,8 @@ const getAllService = {
 
 const addCategory = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
-    serviceId: Joi.string().required(),
+    name: validateUUID(),
+    serviceId: validateUUID(),
   }),
 };
 

@@ -3,19 +3,12 @@ const { Op } = require('sequelize');
 const { User, ArtistInfo, CustomerInfo, ArtistBankingInfo, Service, Category, Art } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
-const {
-  verifyUPICallback,
-  getCFAuthToken,
-  verifyPANCallback,
-  getAuthenticationTokenAPICallback,
-  verifyUPICallbackV2,
-} = require('../../utils/cashfree-payout-api.util');
+const { verifyPANCallback, verifyUPICallbackV2 } = require('../../utils/cashfree-payout-api.util');
 const { getPlainData } = require('../../utils/common.util');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
 const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-queries/get-all-arts-search-query copy');
 const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all-customers-search-query');
-const { getSignature } = require('../../utils/cashfree.util');
 const logger = require('../../config/logger');
 
 /**
@@ -369,8 +362,8 @@ const getAllArts = async (query, condition, include) => {
 /**
  * Get all arts
  * @param {string} artistId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @param {string} searchToken
  * @param {string} sortKey
  * @returns {Promise<Art>}

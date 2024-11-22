@@ -17,8 +17,8 @@ const includeModelForReview = [
 /**
  * Get all reviews for single artist
  * @param {string} artistId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Review>}
  */
 const getAllArtistReviewsForAdminService = async (artistId, page, size) => {
@@ -31,8 +31,8 @@ const getAllArtistReviewsForAdminService = async (artistId, page, size) => {
 
 /**
  * Get all reviews
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Review>}
  */
 const getAllReviewsForAdminService = async (page, size) => {

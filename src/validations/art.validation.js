@@ -70,6 +70,16 @@ const editArt = {
   }),
 };
 
+const switchArtStatus = {
+  params: Joi.object().keys({
+    artistId: Joi.string().required(),
+    artId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    isActive: Joi.bool().required(),
+  }),
+};
+
 const getSingleArt = {
   params: Joi.object().keys({
     artistId: Joi.string().required(),
@@ -84,7 +94,14 @@ const updateArtStatus = {
     artId: Joi.string().required(),
   }),
   body: Joi.object().keys({
-    status: Joi.string().required().valid('APPROVED', 'REJECTED'),
+    status: Joi.string().required().valid('APPROVED', 'REJECTED').messages({ 'any.only': 'Invalid status' }),
+    isActive: Joi.bool()
+      .required()
+      .when('status', {
+        is: 'APPROVED',
+        then: Joi.valid(true).required(),
+        otherwise: Joi.valid(false).required(),
+      }),
     reasonToDeclineArt: Joi.string().when('status', {
       is: 'REJECTED',
       then: Joi.required(),
@@ -106,6 +123,7 @@ const getArts = {
 module.exports = {
   addArt,
   editArt,
+  switchArtStatus,
   getArts,
   getSingleArt,
   updateArtStatus,

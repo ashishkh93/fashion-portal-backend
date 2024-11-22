@@ -112,6 +112,21 @@ const getServices = {
   }),
 };
 
+const addFavArtistService = {
+  params: Joi.object().keys({
+    customerId: validateUUID(),
+  }),
+  body: Joi.object().keys({
+    artistId: validateUUID(),
+  }),
+};
+
+const getAllFavArtistService = {
+  params: Joi.object().keys({
+    customerId: validateUUID(),
+  }),
+};
+
 module.exports = {
   addCustomerInfo,
   editCustomerInfo,
@@ -121,4 +136,6 @@ module.exports = {
   getFilteredArtists,
   getSingleArtist,
   getServices,
+  addFavArtistService,
+  getAllFavArtistService,
 };

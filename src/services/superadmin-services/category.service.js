@@ -11,6 +11,12 @@ const { GET_ALL_CATS_SEARCH_QUERY } = require('../../search-queries/get-all-cats
  * @returns {Category}
  */
 const addCategory = async (body) => {
+  const service = await Service.findByPk(body.serviceId);
+
+  if (!service.isActive) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Service is not active, please choose another service to add category');
+  }
+
   const catBody = {
     name: body.name,
     serviceId: body.serviceId,
@@ -23,8 +29,8 @@ const addCategory = async (body) => {
 
 /**
  * Get all Categories
- * @param {Number} query.page
- * @param {Number} query.size
+ * @param {number} query.page
+ * @param {number} query.size
  * @param {string} query.searchToken
  * @returns {Category}
  */

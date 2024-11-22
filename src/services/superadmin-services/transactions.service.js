@@ -1,16 +1,13 @@
 const httpStatus = require('http-status');
 const { User, Transaction, CustomerInfo, Transfer, ArtistInfo, PayoutTransaction } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { getPlainData } = require('../../utils/common.util');
-const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
-const { includeModelForOrderFetch } = require('../artist-services/order.service');
 
 /**
  * Get all transactions for customer
  * @param {string} customerId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Transaction>}
  */
 const getAllTransactionsForCustomerService = async (customerId, page, size) => {
@@ -64,8 +61,8 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
 /**
  * Get all transactions for artist
  * @param {string} artistId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Transaction>}
  */
 const getAllTransactionsForArtistService = async (artistId, page, size) => {

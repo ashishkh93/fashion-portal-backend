@@ -4,8 +4,18 @@ const { User, Art, Service, Category } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const config = require('../../config/config');
+const { Op } = require('sequelize');
 
 const advanceAmountPT = config.pt.advanceAmountPT;
+
+const getArtByArtId = async (artId) => {
+  const art = await Art.findByPk(artId);
+  if (art) {
+    return art;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
+  }
+};
 
 const getArtist = async (artistId) => {
   const artist = await User.findOne({ where: { id: artistId } });
@@ -35,9 +45,14 @@ const addArtService = async (artistId, body) => {
   promises.push(Service.findOne({ where: { id: body.serviceId, isActive: true } }));
 
   const catSer = await Promise.all(promises);
-
   if (catSer.some((res) => !res)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Category or Service is not valid, please provide valid one');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category or Service is not valid, please provide valid Id');
+  }
+
+  const sameArtNameExistForArtist = await Art.findOne({ where: { artistId, name: { [Op.iLike]: body.name } } });
+
+  if (sameArtNameExistForArtist) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Art with same name exists in your current records');
   }
 
   const artBody = { ...body, artistId, status: 'PENDING', isActive: false };
@@ -105,25 +120,35 @@ const throwErrorForAdvanceAmount = (maxAdvanceAmount) => {
  * @param {object} body
  * @returns {Promise}
  */
-const editArtService = async (artistId, artId, body) => {
-  const curArt = await Art.findOne({ where: { id: artId, artistId } });
-  if (curArt) {
-    /**
-     * check for advance amount, which must not be greater than 20% of price
-     */
-    if (_.has(body, 'price') && !_.has(body, 'advanceAmount')) {
-      const maxAdvanceAmount = body.price * advanceAmountPT;
-      if (curArt.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
-    } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
-      const maxAdvanceAmount = curArt.price * advanceAmountPT;
-      if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
-    }
+const editArtService = async (artId, body) => {
+  const curArt = await getArtByArtId(artId);
 
-    const updatedArtBody = { ...body };
-    await Art.update(updatedArtBody, { where: { id: artId, artistId } });
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Art not found');
+  /**
+   * check for advance amount, which must not be greater than 20% of price
+   */
+  if (_.has(body, 'price') && !_.has(body, 'advanceAmount')) {
+    const maxAdvanceAmount = body.price * advanceAmountPT;
+    if (curArt.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
+  } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
+    const maxAdvanceAmount = curArt.price * advanceAmountPT;
+    if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
   }
+
+  const updatedArtBody = { ...body };
+  await curArt.update(updatedArtBody);
+};
+
+/**
+ * Edit art status to active OR inactive
+ * @param {string} artistId
+ * @param {string} artId
+ * @param {object} body
+ * @returns {Promise}
+ */
+const switchArtStatus = async (artistId, artId, body) => {
+  const { isActive } = body;
+  const curArt = await getArtByArtId(artId);
+  await curArt.update({ isActive });
 };
 
 module.exports = {
@@ -132,4 +157,5 @@ module.exports = {
   getSingleArtService,
   editArtService,
   getArtist,
+  switchArtStatus,
 };

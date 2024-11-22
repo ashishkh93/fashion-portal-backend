@@ -37,4 +37,12 @@ router
     artistControllers.artController.editArt
   );
 
+router.patch(
+  '/:artId/switch-status',
+  auth(),
+  validate(artValidation.switchArtStatus),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'art' })),
+  artistControllers.artController.switchArtStatus
+);
+
 module.exports = router;

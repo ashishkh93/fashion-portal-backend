@@ -215,7 +215,7 @@ module.exports = class GetFilteredArtists {
         },
         {
           model: Art,
-          where: { status: 'APPROVED' }, // We only fetch the artists who actually have added their arts, in order to avoid confusion for customers
+          where: { status: 'APPROVED', isActive: true }, // We only fetch the artists who actually have added their arts, in order to avoid confusion for customers
           attributes: [],
           as: 'arts',
           required: true,

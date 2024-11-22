@@ -32,10 +32,16 @@ const getSingleArt = catchAsync(async (req, res) => {
 });
 
 const editArt = catchAsync(async (req, res) => {
+  const artId = req.params.artId;
+  await artistServices.artService.editArtService(artId, req.body);
+  res.status(httpStatus.OK).send({ status: true, message: 'Art updated successfully!', entity: req.body });
+});
+
+const switchArtStatus = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
   const artId = req.params.artId;
-  await artistServices.artService.editArtService(artistId, artId, req.body);
-  res.status(httpStatus.OK).send({ status: true, message: 'Art updated successfully!', entity: req.body });
+  await artistServices.artService.switchArtStatus(artistId, artId, req.body);
+  res.status(httpStatus.OK).send({ status: true, message: 'Art status updated!!' });
 });
 
 module.exports = {
@@ -43,4 +49,5 @@ module.exports = {
   getAllArts,
   getSingleArt,
   editArt,
+  switchArtStatus,
 };

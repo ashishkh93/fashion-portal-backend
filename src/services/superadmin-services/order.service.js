@@ -21,8 +21,8 @@ const includeModel = [
 /**
  * Get all orders for single artist
  * @param {string} artistId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Order>}
  */
 const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
@@ -35,8 +35,8 @@ const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
 /**
  * Get all orders for single artist
  * @param {string} customerId
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Order>}
  */
 const getAllOrdersForSingleCustomerService = async (customerId, page, size) => {
@@ -48,8 +48,8 @@ const getAllOrdersForSingleCustomerService = async (customerId, page, size) => {
 
 /**
  * Get all orders
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Order>}
  */
 const getAllOrdersService = async (page, size) => {
@@ -59,8 +59,8 @@ const getAllOrdersService = async (page, size) => {
 
 /**
  * Get Single order by Id
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise<Order>}
  */
 const getSingleOrderForAdminService = async (orderId) => {

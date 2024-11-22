@@ -9,7 +9,7 @@ const createService = catchAsync(async (req, res) => {
 
 const getAllServices = catchAsync(async (_req, res) => {
   const services = await mainArtService.getServices();
-  res.status(httpStatus.CREATED).send({ status: true, message: 'Services fetched successfully', entity: services });
+  res.status(httpStatus.OK).send({ status: true, message: 'Services fetched successfully', entity: services });
 });
 
 const getOneService = catchAsync(async (req, res) => {
@@ -21,7 +21,7 @@ const getOneService = catchAsync(async (req, res) => {
 const editService = catchAsync(async (req, res) => {
   const serviceId = req.params.serviceId;
   await mainArtService.editService(req.body, serviceId);
-  res.status(httpStatus.CREATED).send({ status: true, message: 'Service updated successfully', entity: req.body });
+  res.status(httpStatus.OK).send({ status: true, message: 'Service updated successfully', entity: req.body });
 });
 
 const deleteService = catchAsync(async (req, res) => {

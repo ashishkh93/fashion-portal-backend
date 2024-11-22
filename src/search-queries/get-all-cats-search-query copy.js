@@ -17,7 +17,7 @@ const searchTokenQuery = (searchToken) => {
   };
 };
 
-const isActiveQery = (active) => {
+const isActiveQuery = (active) => {
   return {
     isActive: {
       [Op.eq]: active,
@@ -28,12 +28,12 @@ const isActiveQery = (active) => {
 const GET_ALL_CATS_SEARCH_QUERY = (searchToken, isActive, isActiveCondition) => {
   if (searchToken && isActiveCondition) {
     return {
-      [Op.and]: [searchTokenQuery(searchToken), isActiveQery(isActive)],
+      [Op.and]: [searchTokenQuery(searchToken), isActiveQuery(isActive)],
     };
   } else if (searchToken) {
     return searchTokenQuery(searchToken);
   } else if (isActiveCondition) {
-    return isActiveQery(isActive);
+    return isActiveQuery(isActive);
   }
 };
 

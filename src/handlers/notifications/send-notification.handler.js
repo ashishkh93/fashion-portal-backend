@@ -27,7 +27,7 @@ const sendNotificationToUser = async (type, deviceTokens, notificationPayload, a
   const firebase = new FirebaseAdminUtil();
   const admin = firebase.fb_admin;
 
-  const fcmPayload = notificationJson[type]['messages']['fcm']; // fcm payload data
+  const fcmPayload = notificationJson[type]['messages']['fcm']; // fcm payload data that need to send in notifiaction
   const title = fcmPayload.title;
   const body = replaceDynamicPlaceholders(fcmPayload.body, notificationPayload);
   const screen = fcmPayload.screen;

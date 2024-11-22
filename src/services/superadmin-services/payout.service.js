@@ -47,7 +47,9 @@ const payoutToArtistsService = async (body) => {
           date: {
             [Op.between]: [body.fromDate, body.toDate],
           },
-          status: 'COMPLETED',
+          status: {
+            [Op.in]: ['COMPLETED', 'CANCELLED_BY_CUSTOMER'], // status must be COMPLETED or CANCELLED_BY_CUSTOMER in order to be considered the order as payout to artist
+          },
         },
         attributes: ['id', 'customerId', 'artistId', 'date', 'time', 'status', 'createdAt'],
         include: [
@@ -55,6 +57,10 @@ const payoutToArtistsService = async (body) => {
             model: OrderFinancialInfo,
             as: 'orderFinancialInfo',
             attributes: ['totalAmount', 'advanceAmountForOrder', 'advanceAmountPaid', 'discount', 'addOnAmount'],
+            where: {
+              isRefunded: false, // we are not paying for refunded orders
+            },
+            required: true,
           },
           {
             model: ArtistInfo,
@@ -261,7 +267,10 @@ const payoutToArtistsService = async (body) => {
         );
       }
     } else {
-      throw new ApiError(httpStatus.FORBIDDEN, 'The Payout is already done for the date range you have selected');
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        'Invalid date range OR The Payout is already done for the date range you have selected'
+      );
     }
   } catch (error) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Internal Server Error');
@@ -290,8 +299,8 @@ const batchPayoutVerifyService = async (batchTransferId) => {
 
 /**
  * Get all payouts
- * @param {Number} page
- * @param {Number} size
+ * @param {number} page
+ * @param {number} size
  * @returns {Promise}
  */
 const getAllPayoutsService = async (page, size) => {

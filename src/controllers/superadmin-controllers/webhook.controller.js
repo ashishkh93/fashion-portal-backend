@@ -19,7 +19,7 @@ const pgWebhookTransaction = async (req, res) => {
   try {
     const webhookReqBody = req.body.data;
 
-    console.log(webhookReqBody, 'webhookReqBody===');
+    logger.info('Webhook transaction called for orderId: ', webhookReqBody.order.order_id);
 
     const cfOrderId = webhookReqBody.order.order_id;
     const isAdvancePayment = cfOrderId.startsWith('ADVANCE');
@@ -57,20 +57,15 @@ const pgWebhookTransaction = async (req, res) => {
 
         await Order.update(orderUpdateBody, { where: { id: actualOrderId } });
 
-        let advancedPaid = false;
-        if ((isAdvancePayment && webhookReqBody.payment.payment_status === 'SUCCESS') || isFinalPayment) {
-          advancedPaid = true;
+        if (isAdvancePayment) {
+          let advancedPaid = webhookReqBody.payment.payment_status === 'SUCCESS';
+
+          let orderFinancialInfoUpdateBody = {
+            advanceAmountPaid: advancedPaid,
+            advancePaidAt: moment(),
+          };
+          await OrderFinancialInfo.update(orderFinancialInfoUpdateBody, { where: { orderId: actualOrderId } });
         }
-
-        let orderFinancialInfoUpdateBody = {
-          advanceAmountPaid: advancedPaid,
-        };
-
-        if (advancedPaid) {
-          orderFinancialInfoUpdateBody.advancePaidAt = moment();
-        }
-
-        await OrderFinancialInfo.update(orderFinancialInfoUpdateBody, { where: { orderId: actualOrderId } });
       }
 
       logger.info('Transaction created for order: ' + actualOrderId);
