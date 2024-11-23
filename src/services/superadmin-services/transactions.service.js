@@ -11,7 +11,7 @@ const { getPaginationDataFromModel } = require('../../utils/paginate');
  * @returns {Promise<Transaction>}
  */
 const getAllTransactionsForCustomerService = async (customerId, page, size) => {
-  const customer = await User.findOne({ where: { id: customerId, role: 'customer' } });
+  const customer = await User.findByPk(customerId);
 
   if (!customer) {
     throw new ApiError(
@@ -66,7 +66,7 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
  * @returns {Promise<Transaction>}
  */
 const getAllTransactionsForArtistService = async (artistId, page, size) => {
-  const artist = await User.findOne({ where: { id: artistId, role: 'artist' } });
+  const artist = await User.findByPk(artistId);
 
   if (!artist) {
     throw new ApiError(
