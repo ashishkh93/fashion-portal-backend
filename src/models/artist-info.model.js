@@ -31,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING(255),
         allowNull: false,
-        // unique: true,
         unique: {
           msg: 'The email you provided is already registered.',
         },
@@ -45,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       profilePic: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      businessProfilePic: {
         type: DataTypes.STRING,
         allowNull: true,
       },
