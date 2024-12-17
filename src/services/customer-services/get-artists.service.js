@@ -127,7 +127,7 @@ const getSingleArtistService = async (artistId) => {
         {
           model: CustomerInfo,
           as: 'CustomerInformation',
-          attributes: ['fullName'],
+          attributes: ['fullName', 'profilePic'],
         },
       ],
     },
