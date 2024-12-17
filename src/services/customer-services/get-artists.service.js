@@ -138,6 +138,8 @@ const getSingleArtistService = async (artistId) => {
     attributes: [
       'artistId',
       'fullName',
+      'profilePic',
+      'businessProfilePic',
       'businessName',
       'gender',
       'profilePic',

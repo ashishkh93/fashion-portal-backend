@@ -46,6 +46,7 @@ const getAllArtistService = async (query) => {
         'dob',
         'gender',
         'profilePic',
+        'businessProfilePic',
         'workingTime',
         'location',
         'pincode',

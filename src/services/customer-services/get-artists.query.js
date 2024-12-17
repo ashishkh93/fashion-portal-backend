@@ -183,6 +183,8 @@ module.exports = class GetFilteredArtists {
       attributes: [
         'artistId',
         'businessName',
+        'profilePic',
+        'businessProfilePic',
         'fullName',
         'location',
         'city',
