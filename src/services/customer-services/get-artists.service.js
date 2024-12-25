@@ -1,9 +1,10 @@
 const httpStatus = require('http-status');
+const moment = require('moment');
 const ApiError = require('../../utils/ApiError');
 const GetFilteredArtists = require('./get-artists.query');
-const { ArtistInfo, User, Service, Art, CustomerInfo, Review, Sequelize } = require('../../models');
+const { ArtistInfo, User, Service, Art, CustomerInfo, ArtistVacation, Review, Sequelize } = require('../../models');
 const { getAverageRatingOfArtistRawQuery } = require('../../utils/common.util');
-const { required } = require('joi');
+const { Op } = require('sequelize');
 
 /**
  * ************* VERY IMPORTANT API CONTROLLER *************
@@ -76,9 +77,9 @@ const { required } = require('joi');
 //   }
 // };
 
-const getFilteredArtistsService = async (page, size, body) => {
+const getFilteredArtistsService = async (page, size, body, customerId) => {
   const getArtistsInstance = new GetFilteredArtists(page, size, body);
-  const artists = await getArtistsInstance.get();
+  const artists = await getArtistsInstance.get(customerId);
   return artists;
 };
 
@@ -130,6 +131,17 @@ const getSingleArtistService = async (artistId) => {
           attributes: ['fullName', 'profilePic'],
         },
       ],
+    },
+    {
+      model: ArtistVacation,
+      as: 'vacations',
+      attributes: ['title', 'startDate', 'endDate'],
+      required: false,
+      where: {
+        endDate: {
+          [Op.gt]: moment().format('YYYY-MM-DD'),
+        },
+      },
     },
   ];
 

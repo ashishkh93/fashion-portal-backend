@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const moment = require('moment');
 const httpStatus = require('http-status');
 const { ArtistVacation } = require('../../models');
 const ApiError = require('../../utils/ApiError');
@@ -29,6 +30,8 @@ const addVacationService = async (artistId, body) => {
     ],
   };
 
+  const isStartDateBeforeToday = moment(body.startDate).isBefore(moment().format('YYYY-MM-DD'));
+
   const isVacationExistForFromDate = await ArtistVacation.findOne({
     where: { ...vacationExistQuery },
   });
@@ -38,6 +41,8 @@ const addVacationService = async (artistId, body) => {
       httpStatus.FORBIDDEN,
       'You have already added the vacation between the dates you selected, please choose another dates'
     );
+  } else if (isStartDateBeforeToday) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You can't add vacation before current date");
   }
 
   const newVacation = await ArtistVacation.create({ ...body, artistId });

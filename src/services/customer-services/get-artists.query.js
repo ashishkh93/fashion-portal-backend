@@ -147,7 +147,7 @@ module.exports = class GetFilteredArtists {
   //     // raw: true,
   //   };
 
-  async get() {
+  async get(customerId) {
     let { page, size, latitude: userLat, longitude: userLong, minRating, services, maxDistance } = this.details;
 
     const { limit, offset } = getPagination(page, size);
@@ -176,6 +176,15 @@ module.exports = class GetFilteredArtists {
     `
       : 'true';
 
+    // Raw query to get favorite artist count
+    const favArtistsCount = `(
+            SELECT COUNT(*)
+            FROM "FavoriteArtist"
+            WHERE "FavoriteArtist"."artistId" = "ArtistInfo"."artistId"
+              AND "FavoriteArtist"."customerId" = :customerId
+              AND "FavoriteArtist"."deletedAt" IS NULL
+            ) > 0`;
+
     // to add all attributes from model, and then append extra ones as below in query
     // const attributes = Object.keys(ArtistInfo.rawAttributes);
 
@@ -197,6 +206,7 @@ module.exports = class GetFilteredArtists {
         'createdAt',
         [Sequelize.literal('"artist"."phone"'), 'phone'],
         [Sequelize.literal(getAverageRatingOfArtistRawQuery()), 'averageRating'],
+        [Sequelize.literal(favArtistsCount), 'isFavorite'],
       ],
       include: [
         {
@@ -223,10 +233,12 @@ module.exports = class GetFilteredArtists {
           required: true,
         },
       ],
-      // where: Sequelize.and({ status: 'APPROVED' }, Sequelize.literal(locationFilter), Sequelize.literal(ratingFilter)),
       where: {
         status: 'APPROVED',
         [Op.and]: [Sequelize.literal(locationFilter), Sequelize.literal(ratingFilter)],
+      },
+      replacements: {
+        customerId, // Bind the customerId securely
       },
       order: [],
       limit,
@@ -258,7 +270,7 @@ module.exports = class GetFilteredArtists {
 
     if (services) {
       query.where.services = {
-        [Op.overlap]: services, // Assuming services is stored as an array in the database
+        [Op.overlap]: services, // Services is stored as an array in the database
       };
     }
 
