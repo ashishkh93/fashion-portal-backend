@@ -30,9 +30,6 @@ module.exports = (sequelize, DataTypes) => {
       updatedAt: {
         type: DataTypes.DATE,
       },
-      deletedAt: {
-        type: DataTypes.DATE,
-      },
     },
     {
       tableName: 'FavoriteArtist',
@@ -43,7 +40,6 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       timestamps: true,
-      paranoid: true,
     }
   );
 
