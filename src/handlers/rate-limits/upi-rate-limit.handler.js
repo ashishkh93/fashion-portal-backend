@@ -4,7 +4,11 @@ const ApiError = require('../../utils/ApiError');
 const config = require('../../config/config');
 
 const verifyUPIRateLimiter = (app) => {
-  const upiVerifyRoutes = ['/api/v1/super-admin/:adminId/verify/:artistId/upi', '/api/v1/artist/:artistId/verification/upi'];
+  const upiVerifyRoutes = [
+    '/api/v1/super-admin/:adminId/verify/:artistId/upi',
+    '/api/v1/artist/:artistId/verification/upi',
+    // '/api/v1/artist/:artistId/banking',
+  ];
 
   const upiRateLimitOptions = {
     windowMs: 5 * 60 * 1000,

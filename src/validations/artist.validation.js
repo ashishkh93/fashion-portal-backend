@@ -1,19 +1,6 @@
 const Joi = require('joi');
 const { validateUUID } = require('./common.validation');
 
-// Define the UPI regex pattern
-// const upiRegex = /^[\w.-]+@[\w.-]+$/;
-// const upiRegex = /^[a-zA-Z0-9.-]{2,256}@[a-zA-Z.-]{2,64}$/;
-const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z]{2,64}$/;
-const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-
-const upiValidationWithJoi = () => {
-  return Joi.string().pattern(upiRegex).required().messages({
-    'string.empty': 'UPI is required',
-    'string.pattern.base': 'UPI is invalid, please enter a valid UPI',
-  });
-};
-
 const addArtistInfo = {
   params: Joi.object().keys({
     artistId: Joi.string().required().uuid(),

@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(64), // Length of SHA-256 hash
         allowNull: false,
         unique: {
-          msg: 'The UPI ID you provided already exists in the system',
+          msg: 'The UPI ID you provided is already associated with another artist.',
         },
       },
       upiVerified: {

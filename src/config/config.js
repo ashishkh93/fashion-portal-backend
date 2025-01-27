@@ -191,7 +191,7 @@ module.exports = {
   },
 
   /** Upi verification api rate limit number */
-  upiVerificationLimit: 2,
+  upiVerificationLimit: 10,
   maxBankingOTPAttempts: 3,
   upiVerificationTimeLimit: 10, // in minutes
 

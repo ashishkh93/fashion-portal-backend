@@ -3,6 +3,7 @@ const { OtpRequest, ArtistInfo, ArtistBankingInfo } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const config = require('../../config/config');
 const { createOtpRequest } = require('../common-services/otp.service');
+const { handleVerificationByCF } = require('./verification.service');
 
 const MAX_BANKING_OTP_ATTEMPTS = config.maxBankingOTPAttempts;
 const upiVerificationTimeLimit = config.upiVerificationTimeLimit;
@@ -17,9 +18,15 @@ const addArtistBankingInfoService = async (artistId, body) => {
   if (artistBanking) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Banking informations already added');
   } else {
-    const bankingBody = { ...body, artistId };
-    await ArtistBankingInfo.create(bankingBody);
-    return body;
+    /**
+     *  FIRST VERIFY THE UPI BY CASHFREE VERIFICATION API, THEN ADD IT TO DB
+     */
+    const verifiactionRes = await handleVerificationByCF(artistId, body.upi);
+    if (verifiactionRes) {
+      const bankingBody = { ...body, artistId, accountHolderName: verifiactionRes.name_at_bank, upiVerified: true };
+      await ArtistBankingInfo.create(bankingBody);
+      return body;
+    }
   }
 };
 

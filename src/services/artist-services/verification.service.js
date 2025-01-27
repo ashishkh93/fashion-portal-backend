@@ -1,9 +1,21 @@
 const httpStatus = require('http-status');
 const { User } = require('../../models');
 const ApiError = require('../../utils/ApiError');
-const { Op } = require('sequelize');
 const { verifyUpiCallback } = require('../superadmin-services/getInfos.service');
 const { getUniqueTempId } = require('../../utils/common.util');
+const logger = require('../../config/logger');
+
+const handleVerificationByCF = async (artistId, upi) => {
+  const verificationId = getUniqueTempId(artistId);
+  const apiResult = await verifyUpiCallback(upi, null, verificationId); // middle one is artist name attribute
+
+  if (apiResult.status === 'VALID') {
+    return apiResult;
+  } else {
+    logger.error('Invalid UPI: ' + JSON.stringify(apiResult));
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UPI, please provide valid one.');
+  }
+};
 
 /**
  * Verify Upi service
@@ -16,15 +28,7 @@ const verifyUpiService = async (artistId, upi) => {
     let artist = await User.findByPk(artistId);
 
     if (artist) {
-      const verificationId = getUniqueTempId(artistId);
-      const apiResult = await verifyUpiCallback(upi, null, verificationId); // middle one is artist name attribute
-
-      if (apiResult.status === 'VALID') {
-        return apiResult;
-      } else {
-        logger.error('Invalid UPI: ' + JSON.stringify(apiResult));
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UPI');
-      }
+      return handleVerificationByCF(artistId, upi);
     } else {
       throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
     }
@@ -35,4 +39,5 @@ const verifyUpiService = async (artistId, upi) => {
 
 module.exports = {
   verifyUpiService,
+  handleVerificationByCF,
 };

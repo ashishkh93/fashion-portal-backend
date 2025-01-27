@@ -139,8 +139,10 @@ const verifyUPICallbackV2 = async (upi, name, verificationId) => {
     if (upiVerifyResponse.status === 200) {
       return result;
     } else {
+      const is_attemp_failed = result?.code === 'verification_failed';
+      const msg = is_attemp_failed ? 'Invalid UPI id, please provide valid one.' : result?.message;
       logger.error('upi validation failed due to: ', result?.message);
-      throw new ApiError(result?.status || upiVerifyResponse.status, result?.message || 'Internal server error');
+      throw new ApiError(result?.status || upiVerifyResponse.status, msg || 'Internal server error');
     }
   } catch (error) {
     logger.error('upi validation failed due to: ' + error.message);

@@ -8,12 +8,6 @@ const addArtistInfo = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ status: true, message: 'Profile information added!', entity: artistInfo });
 });
 
-const addArtistBankingInfo = catchAsync(async (req, res) => {
-  const artistId = req.params.artistId;
-  const artistInfo = await artistServices.artistInfoService.addArtistBankingInfoService(artistId, req.body);
-  res.status(httpStatus.CREATED).send({ status: true, message: 'Banking information added!', entity: artistInfo });
-});
-
 const getArtistInfo = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
   const artistInfo = await artistServices.artistInfoService.getArtistInfoService(artistId);
@@ -59,7 +53,6 @@ const removeArtistRecentWorkImages = catchAsync(async (req, res) => {
 
 module.exports = {
   addArtistInfo,
-  addArtistBankingInfo,
   getArtistInfo,
   editArtistInfo,
   editUpi,

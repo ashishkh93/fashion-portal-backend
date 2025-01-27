@@ -91,22 +91,6 @@ const addArtistInfoService = async (artistId, body) => {
 };
 
 /**
- * Add artist banking info
- * @param {string} artistId
- * @param {Object} body
- */
-const addArtistBankingInfoService = async (artistId, body) => {
-  const artistBanking = await ArtistBankingInfo.findOne({ where: { artistId } });
-  if (artistBanking) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Banking informations already added');
-  } else {
-    const bankingBody = { ...body, artistId };
-    await ArtistBankingInfo.create(bankingBody);
-    return body;
-  }
-};
-
-/**
  * Get artist info
  * @param {string} artistId
  * @returns {Promise<ArtistInfo>}
@@ -324,7 +308,6 @@ const removeArtistRecentWorkImagesService = async (body, artistInfo) => {
 
 module.exports = {
   addArtistInfoService,
-  addArtistBankingInfoService,
   getArtistInfoService,
   editArtistInfoService,
   getApprovedArtist,
