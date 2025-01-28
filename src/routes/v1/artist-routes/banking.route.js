@@ -4,6 +4,7 @@ const { artistControllers } = require('../../../controllers');
 const { bankingValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
 const { artistValidate } = require('../../../middlewares/userValidate');
+const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router({ mergeParams: true });
 
@@ -37,6 +38,7 @@ router.patch(
   auth(),
   validate(bankingValidation.editUpi),
   artistValidate((req) => ({ artistId: req.params.artistId, route: 'banking' })),
+  transactionMiddleware,
   artistControllers.bankingController.editUpi
 );
 

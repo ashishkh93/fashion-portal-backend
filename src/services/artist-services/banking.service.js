@@ -4,6 +4,7 @@ const ApiError = require('../../utils/ApiError');
 const config = require('../../config/config');
 const { createOtpRequest } = require('../common-services/otp.service');
 const { handleVerificationByCF } = require('./verification.service');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
 const MAX_BANKING_OTP_ATTEMPTS = config.maxBankingOTPAttempts;
 const upiVerificationTimeLimit = config.upiVerificationTimeLimit;
@@ -38,7 +39,9 @@ const artistVerificationDuringUpiUpdation = async (artist, artistInfo, phone) =>
   const artistBanking = await artistInfo.getArtistBankingInfo();
   const artistCanUpdateBankingInfo = artistBanking?.canUpdateBankingInfo;
 
-  if (!artistCanUpdateBankingInfo) {
+  if (!artistBanking) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Banking info not found.');
+  } else if (!artistCanUpdateBankingInfo) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
       'Your account is temporarily restricted from updating banking information due to multiple incorrect OTP entries. Please contact the support team to regain access.'
@@ -55,6 +58,7 @@ const artistVerificationDuringUpiUpdation = async (artist, artistInfo, phone) =>
 const editArtistUPIService = async (artistId, body, artistInfo, artist) => {
   await artistVerificationDuringUpiUpdation(artist, artistInfo, body.phone);
 
+  const transaction = getTransaction();
   const otpRequest = await OtpRequest.findOne({
     where: {
       userId: artistId,
@@ -65,20 +69,29 @@ const editArtistUPIService = async (artistId, body, artistInfo, artist) => {
   });
 
   if (!otpRequest) {
-    throw new Error('Please complete the verifing OTP flow before updating UPI.');
+    throw new ApiError(httpStatus.FORBIDDEN, 'Please complete the verifing OTP flow before updating UPI.');
   }
 
   const verificationTimeLimit = upiVerificationTimeLimit * 60 * 1000; // 10 minutes in milliseconds
   if (new Date() - new Date(otpRequest.updatedAt) > verificationTimeLimit) {
-    throw new Error('OTP verification expired. Please verify OTP again to update UPI.');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'OTP verification expired. Please verify OTP again to update UPI.');
   }
 
   const artistBanking = await ArtistBankingInfo.findOne({ where: { artistId } });
   if (artistBanking) {
-    const updateUpiBody = { upi: body.upi, upiVerified: true };
-    await artistBanking.update(updateUpiBody);
+    const verifiactionRes = await handleVerificationByCF(artistId, body.upi);
+    if (verifiactionRes) {
+      const updateUpiBody = { upi: body.upi, upiVerified: true };
+      await artistBanking.update(updateUpiBody, { transaction });
+      await otpRequest.destroy({ transaction });
+    } else {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Something went wrong, please try after sometime, if issue persist contact to our support team.'
+      );
+    }
   } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You haven't provided the banking info yet");
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Banking info not found.');
   }
 };
 
