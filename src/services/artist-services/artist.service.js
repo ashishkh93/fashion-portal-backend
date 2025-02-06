@@ -244,14 +244,16 @@ const getArtistStatusService = async (artistId) => {
 
   let profileInfoAdded = false;
   let bankInfoAdded = false;
+  let artistApproved = false;
 
   if (curArtist) {
     curArtist = getPlainData(curArtist);
     profileInfoAdded = !!curArtist;
     bankInfoAdded = !!curArtist.artistBankingInfo;
+    artistApproved = profileInfoAdded && bankInfoAdded && curArtist.status === 'APPROVED';
   }
 
-  return { profileInfoAdded, bankInfoAdded };
+  return { profileInfoAdded, bankInfoAdded, artistApproved };
 };
 
 /**
