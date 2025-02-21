@@ -19,12 +19,12 @@ const jwtVerify = async (payload, done) => {
       attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
     });
 
-    if (payload?.v !== user.tokenVersion) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Blacklisted token');
-    }
-
     if (!user) {
       return done(null, false);
+    }
+
+    if (payload?.v !== user.tokenVersion) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Blacklisted token');
     }
 
     done(null, user);
