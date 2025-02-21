@@ -23,9 +23,9 @@ if (config.env !== 'test') {
 }
 
 // re-sync database ---- SHOULD ONLY USE IN DEV ENVIRONMENT
-// db.sequelize.sync({ alter: true }).then(() => {
-//   console.log('Drop and re-sync db.');
-// });
+db.sequelize.sync({ alter: true }).then(() => {
+  console.log('Drop and re-sync db.');
+});
 
 // set security HTTP headers
 app.use(helmet());
