@@ -71,8 +71,8 @@ const addArtistInfoService = async (artistId, body) => {
   const artist = await ArtistInfo.findOne({ where: { artistId } });
 
   if (artist) {
-    // safe side checking and giving the response based on the artist status
-    await checkArtistStatus(artist, 'add');
+    // await checkArtistStatus(artist, 'add');
+    throw new ApiError(httpStatus.FORBIDDEN, 'You have already added your info!');
   } else {
     const artistInfoEntry = { ...body, artistId, status: 'PENDING' };
     let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry, { transaction });
