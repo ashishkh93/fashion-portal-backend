@@ -1,7 +1,7 @@
 const express = require('express');
 const validate = require('../../../middlewares/validate');
 const authValidation = require('../../../validations/auth.validation');
-const { commonControllers } = require('../../../controllers');
+const { commonControllers, superAdminControllers } = require('../../../controllers');
 const addRoleToLoginRoute = require('../../../middlewares/addRole');
 const { userValidateWhileVerifyOTP, adminValidate } = require('../../../middlewares/userValidate');
 const auth = require('../../../middlewares/auth');
@@ -9,11 +9,19 @@ const auth = require('../../../middlewares/auth');
 const router = express.Router();
 
 router.post(
+  '/signup',
+  validate(authValidation.phoneLogin),
+  addRoleToLoginRoute('superAdmin'),
+  superAdminControllers.adminAuthController.adminSignup
+);
+
+router.post(
   '/login',
   validate(authValidation.phoneLogin),
   addRoleToLoginRoute('superAdmin'),
-  commonControllers.authController.login
+  superAdminControllers.adminAuthController.adminLogin
 );
+
 router.post(
   '/:adminId/verify-otp',
   addRoleToLoginRoute('superAdmin'),
@@ -27,7 +35,7 @@ router.post(
   auth(),
   validate(authValidation.adminLogout),
   adminValidate((req) => ({ superAdminId: req.params.userId })),
-  commonControllers.authController.adminLogout
+  superAdminControllers.adminAuthController.adminLogout
 );
 
 // router.post('/logout', validate(authValidation.logout), commonControllers.authController.logout);

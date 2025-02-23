@@ -1,3 +1,4 @@
+module.exports.adminAuthController = require('./admin-auth.controller');
 module.exports.serviceController = require('./service.controller');
 module.exports.categoryController = require('./category.controller');
 module.exports.infoController = require('./getInfos.controller');

@@ -33,13 +33,6 @@ const logout = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-const adminLogout = catchAsync(async (req, res) => {
-  const { userId } = req.params;
-  const { refreshToken } = req.body;
-  await commonServices.authService.adminLogout(userId, refreshToken);
-  res.status(httpStatus.NO_CONTENT).send();
-});
-
 const refreshTokens = catchAsync(async (req, res) => {
   const tokens = await commonServices.authService.refreshAuth(req.body.refreshToken);
   res.send({ ...tokens });
@@ -50,6 +43,5 @@ module.exports = {
   verifyOtp,
   updateFcmToken,
   logout,
-  adminLogout,
   refreshTokens,
 };
