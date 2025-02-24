@@ -13,9 +13,15 @@ const errorConverter = (err, req, res, next) => {
 
     let message = error.message || httpStatus[statusCode];
 
+    // Handle Sequelize Validation Error
     if (error instanceof Sequelize.ValidationError) {
       const messages = error.errors.map((e) => e.message);
       message = messages.join(', ');
+    }
+
+    // Handle Foreign Key Constraint Error
+    if (error instanceof Sequelize.ForeignKeyConstraintError) {
+      message = 'Invalid reference: The related record does not exist.';
     }
 
     error = new ApiError(statusCode, message, false, err.stack);
