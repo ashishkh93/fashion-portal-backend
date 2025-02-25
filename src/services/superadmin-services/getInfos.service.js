@@ -104,8 +104,9 @@ const getArtistInfoService = async (artistId) => {
 
   if (artistInfo) {
     return getPlainData(artistInfo);
+  } else {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
   }
-  return {};
 };
 
 const artIncludes = [
