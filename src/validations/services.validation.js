@@ -19,13 +19,13 @@ const getEditAndDeleteService = {
 
 const getAllService = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
+    adminId: validateUUID(),
   }),
 };
 
 const addCategory = {
   body: Joi.object().keys({
-    name: validateUUID(),
+    name: Joi.string().required(),
     serviceId: validateUUID(),
   }),
 };
