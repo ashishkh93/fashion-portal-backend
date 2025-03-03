@@ -189,7 +189,8 @@ const getPrivateImageUrl = async (userId, s3Key, isAdmin) => {
 // };
 
 const uploadPublicFileToBucket = async (req) => {
-  const file = req.file;
+  const file = req.file || req.body?.file; // file from req.body is for react-native request
+
   if (!file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide a image source');
   }
