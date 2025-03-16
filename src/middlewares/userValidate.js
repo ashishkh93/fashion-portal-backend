@@ -65,8 +65,6 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
 
     const customer = await CustomerInfo.findOne({ where: { customerId: userId } });
 
-    console.log(activeUser, customer, 'activeUser==');
-
     if (!activeUser) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
     } else if (!activeUser?.isActive) {
