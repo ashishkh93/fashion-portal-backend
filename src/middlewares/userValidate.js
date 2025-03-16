@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
-const { ArtistInfo } = require('../models');
+const { ArtistInfo, CustomerInfo } = require('../models');
 const { getUserById } = require('../services/common-services/user.service');
 
 const ARTIST_NOT_MANDATE_ROUTES = ['artistInfo', 'verification', 'auth'];
@@ -63,14 +63,18 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
     const userId = getUserId(req);
     const activeUser = req.user;
 
+    const customer = await CustomerInfo.findOne({ where: { customerId: userId } });
+
     if (!activeUser) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
     } else if (!activeUser?.isActive) {
       throw new ApiError(httpStatus.NOT_FOUND, 'You may have been blocked, please contact support team');
     } else if (activeUser.role !== 'customer') {
-      throw new ApiError(httpStatus.UNAUTHORIZED, 'Access denied');
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Access denied!');
     } else if (userId !== activeUser.id) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
+    } else if (!customer) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'Access denied!');
     }
 
     next();
