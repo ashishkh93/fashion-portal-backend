@@ -65,6 +65,8 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
 
     const customer = await CustomerInfo.findOne({ where: { customerId: userId } });
 
+    console.log(activeUser, customer, 'activeUser==');
+
     if (!activeUser) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
     } else if (!activeUser?.isActive) {
@@ -74,7 +76,7 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
     } else if (userId !== activeUser.id) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'You dont have permission to access this resource!');
     } else if (!customer) {
-      throw new ApiError(httpStatus.FORBIDDEN, 'Access denied!');
+      throw new ApiError(httpStatus.FORBIDDEN, 'Please add your profile info to initiate a booking!');
     }
 
     next();
