@@ -3,7 +3,7 @@ const validate = require('../../../middlewares/validate');
 const { customerController } = require('../../../controllers');
 const { orderValidation } = require('../../../validations');
 const auth = require('../../../middlewares/auth');
-const { customerValidate } = require('../../../middlewares/userValidate');
+const { customerValidate, customerInfoValidate } = require('../../../middlewares/userValidate');
 const transactionMiddleware = require('../../../middlewares/transaction');
 
 const router = express.Router({ mergeParams: true });
@@ -12,6 +12,7 @@ router.route('/:artistId').post(
   auth(),
   validate(orderValidation.orderInitiate),
   customerValidate((req) => req.params.customerId),
+  customerInfoValidate((req) => req.params.customerId),
   transactionMiddleware,
   customerController.orderController.orderInitiate
 );

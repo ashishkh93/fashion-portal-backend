@@ -83,6 +83,22 @@ const customerValidate = (getUserId) => async (req, _res, next) => {
   }
 };
 
+const customerInfoValidate = (getUserId) => async (req, _res, next) => {
+  try {
+    const userId = getUserId(req);
+
+    const info = await CustomerInfo.findOne({ where: { customerId: userId } });
+
+    if (!info) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'Please add your profile info!');
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 const userValidateWhileVerifyOTP = (getUserId) => async (req, _res, next) => {
   try {
     const userId = getUserId(req);
@@ -101,4 +117,10 @@ const userValidateWhileVerifyOTP = (getUserId) => async (req, _res, next) => {
   }
 };
 
-module.exports = { artistValidate, adminValidate, customerValidate, userValidateWhileVerifyOTP };
+module.exports = {
+  artistValidate,
+  adminValidate,
+  customerValidate,
+  customerInfoValidate,
+  userValidateWhileVerifyOTP,
+};
