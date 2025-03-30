@@ -25,13 +25,14 @@ const includeModelForOrderFetch = [
       },
     ],
     through: {
-      attributes: [], // This excludes all attributes from the join table
+      attributes: ['quantity'], // This excludes all attributes from the join table
     },
   },
   {
     model: CustomerInfo,
     as: 'orderCustomer',
-    attributes: ['status', 'fullName', 'email', 'gender', 'profilePic'],
+    attributes: { exclude: ['id'] },
+    // attributes: ['status', 'fullName', 'email', 'gender', 'profilePic'],
   },
   {
     model: OrderFinancialInfo,
