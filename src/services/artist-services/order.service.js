@@ -32,6 +32,13 @@ const includeModelForOrderFetch = [
     model: CustomerInfo,
     as: 'orderCustomer',
     attributes: { exclude: ['id'] },
+    include: [
+      {
+        model: User,
+        as: 'customerInfo',
+        attributes: ['phone'],
+      },
+    ],
     // attributes: ['status', 'fullName', 'email', 'gender', 'profilePic'],
   },
   {
