@@ -1,15 +1,16 @@
 const httpStatus = require('http-status');
 const { Op } = require('sequelize');
-const { User, ArtistInfo, CustomerInfo, ArtistBankingInfo, Service, Category, Art } = require('../../models');
+const { User, ArtistInfo, CustomerInfo, ArtistBankingInfo, Service, Category, Art, Sequelize } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { verifyPANCallback, verifyUPICallbackV2 } = require('../../utils/cashfree-payout-api.util');
 const { getPlainData } = require('../../utils/common.util');
 const { getTransaction } = require('../../middlewares/asyncHooks');
-const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
-const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-queries/get-all-arts-search-query copy');
+
+const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-queries/get-all-arts-search-query');
 const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all-customers-search-query');
 const logger = require('../../config/logger');
+const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
 
 /**
  * Get artist information for admin to check artist's status
@@ -25,6 +26,34 @@ const getArtistForAdmin = async (artistId) => {
   }
 };
 
+const getArtistServices = async (items) => {
+  return Promise.all(
+    items.map(async (artist) => {
+      const plainArtist = getPlainData(artist);
+      const serviceIds = plainArtist.artistInfos?.services ?? [];
+
+      if (serviceIds?.length) {
+        let services = await Service.findAll({
+          where: {
+            id: {
+              [Op.in]: serviceIds,
+            },
+          },
+          attributes: ['id', 'name'],
+        });
+
+        services = services.map((s) => getPlainData(s));
+
+        return {
+          ...plainArtist,
+          artistInfos: plainArtist.artistInfos ? { ...plainArtist.artistInfos, services } : null,
+        };
+      }
+      return plainArtist;
+    })
+  );
+};
+
 /**
  * Get all artists
  * @param {Object} query
@@ -32,12 +61,13 @@ const getArtistForAdmin = async (artistId) => {
  */
 
 const getAllArtistService = async (query) => {
-  let { page, size, searchToken, status } = query;
+  let { page, size, searchToken, status, startDate, endDate } = query;
 
   const includeModel = [
     {
       model: ArtistInfo,
       as: 'artistInfos',
+      required: false,
       attributes: [
         'status',
         'fullName',
@@ -46,6 +76,7 @@ const getAllArtistService = async (query) => {
         'dob',
         'gender',
         'profilePic',
+        'services',
         'businessProfilePic',
         'workingTime',
         'location',
@@ -56,17 +87,22 @@ const getAllArtistService = async (query) => {
 
   let artistCondition = { role: 'artist' };
 
-  if (searchToken || status) {
+  if (searchToken || status || (startDate && endDate)) {
     searchToken = searchToken && searchToken.trim();
     artistCondition = {
       ...artistCondition,
-      ...GET_ALL_ARTISTS_SEARCH_QUERY(searchToken, status),
+      ...GET_ALL_ARTISTS_SEARCH_QUERY(searchToken, status, startDate, endDate),
     };
   }
 
   const userAttributes = { exclude: ['fcmTokens', 'deletedAt'] };
 
-  const allArtists = await getPaginationDataFromModel(User, artistCondition, page, size, includeModel, userAttributes);
+  let allArtists = await getPaginationDataFromModel(User, artistCondition, page, size, includeModel, userAttributes);
+
+  allArtists = {
+    ...allArtists,
+    items: await getArtistServices(allArtists.items),
+  };
 
   return allArtists;
 };
@@ -77,28 +113,38 @@ const getAllArtistService = async (query) => {
  * @returns {User}
  */
 const getArtistInfoService = async (artistId) => {
-  const artistCondoition = { artistId };
+  const artistCondoition = { id: artistId };
   const includeModel = [
     {
-      model: ArtistBankingInfo,
-      as: 'artistBankingInfo',
-      attributes: ['beneficiaryId', 'upi'],
-    },
-    {
-      model: Service,
-      as: 'artistServices', // Ensure this matches the alias we used in association
-      attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-      through: {
-        attributes: [], // This excludes all attributes from the join table
+      model: ArtistInfo,
+      as: 'artistInfos',
+      required: false,
+      attributes: {
+        exclude: ['createdAt', 'updatedAt', 'deletedAt', 'artistId', 'services', 'happyCustomerCount', 'userVisitedCount'],
       },
+      include: [
+        {
+          model: ArtistBankingInfo,
+          as: 'artistBankingInfo',
+          attributes: ['beneficiaryId', 'upi'],
+        },
+        {
+          model: Service,
+          as: 'artistServices',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+          through: {
+            attributes: [],
+          },
+        },
+      ],
     },
   ];
 
-  const artistInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'services'] };
+  const userAttrs = ['id', 'phone', 'reasonToDecline'];
 
-  let artistInfo = await ArtistInfo.findOne({
+  let artistInfo = await User.findOne({
     where: [artistCondoition],
-    attributes: artistInfoAttrs,
+    attributes: userAttrs,
     include: includeModel,
   });
 
@@ -108,6 +154,50 @@ const getArtistInfoService = async (artistId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
   }
 };
+// const getArtistInfoService = async (artistId) => {
+//   const artistCondoition = { artistId };
+//   const includeModel = [
+//     {
+//       model: User,
+//       as: 'artist',
+//       required: true,
+//       attributes: [],
+//     },
+//     {
+//       model: ArtistBankingInfo,
+//       as: 'artistBankingInfo',
+//       attributes: ['beneficiaryId', 'upi'],
+//     },
+//     {
+//       model: Service,
+//       as: 'artistServices', // Ensure this matches the alias we used in association
+//       attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+//       through: {
+//         attributes: [], // This excludes all attributes from the join table
+//       },
+//     },
+//   ];
+
+//   const artistInfoAttrs = {
+//     exclude: ['createdAt', 'updatedAt', 'deletedAt', 'services'],
+//     include: [
+//       [Sequelize.col('"artist"."phone"'), 'phone'],
+//       [Sequelize.col('"artist"."reasonToDecline"'), 'reasonToDecline'],
+//     ],
+//   };
+
+//   let artistInfo = await ArtistInfo.findOne({
+//     where: [artistCondoition],
+//     attributes: artistInfoAttrs,
+//     include: includeModel,
+//   });
+
+//   if (artistInfo) {
+//     return getPlainData(artistInfo);
+//   } else {
+//     throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
+//   }
+// };
 
 const artIncludes = [
   {
@@ -129,7 +219,7 @@ const artIncludes = [
  */
 
 const getAllCustomersService = async (query) => {
-  let { page, size, searchToken, status } = query;
+  let { page, size, searchToken, status, startDate, endDate } = query;
 
   const includeModel = [
     {
@@ -141,17 +231,25 @@ const getAllCustomersService = async (query) => {
 
   let customerCondition = { role: 'customer' };
 
-  if (searchToken || status) {
+  if (searchToken || status || (startDate && endDate)) {
     searchToken = searchToken && searchToken.trim();
     customerCondition = {
       ...customerCondition,
-      ...GET_ALL_CUSTOMERS_SEARCH_QUERY(searchToken, status),
+      ...GET_ALL_CUSTOMERS_SEARCH_QUERY(searchToken, status, startDate, endDate),
     };
   }
 
   const userAttributes = { exclude: ['role', 'fcmTokens', 'deletedAt'] };
 
-  const allCustomers = await getPaginationDataFromModel(User, customerCondition, page, size, includeModel, userAttributes);
+  const allCustomers = await getPaginationDataFromModel(
+    User,
+    customerCondition,
+    page,
+    size,
+    includeModel,
+    userAttributes,
+    'createdAt'
+  );
 
   return allCustomers;
 };
@@ -162,16 +260,16 @@ const getAllCustomersService = async (query) => {
  * @returns {User}
  */
 const getCustomerInfoService = async (customerId) => {
-  const customerInfoAttrs = { exclude: ['createdAt', 'updatedAt', 'deletedAt'] };
+  const customerInfoAttrs = ['phone', 'fcmTokens', 'reasonToDecline'];
 
-  const customerInfo = await CustomerInfo.findOne({
-    where: { customerId },
+  const customerInfo = await User.findOne({
+    where: { id: customerId },
     attributes: customerInfoAttrs,
     include: [
       {
-        model: User,
+        model: CustomerInfo,
         as: 'customerInfo',
-        attributes: ['phone', 'fcmTokens'],
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
       },
     ],
   });
@@ -219,6 +317,29 @@ const updateArtStatusService = async (body, artistId, artId) => {
         reasonToDeclineArt: body.status === 'APPROVED' ? null : body.reasonToDeclineArt,
       };
       await singleArt.update(artUpdateBody);
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Art not found');
+    }
+  } else {
+    throw new ApiError(httpStatus.FORBIDDEN, `Artist is currently ${artist.status}, please approve artist first`);
+  }
+};
+
+/**
+ * Switch art state
+ * @param {object} body
+ * @param {string} artistId
+ * @param {string} artId
+ * @returns {Promise}
+ */
+const switchArtStateService = async (body, artistId, artId) => {
+  const artist = await getArtistForAdmin(artistId);
+
+  if (artist.dataValues.status === 'APPROVED') {
+    const artCondition = { id: artId, artistId };
+    const singleArt = await Art.findOne({ where: artCondition });
+    if (singleArt) {
+      await singleArt.update(body);
     } else {
       throw new ApiError(httpStatus.NOT_FOUND, 'Art not found');
     }
@@ -297,8 +418,6 @@ const verifyUPIService = async (artistId) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UPI');
       }
     } else {
-      console.log(apiResult, 'apiResult==');
-
       throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
     }
   } catch (error) {
@@ -375,7 +494,7 @@ const getAllArtsForSingleArtistInAdminService = async (artistId, query) => {
     ...artIncludes,
     {
       model: ArtistInfo,
-      as: 'artistArt',
+      as: 'artist',
       attributes: ['fullName'],
     },
   ];
@@ -394,13 +513,33 @@ const getAllArtsService = async (query) => {
     ...artIncludes,
     {
       model: ArtistInfo,
-      as: 'artistArt',
-      attributes: ['fullName', 'businessName'],
+      as: 'artist',
+      attributes: ['fullName', 'businessName', 'profilePic', 'email'],
     },
   ];
 
   const allArts = await getAllArts(query, {}, include);
   return allArts;
+};
+
+/**
+ * Update artist status
+ * @param {string} customerId
+ * @param {object} body
+ * @returns {Promise}
+ */
+const changeCustomerStatusService = async (body, customerId) => {
+  const transaction = getTransaction();
+
+  const currentCustomer = await User.findOne({ where: { id: customerId, role: 'customer' } });
+  if (currentCustomer) {
+    const customerUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
+    const customerInfoUpdateBody = { status: body.status };
+    await currentCustomer.update(customerUpdateBody, { transaction });
+    await CustomerInfo.update(customerInfoUpdateBody, { where: { customerId }, transaction });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Customer not found');
+  }
 };
 
 module.exports = {
@@ -409,6 +548,7 @@ module.exports = {
   getAllArtsForSingleArtistInAdminService,
   updateArtistStatusService,
   updateArtStatusService,
+  switchArtStateService,
   updateLatLongService,
   verifyUPIService,
   verifyUpiCallback,
@@ -416,4 +556,5 @@ module.exports = {
   getAllCustomersService,
   getCustomerInfoService,
   getAllArtsService,
+  changeCustomerStatusService,
 };

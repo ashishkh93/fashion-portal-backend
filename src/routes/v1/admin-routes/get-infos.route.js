@@ -15,19 +15,13 @@ router.get(
   validate(artistValidation.getArtists),
   superAdminControllers.infoController.getAllArtist
 );
+
 router.get(
-  '/:artistId/get-artist-info',
+  '/arts',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(serviceValidation.getSingleArtist),
-  superAdminControllers.infoController.getArtistInfo
-);
-router.get(
-  '/:artistId/get-all-arts',
-  auth(),
-  adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(serviceValidation.getArtsForSingleArtist),
-  superAdminControllers.infoController.getAllArtsForSingleArtist
+  validate(serviceValidation.getAllArtsArts),
+  superAdminControllers.infoController.getAllArts
 );
 
 router.get(
@@ -37,6 +31,23 @@ router.get(
   validate(artistValidation.getCustomers),
   superAdminControllers.infoController.getAllCustomers
 );
+
+router.get(
+  '/:artistId/get-artist-info',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(serviceValidation.getSingleArtist),
+  superAdminControllers.infoController.getArtistInfo
+);
+
+router.get(
+  '/:artistId/get-all-arts',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(serviceValidation.getArtsForSingleArtist),
+  superAdminControllers.infoController.getAllArtsForSingleArtist
+);
+
 router.get(
   '/:customerId/customer-info',
   auth(),
@@ -51,14 +62,6 @@ router.get(
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(serviceValidation.getSingleArt),
   superAdminControllers.infoController.getSingleArt
-);
-
-router.get(
-  '/arts',
-  auth(),
-  adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(serviceValidation.getAllArtsArts),
-  superAdminControllers.infoController.getAllArts
 );
 
 module.exports = router;

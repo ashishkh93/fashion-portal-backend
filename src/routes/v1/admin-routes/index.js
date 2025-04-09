@@ -3,6 +3,7 @@ const authRoutes = require('./auth.route');
 const serviceRoutes = require('./service.route');
 const categoryRoutes = require('./category.route');
 const infoRoutes = require('./get-infos.route');
+const uploadRoutes = require('./upload.route');
 const verifyStatusRoutes = require('./verify-status.route');
 const webhookRoute = require('./webhook.route');
 const beneficiaryRoutes = require('./beneficiary.route');
@@ -20,11 +21,15 @@ const defaultUserRoutes = [
     route: authRoutes,
   },
   {
-    path: '/services',
+    path: '/:adminId/services',
     route: serviceRoutes,
   },
   {
-    path: '/category',
+    path: '/:adminId/upload',
+    route: uploadRoutes,
+  },
+  {
+    path: '/:adminId/category',
     route: categoryRoutes,
   },
   {

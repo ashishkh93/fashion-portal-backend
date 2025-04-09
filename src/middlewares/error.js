@@ -27,6 +27,8 @@ const errorConverter = (err, req, res, next) => {
     error = new ApiError(statusCode, message, false, err.stack);
   }
 
+  console.log(error, 'error===');
+  
   next(error);
 };
 

@@ -2,6 +2,7 @@ const Joi = require('joi');
 const moment = require('moment');
 const logger = require('../config/logger');
 const config = require('../config/config');
+const { validateUUID } = require('./common.validation');
 const minTimeToOrderInHours = config.order.minTimeToOrder;
 
 const artSchema = Joi.object({
@@ -19,10 +20,11 @@ const artSchema = Joi.object({
 
 const orderInitiate = {
   params: Joi.object().keys({
-    customerId: Joi.string().uuid().required(),
-    artistId: Joi.string().uuid().required(),
+    customerId: validateUUID(),
+    artistId: validateUUID(),
   }),
   body: Joi.object().keys({
+    addressId: validateUUID(),
     arts: Joi.array().items(artSchema).min(1).required().messages({
       'array.base': 'Arts must be an array.',
       'array.min': 'Arts array must contain at least one item.',

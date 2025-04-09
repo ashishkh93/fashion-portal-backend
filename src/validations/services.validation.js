@@ -12,8 +12,8 @@ const addService = {
 
 const getEditAndDeleteService = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    serviceId: Joi.string().required(),
+    adminId: validateUUID(),
+    serviceId: validateUUID(),
   }),
 };
 
@@ -24,6 +24,9 @@ const getAllService = {
 };
 
 const addCategory = {
+  params: Joi.object().keys({
+    adminId: validateUUID(),
+  }),
   body: Joi.object().keys({
     name: Joi.string().required(),
     serviceId: validateUUID(),
@@ -48,8 +51,8 @@ const getEditDeleteCategory = {
 
 const editCategory = {
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
-    catId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
+    catId: validateUUID(),
   }),
   body: Joi.object().keys({
     name: Joi.string(),
@@ -77,8 +80,8 @@ const editServiceStatus = {
 };
 
 const artQueryParams = {
-  page: Joi.number(),
-  size: Joi.number(),
+  page: Joi.number().optional(),
+  size: Joi.number().optional(),
   searchToken: Joi.string().allow(''),
   sortKey: Joi.string().allow(''),
   status: Joi.string()
@@ -91,37 +94,37 @@ const artQueryParams = {
 const getAllArtsArts = {
   query: Joi.object().keys(artQueryParams),
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
+    adminId: validateUUID(),
   }),
 };
 
 const getArtsForSingleArtist = {
   query: Joi.object().keys(artQueryParams),
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
+    adminId: validateUUID(),
+    artistId: validateUUID(),
   }),
 };
 
 const getSingleArtist = {
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
-    artistId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
+    artistId: validateUUID(),
   }),
 };
 
 const getSingleCustomer = {
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
-    customerId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
+    customerId: validateUUID(),
   }),
 };
 
 const getSingleArt = {
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
-    artId: Joi.string().required().uuid(),
-    artistId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
+    artId: validateUUID(),
+    artistId: validateUUID(),
   }),
 };
 

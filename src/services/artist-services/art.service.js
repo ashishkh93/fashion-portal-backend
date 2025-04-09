@@ -132,6 +132,9 @@ const editArtService = async (artId, body) => {
   } else if (_.has(body, 'advanceAmount') && !_.has(body, 'price')) {
     const maxAdvanceAmount = curArt.price * advanceAmountPT;
     if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
+  } else if (_.has(body, 'price') && _.has(body, 'advanceAmount')) {
+    const maxAdvanceAmount = body.price * advanceAmountPT;
+    if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
   }
 
   const updatedArtBody = { ...body };

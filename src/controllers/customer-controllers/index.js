@@ -5,3 +5,4 @@ module.exports.reviewController = require('./review.controller');
 module.exports.getArtistsController = require('./get-artists.controller');
 module.exports.getServicesController = require('./get-services.controller');
 module.exports.favoriteController = require('./favorite.controller');
+module.exports.addressController = require('./address.controller');

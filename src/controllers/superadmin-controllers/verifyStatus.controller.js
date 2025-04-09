@@ -14,6 +14,12 @@ const updateArtStatus = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'Art status updated', entity: null });
 });
 
+const switchArtState = catchAsync(async (req, res) => {
+  const { artistId, artId } = req.params;
+  await superAdminServices.infoService.switchArtStateService(req.body, artistId, artId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Art state updated' });
+});
+
 const updateLatLong = catchAsync(async (req, res) => {
   const { artistId } = req.params;
   await superAdminServices.infoService.updateLatLongService(req.body, artistId);
@@ -35,10 +41,18 @@ const verifyPAN = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ status: true, message: 'PAN verification done!', entity: panValidateResponse || null });
 });
 
+const changeCustomerStatus = catchAsync(async (req, res) => {
+  const customerId = req.params.customerId;
+  await superAdminServices.infoService.changeCustomerStatusService(req.body, customerId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Customer Status updated', entity: null });
+});
+
 module.exports = {
   updateArtStatus,
+  switchArtState,
   changeArtistStatus,
   updateLatLong,
   verifyUPI,
   verifyPAN,
+  changeCustomerStatus,
 };

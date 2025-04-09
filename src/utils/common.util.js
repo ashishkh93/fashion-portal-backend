@@ -167,11 +167,15 @@ const getPlainData = (data) => {
 
 /**
  * Create an order identity patent
- * @param {string} service
+ * @param {string} servicePrefix
  * @param {number} currentOrderLength
  */
 const getOrderIdentity = (servicePrefix, currentOrderLength) => {
-  // BID240614M1
+  /**
+   * @input = servicePrefix & ordersLength
+   * @format = BID + DDMMYY (Current Date In Format) + SERVICE_PREFIX + (ORDER_LENGTH + 1)
+   * @output = BID040425M1
+   */
   const prefix = 'BID';
   const curDate = moment().format('DDMMYY');
   const nextChar = servicePrefix;

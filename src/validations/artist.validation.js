@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { validateUUID } = require('./common.validation');
+const { validateUUID, dateRangeValidaton } = require('./common.validation');
 
 const addArtistInfo = {
   params: Joi.object().keys({
@@ -80,18 +80,46 @@ const getReviewsForSingleArtist = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    ...dateRangeValidaton(),
   }),
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
-    artistId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
+    artistId: validateUUID(),
+  }),
+};
+
+const orderQueryParams = Joi.object().keys({
+  page: Joi.number(),
+  size: Joi.number(),
+  searchToken: Joi.string().allow('').allow(null),
+  status: Joi.string()
+    .valid(
+      'PENDING',
+      'APPROVED',
+      'REJECTED',
+      'NOT_RESPONDED',
+      'AUTO_CANCELLED_DUE_TO_UNPAID_ADVANCE_AMOUNT',
+      'CANCELLED_BY_ARTIST',
+      'CANCELLED_BY_CUSTOMER',
+      'COMPLETED'
+    )
+    .allow('')
+    .allow(null)
+    .messages({ 'any.only': 'Invalid status' }),
+  ...dateRangeValidaton(),
+});
+
+const getOrdersForSingleArtist = {
+  query: orderQueryParams,
+  params: Joi.object().keys({
+    adminId: validateUUID(),
+    artistId: validateUUID(),
   }),
 };
 
 const getOrdersForSingleCustomer = {
-  query: Joi.object().keys({
-    page: Joi.number(),
-    size: Joi.number(),
-  }),
+  query: orderQueryParams,
   params: Joi.object().keys({
     adminId: Joi.string().required().uuid(),
     customerId: Joi.string().required().uuid(),
@@ -105,6 +133,13 @@ const getAllReviews = {
   }),
   params: Joi.object().keys({
     adminId: Joi.string().required().uuid(),
+  }),
+};
+
+const getAllOrdersForAdmin = {
+  query: orderQueryParams,
+  params: Joi.object().keys({
+    adminId: validateUUID(),
   }),
 };
 
@@ -150,14 +185,15 @@ const uploadRecentWorkImage = {
 
 const getArtists = {
   query: Joi.object().keys({
-    page: Joi.number(),
-    size: Joi.number(),
+    page: Joi.number().allow(null).optional(),
+    size: Joi.number().allow(null).optional(),
     searchToken: Joi.string().allow('').allow(null),
     status: Joi.string()
       .valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED')
       .allow('')
       .allow(null)
       .messages({ 'any.only': 'Invalid status' }),
+    ...dateRangeValidaton(),
   }),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
@@ -174,6 +210,7 @@ const getCustomers = {
       .allow('')
       .allow(null)
       .messages({ 'any.only': 'Invalid stauts' }),
+    ...dateRangeValidaton(),
   }),
   params: Joi.object().keys({
     adminId: Joi.string().required(),
@@ -202,7 +239,9 @@ module.exports = {
   editArtistInfo,
   updateLatLong,
   getReviewsForSingleArtist,
+  getOrdersForSingleArtist,
   getAllReviews,
+  getAllOrdersForAdmin,
   getOrdersForSingleCustomer,
   uplodPrivateImage,
   uploadRecentWorkImage,

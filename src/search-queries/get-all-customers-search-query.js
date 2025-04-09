@@ -1,26 +1,13 @@
 const { Op } = require('sequelize');
+const { dateRangeQuery } = require('./commom-search-query');
 
-const searchQueryForCustomers = (searchToken) => {
-  return {
-    [Op.or]: [
-      {
-        phone: {
-          [Op.iLike]: `%${searchToken}%`,
-        },
-      },
-      {
-        '$customerInfo.fullName$': {
-          [Op.iLike]: `%${searchToken}%`,
-        },
-      },
-      {
-        '$customerInfo.email$': {
-          [Op.iLike]: `%${searchToken}%`,
-        },
-      },
-    ],
-  };
-};
+const searchQueryForCustomers = (searchToken) => ({
+  [Op.or]: [
+    { phone: { [Op.iLike]: `%${searchToken}%` } },
+    { '$customerInfo.fullName$': { [Op.iLike]: `%${searchToken}%` } },
+    { '$customerInfo.email$': { [Op.iLike]: `%${searchToken}%` } },
+  ],
+});
 
 /**
  * We are filtering here based on the artist current status. If artist just loggedin and he/she doesn't create the profile, then there will be no entry in the ArtistInfo table, so we have put here 2 conditions in OR block
@@ -28,37 +15,30 @@ const searchQueryForCustomers = (searchToken) => {
  * @param {Boolean} active
  * @returns
  */
-const statusWiseQueryForCustomers = (status, active) => {
-  return {
-    [Op.and]: [
-      {
-        isActive: {
-          [Op.eq]: active,
-        },
-      },
-      {
-        '$customerInfo.status$': {
-          [Op.eq]: status,
-        },
-      },
-    ],
-  };
+const statusWiseQueryForCustomers = (status) => {
+  if (status === 'PENDING') {
+    return {
+      [Op.and]: [{ '$customerInfo.status$': { [Op.eq]: null } }, { isActive: true }],
+    };
+  } else {
+    return {
+      [Op.and]: [{ '$customerInfo.status$': { [Op.eq]: status } }, { isActive: status === 'BLOCKED' ? false : true }],
+    };
+  }
 };
 
 const getIsActiveToConsider = (status) => {
   return status === 'APPROVED' ? true : false;
 };
 
-const GET_ALL_CUSTOMERS_SEARCH_QUERY = (searchToken, status) => {
-  if (searchToken && status) {
-    const isActiveToConsider = getIsActiveToConsider(status);
-    return { [Op.and]: [searchQueryForCustomers(searchToken), statusWiseQueryForCustomers(status, isActiveToConsider)] };
-  } else if (searchToken) {
-    return searchQueryForCustomers(searchToken);
-  } else if (status) {
-    const isActiveToConsider = getIsActiveToConsider(status);
-    return statusWiseQueryForCustomers(status, isActiveToConsider);
-  }
+const GET_ALL_CUSTOMERS_SEARCH_QUERY = (searchToken, status, startDate, endDate) => {
+  const filters = [];
+
+  if (searchToken) filters.push(searchQueryForCustomers(searchToken));
+  if (status) filters.push(statusWiseQueryForCustomers(status, getIsActiveToConsider(status)));
+  if (startDate && endDate) filters.push(dateRangeQuery(startDate, endDate));
+
+  return filters.length ? { [Op.and]: filters } : {};
 };
 
 module.exports = { GET_ALL_CUSTOMERS_SEARCH_QUERY };

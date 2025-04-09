@@ -114,7 +114,9 @@ const verifyUserOtp = async (body, role, userId) => {
   if (otp === existingOtpRequest.otp || validOtpForDev) {
     if (Date.now() < existingOtpRequest.otpExpiration || validOtpForDev) {
       const updateBody = { isVerified: true };
-      if (role !== 'superAdmin') {
+      const isSuperAdmin = role === 'superAdmin';
+
+      if (!isSuperAdmin) {
         /**
          * Check if user is exist in firebase, if not then create it with phoneNumber
          */
@@ -128,7 +130,12 @@ const verifyUserOtp = async (body, role, userId) => {
 
       const [tokens] = await Promise.all(updatePromises);
 
-      const resToSend = { id: user.id, phone: user.phone, role: user.role, fcmTokens: user.fcmTokens };
+      const resToSend = {
+        id: user.id,
+        phone: user.phone,
+        role: user.role,
+        ...(!isSuperAdmin && { fcmTokens: user.fcmTokens }),
+      };
       return { ...resToSend, ...tokens };
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');

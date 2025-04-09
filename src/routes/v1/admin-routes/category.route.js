@@ -5,10 +5,10 @@ const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
 const { adminValidate } = require('../../../middlewares/userValidate');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:adminId')
+  .route('/')
   .post(
     auth('manageServices'),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
@@ -22,7 +22,7 @@ router
     superAdminControllers.categoryController.getAllCategories
   );
 router
-  .route('/:adminId/:catId')
+  .route('/:catId')
   .get(
     auth(),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
@@ -43,7 +43,7 @@ router
   );
 
 router.patch(
-  '/:adminId/:catId/update-status',
+  '/:catId/update-status',
   auth('manageServices'),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(serviceValidation.editCategoryStatus),

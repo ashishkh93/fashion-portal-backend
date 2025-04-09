@@ -7,8 +7,8 @@ const createService = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ status: true, message: 'Service created successfully', entity: addedService });
 });
 
-const getAllServices = catchAsync(async (_req, res) => {
-  const services = await mainArtService.getServices();
+const getAllServices = catchAsync(async (req, res) => {
+  const services = await mainArtService.getServices(req.query);
   res.status(httpStatus.OK).send({ status: true, message: 'Services fetched successfully', entity: services });
 });
 

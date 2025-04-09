@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       artistId: {
         type: DataTypes.UUID,
+        references: { model: 'ArtistInfo', key: 'artistId' },
         allowNull: true,
       },
       serviceId: {

@@ -10,6 +10,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       err?.message ||
       (info?.message === 'jwt expired' || info?.message === 'jwt malformed' ? 'Token expired' : info?.message);
     logger.info('Error while autheticate: ' + logError);
+
     return reject(new ApiError(httpStatus.UNAUTHORIZED, logError || 'Access denied!'));
   }
 

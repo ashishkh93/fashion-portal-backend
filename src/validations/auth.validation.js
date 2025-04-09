@@ -117,6 +117,22 @@ const changeArtistStatus = {
   }),
 };
 
+const changeCustomerStatus = {
+  params: Joi.object().keys({
+    adminId: validateUUID(),
+    customerId: validateUUID(),
+  }),
+  body: Joi.object().keys({
+    isActive: Joi.boolean().required(),
+    status: Joi.string().required().valid('PENDING', 'APPROVED', 'BLOCKED'),
+    reasonToDecline: Joi.string().when('isActive', {
+      is: false, // The condition where 'isActive' is false
+      then: Joi.required(), // Make 'reason' field required if condition is met
+      otherwise: Joi.forbidden(), // Make 'reason' field forbidden otherwise
+    }),
+  }),
+};
+
 const updateFcmToken = {
   params: Joi.object().keys({
     userId: validateUUID(),
@@ -140,5 +156,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changeArtistStatus,
+  changeCustomerStatus,
   updateFcmToken,
 };

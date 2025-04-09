@@ -1,4 +1,5 @@
-const { Order, ArtistInfo, CustomerInfo } = require('../../models');
+const { Order, OrderFinancialInfo, ArtistInfo, CustomerInfo } = require('../../models');
+const { GET_ALL_ORDER_FOR_ARTIST_SEARCH_QUERY } = require('../../search-queries/get-all-orders-for-artist-search-query');
 const ApiError = require('../../utils/ApiError');
 const { getPlainData } = require('../../utils/common.util');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
@@ -9,12 +10,17 @@ const includeModel = [
   {
     model: ArtistInfo,
     as: 'orderArtist',
-    attributes: ['status', 'fullName', 'businessName', 'location', 'profilePic'],
+    attributes: ['status', 'fullName', 'businessName', 'email', 'location', 'profilePic'],
   },
   {
     model: CustomerInfo,
     as: 'orderCustomer',
     attributes: ['status', 'fullName', 'profilePic', 'email'],
+  },
+  {
+    model: OrderFinancialInfo,
+    as: 'orderFinancialInfo',
+    attributes: ['totalAmount', 'advanceAmountForOrder'],
   },
 ];
 
@@ -25,9 +31,20 @@ const includeModel = [
  * @param {number} size
  * @returns {Promise<Order>}
  */
-const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
-  const orderCondition = { artistId };
-  const allOrderForArtsit = await getPaginationDataFromModel(Order, orderCondition, page, size, [includeModel[0]]);
+const getAllOrdersForSingleArtistService = async (artistId, query) => {
+  let { page, size, searchToken, status, startDate, endDate } = query;
+
+  let orderCondition = { artistId };
+
+  if (searchToken || status || (startDate && endDate)) {
+    searchToken = searchToken && searchToken.trim();
+    orderCondition = {
+      ...orderCondition,
+      ...GET_ALL_ORDER_FOR_ARTIST_SEARCH_QUERY(searchToken, status, startDate, endDate, 'customerSearch'),
+    };
+  }
+
+  const allOrderForArtsit = await getPaginationDataFromModel(Order, orderCondition, page, size, includeModel);
 
   return allOrderForArtsit;
 };
@@ -39,21 +56,43 @@ const getAllOrdersForSingleArtistService = async (artistId, page, size) => {
  * @param {number} size
  * @returns {Promise<Order>}
  */
-const getAllOrdersForSingleCustomerService = async (customerId, page, size) => {
-  const orderCondition = { customerId };
-  const allOrderForArtsit = await getPaginationDataFromModel(Order, orderCondition, page, size, [includeModel[1]]);
+const getAllOrdersForSingleCustomerService = async (customerId, query) => {
+  let { page, size, searchToken, status, startDate, endDate } = query;
+
+  let orderCondition = { customerId };
+
+  if (searchToken || status || (startDate && endDate)) {
+    searchToken = searchToken && searchToken.trim();
+    orderCondition = {
+      ...orderCondition,
+      ...GET_ALL_ORDER_FOR_ARTIST_SEARCH_QUERY(searchToken, status, startDate, endDate, 'artistSearch'),
+    };
+  }
+
+  const allOrderForArtsit = await getPaginationDataFromModel(Order, orderCondition, page, size, includeModel);
 
   return allOrderForArtsit;
 };
 
 /**
  * Get all orders
- * @param {number} page
- * @param {number} size
+ * @param {object} query
  * @returns {Promise<Order>}
  */
-const getAllOrdersService = async (page, size) => {
-  const allOrdes = await getPaginationDataFromModel(Order, {}, page, size, includeModel);
+const getAllOrdersService = async (query) => {
+  let { page, size, searchToken, status, startDate, endDate } = query;
+
+  let orderCondition = {};
+
+  if (searchToken || status || (startDate && endDate)) {
+    searchToken = searchToken && searchToken.trim();
+    orderCondition = {
+      ...orderCondition,
+      ...GET_ALL_ORDER_FOR_ARTIST_SEARCH_QUERY(searchToken, status, startDate, endDate),
+    };
+  }
+
+  const allOrdes = await getPaginationDataFromModel(Order, orderCondition, page, size, includeModel);
   return allOrdes;
 };
 
@@ -65,7 +104,7 @@ const getAllOrdersService = async (page, size) => {
  */
 const getSingleOrderForAdminService = async (orderId) => {
   const orderCondition = { id: orderId };
-  const include = [...includeModelForOrderFetch, includeModel[0]];
+  const include = [...includeModelForOrderFetch.slice(0, 2), ...includeModel.slice(0, 2)];
 
   const singleOrder = await Order.findOne({
     where: [orderCondition],

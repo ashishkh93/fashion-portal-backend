@@ -1,15 +1,16 @@
 const Joi = require('joi');
 const config = require('../config/config');
+const { validateUUID } = require('./common.validation');
 
 const advanceAmountPT = config.pt.advanceAmountPT;
 
 const addArt = {
   params: Joi.object().keys({
-    artistId: Joi.string().required().uuid(),
+    artistId: validateUUID(),
   }),
   body: Joi.object().keys({
-    serviceId: Joi.string().required().uuid(),
-    categoryId: Joi.string().required().uuid(),
+    serviceId: validateUUID(),
+    categoryId: validateUUID(),
     name: Joi.string().required(),
     images: Joi.array().items(Joi.string().required()).min(1).required(),
     description: Joi.string().required(),
@@ -89,24 +90,28 @@ const getSingleArt = {
 
 const updateArtStatus = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
-    artId: Joi.string().required(),
+    adminId: validateUUID(),
+    artistId: validateUUID(),
+    artId: validateUUID(),
   }),
   body: Joi.object().keys({
     status: Joi.string().required().valid('APPROVED', 'REJECTED').messages({ 'any.only': 'Invalid status' }),
-    isActive: Joi.bool()
-      .required()
-      .when('status', {
-        is: 'APPROVED',
-        then: Joi.valid(true).required(),
-        otherwise: Joi.valid(false).required(),
-      }),
     reasonToDeclineArt: Joi.string().when('status', {
       is: 'REJECTED',
       then: Joi.required(),
       otherwise: Joi.forbidden(),
     }),
+  }),
+};
+
+const switchArtState = {
+  params: Joi.object().keys({
+    adminId: Joi.string().required(),
+    artistId: Joi.string().required(),
+    artId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    isActive: Joi.bool().required(),
   }),
 };
 
@@ -127,4 +132,5 @@ module.exports = {
   getArts,
   getSingleArt,
   updateArtStatus,
+  switchArtState,
 };

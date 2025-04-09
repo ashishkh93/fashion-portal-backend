@@ -10,6 +10,7 @@ const {
   Category,
   Review,
   ArtistInfo,
+  CustomerAddress,
   Sequelize,
 } = require('../../models');
 const ApiError = require('../../utils/ApiError');
@@ -141,31 +142,38 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
   } else if (artistIsonVacation) {
     throw new ApiError(httpStatus.FORBIDDEN, 'The artist is on vacation on the selected booking date');
   } else {
-    const existOrder = await Order.findOne({ where: { customerId, artistId, status: 'PENDING' } });
-    if (existOrder) {
+    const artIds = body.arts?.map((art) => art.id);
+
+    const existOrderQ = Order.findOne({ where: { customerId, artistId, status: 'PENDING' } });
+    const allArtsQ = Art.findAll({
+      where: {
+        id: {
+          [Op.in]: artIds,
+        },
+        artistId,
+        status: 'APPROVED',
+      },
+      raw: true,
+    });
+
+    const orderCountQ = Order.count(); // get total orders count
+
+    const addressQ = CustomerAddress.findOne({ where: { id: body?.addressId, customerId } });
+
+    let [existingOrder, address, allArts, orderCount] = await Promise.all([existOrderQ, addressQ, allArtsQ, orderCountQ]);
+
+    if (existingOrder) {
       throw new ApiError(
         httpStatus.FORBIDDEN,
         'You have already initiated order request for this artist, please be patient untill he/she accept the current order!'
       );
+    } else if (!address) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide valid address to initiate order request.');
     } else {
-      const artIds = body.arts?.map((art) => art.id);
-      const orderCount = await Order.count(); // get total orders count
-
       /**
        * Generate unique identity for each order
        */
       const orderIdentity = getOrderIdentity(body.servicePrefix, orderCount);
-
-      const allArts = await Art.findAll({
-        where: {
-          id: {
-            [Op.in]: artIds,
-          },
-          artistId,
-          status: 'APPROVED',
-        },
-        raw: true,
-      });
 
       if (!allArts || allArts?.length === 0) {
         throw new ApiError(httpStatus.FORBIDDEN, 'The Artist does not have any services that you choose');
@@ -213,6 +221,91 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
     }
   }
 };
+
+// const orderInitiateService = async (customerId, artistId, body, customer) => {
+//   const transaction = getTransaction();
+//   const artist = await getApprovedArtist(artistId);
+//   const vacations = artist.artistInfos.vacations;
+
+//   const artistIsonVacation = vacations?.length && artistIsOnVacation(body.date, vacations);
+
+//   if (artist.phone === customer.phone) {
+//     throw new ApiError(httpStatus.BAD_REQUEST, 'You cannot create an order for your self');
+//   } else if (artistIsonVacation) {
+//     throw new ApiError(httpStatus.FORBIDDEN, 'The artist is on vacation on the selected booking date');
+//   } else {
+//     const existOrder = await Order.findOne({ where: { customerId, artistId, status: 'PENDING' } });
+//     if (existOrder) {
+//       throw new ApiError(
+//         httpStatus.FORBIDDEN,
+//         'You have already initiated order request for this artist, please be patient untill he/she accept the current order!'
+//       );
+//     } else {
+//       const artIds = body.arts?.map((art) => art.id);
+//       const orderCount = await Order.count(); // get total orders count
+
+//       /**
+//        * Generate unique identity for each order
+//        */
+//       const orderIdentity = getOrderIdentity(body.servicePrefix, orderCount);
+
+//       const allArts = await Art.findAll({
+//         where: {
+//           id: {
+//             [Op.in]: artIds,
+//           },
+//           artistId,
+//           status: 'APPROVED',
+//         },
+//         raw: true,
+//       });
+
+//       if (!allArts || allArts?.length === 0) {
+//         throw new ApiError(httpStatus.FORBIDDEN, 'The Artist does not have any services that you choose');
+//       }
+
+//       // get totalAmount and advanceAmountForOrder from Art model
+//       const { totalAmount, advanceAmountForOrder } = allArts?.reduce(
+//         (acc, art) => {
+//           const payloadArt = body.arts.find((a) => a.id === art.id);
+//           return {
+//             totalAmount: acc.totalAmount + Number(art.price) * Number(payloadArt.qty),
+//             advanceAmountForOrder: acc.advanceAmountForOrder + Number(art.advanceAmount) * Number(payloadArt.qty),
+//           };
+//         },
+//         { totalAmount: 0, advanceAmountForOrder: 0 }
+//       );
+
+//       const orderInitiateBody = { ...body, orderIdentity, artIds, customerId, artistId };
+//       let tmpOrder = await Order.create(orderInitiateBody, { transaction });
+
+//       const orderId = tmpOrder.dataValues.id;
+//       const orderFinancialInfoBody = { orderId, totalAmount, advanceAmountForOrder };
+
+//       await OrderFinancialInfo.create(orderFinancialInfoBody, { transaction });
+
+//       const artOrderEntries = body.arts.map((art) => ({
+//         artOrderId: orderId,
+//         artId: art.id,
+//         quantity: art.qty,
+//       }));
+//       await ArtOrder.bulkCreate(artOrderEntries, { transaction });
+//       const { id, status, createdAt } = tmpOrder.dataValues;
+
+//       /**
+//        * Sending notification to artist about new order request
+//        */
+//       sendNewOrderRequestNotification(customerId, artistId, orderId, body.date);
+
+//       /**
+//        * Cancel the order if order status is still pending after 24 hours
+//        */
+//       cancelPendingOrderSchedule(id, 'pendingOrder');
+
+//       return { id, customerId, artistId, status, createdAt };
+//     }
+//   }
+// };
 
 /**
  * Fetch order for user

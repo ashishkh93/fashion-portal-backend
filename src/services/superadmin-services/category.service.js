@@ -3,7 +3,7 @@ const { Category, Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel, getPagingData, getPagination } = require('../../utils/paginate');
 const { Op } = require('sequelize');
-const { GET_ALL_CATS_SEARCH_QUERY } = require('../../search-queries/get-all-cats-search-query copy');
+const { GET_ALL_CATS_SEARCH_QUERY } = require('../../search-queries/get-all-cats-search-query');
 
 /**
  * Add Category
@@ -42,7 +42,7 @@ const getAllCategorieService = async (query) => {
     {
       model: Service,
       as: 'service',
-      attributes: ['name'],
+      attributes: ['id', 'name'],
       required: false,
     },
   ];

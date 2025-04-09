@@ -9,7 +9,7 @@ const transactionMiddleware = require('../../../middlewares/transaction');
 const router = express.Router({ mergeParams: true });
 
 router.patch(
-  '/:artistId/approve-artist',
+  '/:artistId/update-artist-status',
   auth('manageArtists'),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(authValidation.changeArtistStatus),
@@ -22,6 +22,13 @@ router.patch(
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(artValidation.updateArtStatus),
   superAdminControllers.verifyStatusController.updateArtStatus
+);
+router.patch(
+  '/:artistId/:artId/switch-art-state',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(artValidation.switchArtState),
+  superAdminControllers.verifyStatusController.switchArtState
 );
 router.patch(
   '/:artistId/update-lat-long',
@@ -43,6 +50,16 @@ router.post(
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   validate(bankingValidation.verifyPAN),
   superAdminControllers.verifyStatusController.verifyPAN
+);
+
+// Customer
+router.patch(
+  '/:customerId/update-customer-status',
+  auth('manageUsers'),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(authValidation.changeCustomerStatus),
+  transactionMiddleware,
+  superAdminControllers.verifyStatusController.changeCustomerStatus
 );
 
 module.exports = router;

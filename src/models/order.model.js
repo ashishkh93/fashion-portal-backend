@@ -34,6 +34,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
       },
+      addressId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: { model: 'CustomerAddress', key: 'id' },
+        onDelete: 'NO ACTION',
+        onUpdate: 'CASCADE',
+      },
       artIds: {
         type: DataTypes.ARRAY(DataTypes.UUID),
         allowNull: false,
@@ -117,6 +124,7 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'transferId',
     });
     Order.hasOne(models.Review, { foreignKey: 'orderId', as: 'orderReview' });
+    Order.belongsTo(models.CustomerAddress, { foreignKey: 'addressId', as: 'address' });
   };
 
   return Order;

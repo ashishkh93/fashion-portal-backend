@@ -3,22 +3,19 @@ const catchAsync = require('../../utils/catchAsync');
 const { superAdminServices } = require('../../services');
 
 const getAllOrders = catchAsync(async (req, res) => {
-  const { page, size } = req.query;
-  const allOrders = await superAdminServices.orderService.getAllOrdersService(page, size);
+  const allOrders = await superAdminServices.orderService.getAllOrdersService(req.query);
   res.status(httpStatus.OK).send({ status: true, message: 'All orders fetched!', entity: allOrders });
 });
 
 const getAllOrdersForSingleArtist = catchAsync(async (req, res) => {
   const { artistId } = req.params;
-  const { page, size } = req.query;
-  const ordersForArtist = await superAdminServices.orderService.getAllOrdersForSingleArtistService(artistId, page, size);
+  const ordersForArtist = await superAdminServices.orderService.getAllOrdersForSingleArtistService(artistId, req.query);
   res.status(httpStatus.OK).send({ status: true, message: 'Orders for artist fetched!', entity: ordersForArtist });
 });
 
 const getAllOrdersForSingleCustomer = catchAsync(async (req, res) => {
   const { customerId } = req.params;
-  const { page, size } = req.query;
-  const ordersForArtist = await superAdminServices.orderService.getAllOrdersForSingleCustomerService(customerId, page, size);
+  const ordersForArtist = await superAdminServices.orderService.getAllOrdersForSingleCustomerService(customerId, req.query);
   res.status(httpStatus.OK).send({ status: true, message: 'Orders for artist fetched!', entity: ordersForArtist });
 });
 

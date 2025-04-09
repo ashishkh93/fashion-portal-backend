@@ -9,10 +9,10 @@ const { adminValidate } = require('../../../middlewares/userValidate');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
-  .route('/:adminId')
+  .route('/')
   .get(
     auth(),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
@@ -27,7 +27,7 @@ router
   );
 
 router
-  .route('/:adminId/:serviceId')
+  .route('/:serviceId')
   .get(
     auth(),
     adminValidate((req) => ({ superAdminId: req.params.adminId })),
@@ -48,7 +48,7 @@ router
   );
 
 router.post(
-  '/:adminId/upload-file',
+  '/upload-file',
   auth('manageServices'),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
   upload.single('file'),

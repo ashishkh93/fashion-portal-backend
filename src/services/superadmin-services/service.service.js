@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Service } = require('../../models');
 const ApiError = require('../../utils/ApiError');
+const { Op } = require('sequelize');
 
 /**
  * Add Service in dev environment with multer image upload algo
@@ -24,10 +25,17 @@ const addService = async (body) => {
  * Get all services
  * @returns {Promise<Service>}
  */
-const getServices = async () => {
+const getServices = async (query) => {
   // To override the default scope to include excluded fields
   // Service.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } }).findAll();
-  const allService = await Service.findAll();
+  const { isActive } = query;
+  const whereClause = {};
+
+  if (isActive === 'true' || isActive === 'false') {
+    whereClause.isActive = isActive === 'true'; // Convert string to boolean
+  }
+
+  const allService = await Service.findAll({ where: [whereClause], order: [['createdAt', 'DESC']] });
   return allService;
 };
 

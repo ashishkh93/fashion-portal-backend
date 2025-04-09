@@ -11,3 +11,4 @@ module.exports.refundValidation = require('./refund.validation');
 module.exports.transactionsValidation = require('./transactions.validation');
 module.exports.vacationValidation = require('./vacation.validation');
 module.exports.bankingValidation = require('./banking.validation');
+module.exports.addressValidation = require('./address.validation');

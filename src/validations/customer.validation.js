@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { validateUUID } = require('./common.validation');
+const { validateUUID, dateRangeValidaton } = require('./common.validation');
 
 const addCustomerInfo = {
   params: Joi.object().keys({
@@ -127,6 +127,19 @@ const getAllFavArtistService = {
   }),
 };
 
+const getReviewsForSingleCustomer = {
+  query: Joi.object().keys({
+    page: Joi.number(),
+    size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    ...dateRangeValidaton(),
+  }),
+  params: Joi.object().keys({
+    adminId: validateUUID(),
+    customerId: validateUUID(),
+  }),
+};
+
 module.exports = {
   addCustomerInfo,
   editCustomerInfo,
@@ -138,4 +151,5 @@ module.exports = {
   getServices,
   addFavArtistService,
   getAllFavArtistService,
+  getReviewsForSingleCustomer,
 };

@@ -11,14 +11,14 @@ router.get(
   '/',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.getAllReviews),
+  validate(artistValidation.getAllOrdersForAdmin),
   superAdminControllers.orderController.getAllOrders
 );
 router.get(
   '/artist/:artistId',
   auth(),
   adminValidate((req) => ({ superAdminId: req.params.adminId })),
-  validate(artistValidation.getReviewsForSingleArtist),
+  validate(artistValidation.getOrdersForSingleArtist),
   superAdminControllers.orderController.getAllOrdersForSingleArtist
 );
 router.get(
