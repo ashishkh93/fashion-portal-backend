@@ -1,6 +1,16 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
-const { Order, OrderFinancialInfo, Art, Service, Category, User, CustomerInfo, RefundRequest } = require('../../models');
+const {
+  Order,
+  OrderFinancialInfo,
+  Art,
+  Service,
+  Category,
+  User,
+  CustomerInfo,
+  CustomerAddress,
+  Review,
+} = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
@@ -29,6 +39,11 @@ const includeModelForOrderFetch = [
     },
   },
   {
+    model: OrderFinancialInfo,
+    as: 'orderFinancialInfo',
+    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+  },
+  {
     model: CustomerInfo,
     as: 'orderCustomer',
     attributes: { exclude: ['id'] },
@@ -42,9 +57,14 @@ const includeModelForOrderFetch = [
     // attributes: ['status', 'fullName', 'email', 'gender', 'profilePic'],
   },
   {
-    model: OrderFinancialInfo,
-    as: 'orderFinancialInfo',
-    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+    model: CustomerAddress,
+    as: 'address',
+    attributes: { exclude: ['id', 'customerId', 'deletedAt'] },
+  },
+  {
+    model: Review,
+    as: 'orderReview',
+    attributes: ['reviewCount', 'description', 'createdAt'],
   },
 ];
 
