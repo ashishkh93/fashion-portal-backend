@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { dateRangeQuery } = require('./commom-search-query');
 
 /**
  * Search by customer's fullname, email, and Order Identity
@@ -21,18 +22,6 @@ const searchQueryForArtist = (searchToken, searchKey) => ({
  */
 const statusWiseQuery = (status) => ({
   status: { [Op.eq]: status },
-});
-
-/**
- * Generates date range filter
- * @param {string} startDate
- * @param {string} endDate
- * @returns {Object}
- */
-const dateRangeQuery = (startDate, endDate) => ({
-  createdAt: {
-    [Op.between]: [new Date(startDate), new Date(new Date(endDate).setHours(23, 59, 59, 999))],
-  },
 });
 
 /**

@@ -8,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
+      hash: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true,
+      },
       artistId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -98,7 +103,7 @@ module.exports = (sequelize, DataTypes) => {
     Art.belongsTo(models.ArtistInfo, {
       foreignKey: 'artistId',
       targetKey: 'artistId',
-      as: 'artist'
+      as: 'artist',
     });
     Art.belongsTo(models.Service, {
       foreignKey: 'serviceId',

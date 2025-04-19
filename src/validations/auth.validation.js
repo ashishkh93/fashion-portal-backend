@@ -61,6 +61,14 @@ const phoneLogin = {
   }),
 };
 
+const adminPhoneLogin = {
+  body: Joi.object().keys({
+    phone: Joi.string().required().alphanum().max(10).min(10),
+    fullName: Joi.string().required(),
+    email: Joi.string().email().required(),
+  }),
+};
+
 const logout = {
   params: Joi.object().keys({
     userId: validateUUID(),
@@ -146,6 +154,7 @@ module.exports = {
   register,
   createPassword,
   phoneLogin,
+  adminPhoneLogin,
   login,
   artistPhoneVerify,
   adminPhoneVerify,

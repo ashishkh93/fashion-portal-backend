@@ -165,6 +165,8 @@ const getPlainData = (data) => {
   return data?.get({ plain: true });
 };
 
+const randomSuffix = () => Math.random().toString(36).substring(2, 4).toUpperCase();
+
 /**
  * Create an order identity patent
  * @param {string} servicePrefix
@@ -181,7 +183,46 @@ const getOrderIdentity = (servicePrefix, currentOrderLength) => {
   const nextChar = servicePrefix;
   const index = currentOrderLength + 1;
 
-  return `${prefix}${curDate}${nextChar}${index}`;
+  return `${prefix}${curDate}${nextChar}${index}${randomSuffix()}`;
+};
+
+/**
+ * Generate a human-readable public identity string for Users or Artists
+ *
+ * @input = userType (e.g., 'C' for Customer, 'A' for Artist) & current user count for the day
+ * @format = UID + DDMMYY (Current Date in Format) + USER_TYPE_CODE + (INDEX + 1)
+ * @output = UID080424C12  // Example: 12th customer created on 08-Apr-2024
+ *
+ * @param {string} userType - One-letter code for user type ('C' for Customer, 'A' for Artist)
+ * @param {number} currentIndex - Total number of users of this type created today
+ * @returns {string} - A unique, human-readable user identity string
+ */
+const generateUserPublicId = (type, index) => {
+  const prefix = 'UID';
+  const curDate = moment().format('DDMMYY');
+  const typeCode = type?.toUpperCase() || 'X';
+  const nextIndex = index + 1;
+
+  return `${prefix}${curDate}${typeCode}${nextIndex}${randomSuffix()}`; // e.g., UID080424C12Z3
+};
+
+/**
+ * Generate a human-readable, unique hash for Art
+ *
+ * @format = ART + DDMMYY + ARTIST_INITIAL + INDEX
+ * @example = ART080424S5  → 5th artwork on 08-Apr-2024 by artist starting with S
+ *
+ * @param {string} artistName - Name of the artist (to get first character)
+ * @param {number} index - Count of arts created on the same day
+ * @returns {string}
+ */
+const generateArtPublicHash = (artistName, index) => {
+  const prefix = 'ART';
+  const date = moment().format('DDMMYY');
+  const initial = artistName?.trim()?.[0]?.toUpperCase() || 'X';
+  const artIndex = index + 1;
+
+  return `${prefix}${date}${initial}${artIndex}${randomSuffix()}`;
 };
 
 /**
@@ -228,6 +269,8 @@ module.exports = {
   generateXCFSignature,
   getPlainData,
   getOrderIdentity,
+  generateUserPublicId,
+  generateArtPublicHash,
   getAverageRatingOfArtistRawQuery,
   artistIsOnVacation,
   getUniqueTempId,

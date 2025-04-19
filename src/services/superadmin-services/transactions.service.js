@@ -1,28 +1,31 @@
 const httpStatus = require('http-status');
-const { User, Transaction, CustomerInfo, Transfer, ArtistInfo, PayoutTransaction } = require('../../models');
+const { User, Transaction, Order, CustomerInfo, Transfer, ArtistInfo, PayoutTransaction } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
+const {
+  GET_ALL_TRANSACIONS_FOR_ARTIST_SEARCH_QUERY,
+} = require('../../search-queries/get-all-transactions-for-artist-search-query');
 
 /**
- * Get all transactions for customer
- * @param {string} customerId
- * @param {number} page
- * @param {number} size
+ * Common fn for get transactions for customers
+ * @param {object} query
  * @returns {Promise<Transaction>}
  */
-const getAllTransactionsForCustomerService = async (customerId, page, size) => {
-  const customer = await User.findByPk(customerId);
+const getTransactions = async (txnCondition, query) => {
+  let { page, size, searchToken, status, paymentType, startDate, endDate } = query;
 
-  if (!customer) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Customer not exists in the system for whom you are trying to fetch transctions'
-    );
+  if (searchToken || status || paymentType || (startDate && endDate)) {
+    searchToken = searchToken && searchToken.trim();
+    txnCondition = {
+      ...txnCondition,
+      ...GET_ALL_TRANSACIONS_FOR_ARTIST_SEARCH_QUERY(searchToken, status, paymentType, startDate, endDate),
+    };
   }
 
-  const txnCondition = { customerId };
   const transactionAttrs = [
     'id',
+    'customerId',
+    'cfOrderId',
     'paymentStatus',
     'paymentAmount',
     'paymentCurrency',
@@ -45,7 +48,13 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
         },
       ],
     },
+    {
+      model: Order,
+      as: 'order',
+      attributes: ['orderIdentity', 'transactionId', 'status', 'createdAt'],
+    },
   ];
+
   const allTxnForCustomer = await getPaginationDataFromModel(
     Transaction,
     txnCondition,
@@ -54,6 +63,35 @@ const getAllTransactionsForCustomerService = async (customerId, page, size) => {
     include,
     transactionAttrs
   );
+
+  return allTxnForCustomer;
+};
+
+/**
+ * Get all transactions for all customers
+ * @param {object} query
+ * @returns {Promise<Transaction>}
+ */
+const getAllTransactionsForAllCustomersService = async (query) => {
+  const allTxns = await getTransactions({}, query);
+  return allTxns;
+};
+
+/**
+ * Get all transactions for customer
+ * @param {string} customerId
+ * @param {object} query
+ * @returns {Promise<Transaction>}
+ */
+const getAllTransactionsForCustomerService = async (customerId, query) => {
+  const customer = await User.findByPk(customerId);
+  if (!customer) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User not exists');
+  }
+
+  let txnCondition = { customerId };
+
+  const allTxnForCustomer = await getTransactions(txnCondition, query);
 
   return allTxnForCustomer;
 };
@@ -98,6 +136,7 @@ const getAllTransactionsForArtistService = async (artistId, page, size) => {
 };
 
 module.exports = {
+  getAllTransactionsForAllCustomersService,
   getAllTransactionsForCustomerService,
   getAllTransactionsForArtistService,
 };

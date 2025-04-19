@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post(
   '/signup',
-  validate(authValidation.phoneLogin),
+  validate(authValidation.adminPhoneLogin),
   addRoleToLoginRoute('superAdmin'),
   superAdminControllers.adminAuthController.adminSignup
 );

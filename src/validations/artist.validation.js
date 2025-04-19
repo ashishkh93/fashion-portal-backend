@@ -130,9 +130,11 @@ const getAllReviews = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
+    searchToken: Joi.string().allow('').allow(null),
+    ...dateRangeValidaton(),
   }),
   params: Joi.object().keys({
-    adminId: Joi.string().required().uuid(),
+    adminId: validateUUID(),
   }),
 };
 

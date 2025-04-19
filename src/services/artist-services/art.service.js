@@ -5,6 +5,7 @@ const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const config = require('../../config/config');
 const { Op } = require('sequelize');
+const { generateArtPublicHash } = require('../../utils/common.util');
 
 const advanceAmountPT = config.pt.advanceAmountPT;
 
@@ -37,9 +38,10 @@ const getArtist = async (artistId) => {
  * Add art
  * @param {string} artistId
  * @param {object} body
+ * @param {object} artistInfo
  * @returns {Art}
  */
-const addArtService = async (artistId, body) => {
+const addArtService = async (artistId, body, artistInfo) => {
   const promises = [];
   promises.push(Category.findOne({ where: { id: body.categoryId, isActive: true } }));
   promises.push(Service.findOne({ where: { id: body.serviceId, isActive: true } }));
@@ -55,7 +57,10 @@ const addArtService = async (artistId, body) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Art with same name exists in your current records');
   }
 
-  const artBody = { ...body, artistId, status: 'PENDING', isActive: false };
+  const currentArtsCount = await Art.count();
+  const hash = generateArtPublicHash(artistInfo?.dataValues?.fullName, currentArtsCount);
+
+  const artBody = { ...body, artistId, status: 'PENDING', isActive: false, hash };
   const art = await Art.create(artBody);
   return art;
 };

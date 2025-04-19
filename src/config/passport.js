@@ -13,7 +13,7 @@ const jwtOptions = {
 const jwtVerify = async (payload, done) => {
   try {
     if (payload.type !== tokenTypes.ACCESS) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid token type');
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token type');
     }
     const user = await User.findByPk(payload.sub, {
       attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
@@ -24,7 +24,7 @@ const jwtVerify = async (payload, done) => {
     }
 
     if (payload?.v !== user.tokenVersion) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Blacklisted token');
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Blacklisted token');
     }
 
     done(null, user);

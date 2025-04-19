@@ -3,10 +3,9 @@ const catchAsync = require('../../utils/catchAsync');
 const { superAdminServices } = require('../../services');
 
 const adminSignup = catchAsync(async (req, res) => {
-  const { phone } = req.body;
   const isActive = req.role === 'artist' ? false : true;
 
-  const userBody = { phone, role: req.role, isActive };
+  const userBody = { ...req.body, role: req.role, isActive };
   const adminId = await superAdminServices.adminAuthService.createAdminPhoneAuth(userBody);
   res.status(httpStatus.CREATED).send({ status: true, message: 'User created!', entity: { userId: adminId } });
 });

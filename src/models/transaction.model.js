@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         onUpdate: 'CASCADE',
       },
       paymentStatus: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('SUCCESS', 'FAILURE', 'VOID', 'INCOMPLETE', 'PENDING', 'FLAGGED', 'CANCELLED', 'USER_DROPPED'),
         allowNull: false,
       },
       paymentAmount: {
@@ -80,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Transaction.associate = function (models) {
-    Transaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'orderTransactions' });
+    Transaction.belongsTo(models.Order, { foreignKey: 'cfOrderId', as: 'order' });
     Transaction.belongsTo(models.CustomerInfo, { foreignKey: 'customerId', as: 'customer', targetKey: 'customerId' });
   };
 

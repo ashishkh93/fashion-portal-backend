@@ -51,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   SuperAdminInfo.associate = function (models) {
-    SuperAdminInfo.belongsTo(models.User, { foreignKey: 'userId', as: 'superAdminInfos' });
+    SuperAdminInfo.belongsTo(models.User, { foreignKey: 'superAdminId', as: 'superAdminInfos' });
   };
 
   return SuperAdminInfo;

@@ -7,6 +7,15 @@ const { transactionsValidation } = require('../../../validations');
 
 const router = express.Router({ mergeParams: true });
 
+// For all customer transactions
+router.get(
+  '/customers',
+  auth(),
+  adminValidate((req) => ({ superAdminId: req.params.adminId })),
+  validate(transactionsValidation.getTransactionsForAllCustomersInAdmin),
+  superAdminControllers.transactionsController.getAllTransactionForAllCustomers
+);
+
 router.get(
   '/customer/:customerId',
   auth(),
@@ -14,6 +23,8 @@ router.get(
   validate(transactionsValidation.getTransactionsForCustomersInAdmin),
   superAdminControllers.transactionsController.getAllTransactionForCustomer
 );
+
+
 router.get(
   '/artist/:artistId',
   auth(),

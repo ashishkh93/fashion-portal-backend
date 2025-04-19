@@ -4,7 +4,7 @@ const { artistServices } = require('../../services');
 
 const addArt = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
-  const art = await artistServices.artService.addArtService(artistId, req.body);
+  const art = await artistServices.artService.addArtService(artistId, req.body, req.artist);
   res.status(httpStatus.CREATED).send({
     status: true,
     message: 'Art added successfully! Users will be able to see this art, once it is verified by the team!',

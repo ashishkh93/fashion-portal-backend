@@ -3,14 +3,14 @@ const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const tokenService = require('./token.service');
 const { FirebaseAdminUtil } = require('../../utils/firebase-admin.util');
-const { getPlainData } = require('../../utils/common.util');
+const { getPlainData, generateUserPublicId } = require('../../utils/common.util');
 const { createOtpRequest } = require('./otp.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 
 // to remove path from cahche, when all imports are okay, and still you are getting an errpr
 // delete require.cache[require.resolve('./token.service')];
 
-const { User, OtpRequest } = db;
+const { User, OtpRequest, SuperAdminInfo } = db;
 
 /**
  * Create a user
@@ -37,14 +37,17 @@ const createUserPhoneAuth = async (userBody) => {
   const transaction = getTransaction();
   const { phone, role } = userBody;
   const user = await User.findOne({ where: { phone: phone, role: role } });
-  // if (user && (await user.isPhoneNumberTaken(phone, role))) {
+
   if (user) {
-    // const updateBody = { otp: userBody.otp, otpExpire: userBody.otpExpire };
-    // await updateUserById(updateBody, user.id);
     await createOtpRequest(user.id, 'LOGIN');
     return user.id;
   } else {
-    const newUser = await User.create(userBody, { transaction });
+    const type = role === 'artist' ? 'A' : 'C';
+
+    const currentUsersCount = await User.count();
+    const hash = generateUserPublicId(type, currentUsersCount);
+
+    const newUser = await User.create({ ...userBody, publicHash: hash }, { transaction });
     await createOtpRequest(newUser.id, 'LOGIN', transaction);
     return newUser.id;
   }
@@ -116,12 +119,18 @@ const verifyUserOtp = async (body, role, userId) => {
       const updateBody = { isVerified: true };
       const isSuperAdmin = role === 'superAdmin';
 
+      let adminInfo = {};
       if (!isSuperAdmin) {
         /**
          * Check if user is exist in firebase, if not then create it with phoneNumber
          */
         const fb_admin = new FirebaseAdminUtil();
         await fb_admin.checkUserAndCreate(phone);
+      } else {
+        adminInfo = await SuperAdminInfo.findOne(
+          { where: { superAdminId: user?.id }, raw: true },
+          { attributes: ['fullName', 'email'] }
+        );
       }
 
       const updatePromises = [];
@@ -130,11 +139,13 @@ const verifyUserOtp = async (body, role, userId) => {
 
       const [tokens] = await Promise.all(updatePromises);
 
+      let { fullName, email } = adminInfo || {};
+
       const resToSend = {
         id: user.id,
         phone: user.phone,
         role: user.role,
-        ...(!isSuperAdmin && { fcmTokens: user.fcmTokens }),
+        ...(!isSuperAdmin ? { fcmTokens: user.fcmTokens } : adminInfo && { fullName, email }),
       };
       return { ...resToSend, ...tokens };
     } else {

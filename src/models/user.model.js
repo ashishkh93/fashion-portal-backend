@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM('superAdmin', 'artist', 'customer'),
         allowNull: false,
       },
+      publicHash: {
+        type: DataTypes.STRING(50),
+        unique: true,
+        allowNull: false,
+      },
       phone: {
         type: DataTypes.STRING(10),
         allowNull: false,

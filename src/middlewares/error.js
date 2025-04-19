@@ -27,8 +27,6 @@ const errorConverter = (err, req, res, next) => {
     error = new ApiError(statusCode, message, false, err.stack);
   }
 
-  console.log(error, 'error===');
-  
   next(error);
 };
 
@@ -46,6 +44,7 @@ const errorHandler = async (err, _req, res, _next) => {
     status: false,
     message,
     code: err?.errorCode || 'Error',
+    statusCode: err?.statusCode ?? 500,
     stack: err.stack,
     // ...(config.env === 'development' && { stack: err.stack }),
   };
