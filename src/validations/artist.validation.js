@@ -61,14 +61,14 @@ const editArtistInfo = {
 
 const getArtistInfo = {
   params: Joi.object().keys({
-    artistId: Joi.string().required().uuid(),
+    artistId: validateUUID(),
   }),
 };
 
 const updateLatLong = {
   params: Joi.object().keys({
-    adminId: Joi.string().required(),
-    artistId: Joi.string().required(),
+    adminId: validateUUID(),
+    artistId: validateUUID(),
   }),
   body: Joi.object().keys({
     latitude: Joi.number().required(),
@@ -191,7 +191,7 @@ const getArtists = {
     size: Joi.number().allow(null).optional(),
     searchToken: Joi.string().allow('').allow(null),
     status: Joi.string()
-      .valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED')
+      .valid('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED', 'UNDER_REVIEW')
       .allow('')
       .allow(null)
       .messages({ 'any.only': 'Invalid status' }),

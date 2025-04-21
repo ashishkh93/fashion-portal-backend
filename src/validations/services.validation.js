@@ -85,7 +85,7 @@ const artQueryParams = {
   searchToken: Joi.string().allow(''),
   sortKey: Joi.string().allow(''),
   status: Joi.string()
-    .valid('PENDING', 'APPROVED', 'REJECTED')
+    .valid('PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW')
     .allow('')
     .allow(null)
     .messages({ 'any.only': 'Invalid stauts' }),

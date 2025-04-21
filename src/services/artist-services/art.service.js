@@ -142,7 +142,7 @@ const editArtService = async (artId, body) => {
     if (body.advanceAmount > maxAdvanceAmount) throwErrorForAdvanceAmount(maxAdvanceAmount);
   }
 
-  const updatedArtBody = { ...body };
+  const updatedArtBody = { ...body, status: 'UNDER_REVIEW' };
   await curArt.update(updatedArtBody);
 };
 

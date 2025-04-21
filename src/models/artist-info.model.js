@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
         onUpdate: 'CASCADE',
       },
       status: {
-        type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED'),
+        type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED', 'BLOCKED', 'SUSPENDED', 'UNDER_REVIEW'),
         allowNull: false,
       },
       fullName: {

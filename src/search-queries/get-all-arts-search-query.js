@@ -1,4 +1,3 @@
-const { filter } = require('compression');
 const { Op } = require('sequelize');
 
 const getPriceOrdeConfig = (sortKey) => {
@@ -23,6 +22,7 @@ const searchQueryForArts = (searchToken) => ({
   [Op.or]: [
     { name: { [Op.iLike]: `%${searchToken}%` } },
     { description: { [Op.iLike]: `%${searchToken}%` } },
+    { hash: { [Op.iLike]: `%${searchToken}%` } },
     { '$service.name$': { [Op.iLike]: `%${searchToken}%` } },
     { '$category.name$': { [Op.iLike]: `%${searchToken}%` } },
     { '$artist.fullName$': { [Op.iLike]: `%${searchToken}%` } },

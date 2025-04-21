@@ -185,6 +185,7 @@ const editArtistInfoService = async (artistId, body, artistInfo) => {
   const artistInfoUpdateBody = {
     ...body,
     services: updatedServicesArray,
+    status: 'UNDER_REVIEW', // Doing this, because if artist try to change something, then ADMIN needs to verify those details, after verifying it, approve her/him again.
   };
 
   // Updating the artist info
