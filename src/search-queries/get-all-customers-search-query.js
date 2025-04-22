@@ -4,6 +4,7 @@ const { dateRangeQuery } = require('./commom-search-query');
 const searchQueryForCustomers = (searchToken) => ({
   [Op.or]: [
     { phone: { [Op.iLike]: `%${searchToken}%` } },
+    { publicHash: { [Op.iLike]: `%${searchToken}%` } },
     { '$customerInfo.fullName$': { [Op.iLike]: `%${searchToken}%` } },
     { '$customerInfo.email$': { [Op.iLike]: `%${searchToken}%` } },
   ],

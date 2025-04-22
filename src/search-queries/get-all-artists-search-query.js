@@ -8,6 +8,7 @@ const { Op } = require('sequelize');
 const searchQueryForArtist = (searchToken) => ({
   [Op.or]: [
     { phone: { [Op.iLike]: `%${searchToken}%` } },
+    { publicHash: { [Op.iLike]: `%${searchToken}%` } },
     { '$artistInfos.businessName$': { [Op.iLike]: `%${searchToken}%` } },
     { '$artistInfos.fullName$': { [Op.iLike]: `%${searchToken}%` } },
     { '$artistInfos.email$': { [Op.iLike]: `%${searchToken}%` } },

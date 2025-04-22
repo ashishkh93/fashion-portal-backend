@@ -140,7 +140,7 @@ const getArtistInfoService = async (artistId) => {
     },
   ];
 
-  const userAttrs = ['id', 'phone', 'reasonToDecline'];
+  const userAttrs = ['id', 'phone', 'publicHash', 'reasonToDecline'];
 
   let artistInfo = await User.findOne({
     where: [artistCondoition],
@@ -260,7 +260,7 @@ const getAllCustomersService = async (query) => {
  * @returns {User}
  */
 const getCustomerInfoService = async (customerId) => {
-  const customerInfoAttrs = ['phone', 'fcmTokens', 'reasonToDecline'];
+  const customerInfoAttrs = ['phone', 'fcmTokens', 'publicHash', 'reasonToDecline'];
 
   const customerInfo = await User.findOne({
     where: { id: customerId },
