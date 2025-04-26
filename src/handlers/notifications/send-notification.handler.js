@@ -23,11 +23,11 @@ const replaceDynamicPlaceholders = (str = '', dataObj) => {
  * @param {object} additionalData
  * @param {string} userType
  */
-const sendNotificationToUser = async (type, deviceTokens, notificationPayload, additionalData = {}, userType) => {
+exports.sendNotificationToUser = async (type, deviceTokens, notificationPayload, additionalData = {}, userType) => {
   const firebase = new FirebaseAdminUtil();
   const admin = firebase.fb_admin;
 
-  const fcmPayload = notificationJson[type]['messages']['fcm']; // fcm payload data that need to send in notifiaction
+  const fcmPayload = notificationJson[type]['messages']['fcm'];
   const title = fcmPayload.title;
   const body = replaceDynamicPlaceholders(fcmPayload.body, notificationPayload);
   const screen = fcmPayload.screen;
@@ -43,33 +43,48 @@ const sendNotificationToUser = async (type, deviceTokens, notificationPayload, a
     additionalDetails: additionalData,
   };
 
-  try {
-    const notificationPromises = [];
+  let notificationRecord;
 
-    notificationPromises.push(Notification.create(notificationModelEntry));
+  try {
+    // 1. Create Notification entry first
+    notificationRecord = await Notification.create(notificationModelEntry);
 
     if (!!deviceTokens.length) {
-      deviceTokens.forEach((deviceToken) => {
-        const message = {
-          notification: {
-            title,
-            body,
-          },
-          data: additionalData,
-          token: deviceToken,
-        };
+      const sendResults = await Promise.allSettled(
+        deviceTokens.map((deviceToken) => {
+          const message = {
+            notification: { title, body },
+            data: additionalData,
+            token: deviceToken,
+          };
 
-        notificationPromises.push(admin.messaging().send(message));
-      });
+          return admin.messaging().send(message);
+        })
+      );
+
+      const allSucceeded = sendResults.every((r) => r.status === 'fulfilled');
+
+      if (allSucceeded) {
+        await notificationRecord.update({ sentStatus: 'SUCCESS' });
+        logger.info('Notification sent successfully for type: ' + type);
+      } else {
+        await notificationRecord.update({ sentStatus: 'FAILED' });
+
+        // Get failure reasons and log them
+        const failureReasons = sendResults.filter((r) => r.status === 'rejected').map((r) => r.reason.message || r.reason);
+
+        logger.error(`Some notifications failed to send for type: ${type}. Reasons: ${JSON.stringify(failureReasons)}`);
+      }
+    } else {
+      await notificationRecord.update({ sentStatus: 'FAILED' });
+      logger.error('No device tokens available to send notification.');
     }
-
-    await Promise.all(notificationPromises);
-    logger.info('Notification sent for type: ' + type + ' with data ' + JSON.stringify(notificationModelEntry));
   } catch (error) {
+    if (notificationRecord) {
+      await notificationRecord.update({ sentStatus: 'FAILED' });
+    }
     logger.error(
       'Notification failed to sent due to : ' + error.message + ' with data ' + JSON.stringify({ ...notificationModelEntry })
     );
   }
 };
-
-module.exports = { sendNotificationToUser };

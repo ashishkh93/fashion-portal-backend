@@ -70,7 +70,6 @@ const orderInitiate = {
         'string.pattern.name': `"Time" must be in 'HH:MM AM' or 'HH:MM PM' format`,
         'any.required': `"Time" is required`,
       }),
-    status: Joi.string().required().valid('PENDING'),
     servicePrefix: Joi.string().required().max(2).messages({
       'string.max': 'The service prefix must be at most 2 characters long.',
       'string.empty': 'The service prefix cannot be empty.',

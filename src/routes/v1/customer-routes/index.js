@@ -8,6 +8,7 @@ const getArtistsRoutes = require('./get-artists.route');
 const servicesRoutes = require('./services.route');
 const addressRoutes = require('./address.route');
 const favoriteRoutes = require('./favorite.route');
+const notificationRoutes = require('./notification.route');
 
 const router = express.Router();
 
@@ -47,6 +48,10 @@ const defaultUserRoutes = [
   {
     path: '/:customerId/address',
     route: addressRoutes,
+  },
+  {
+    path: '/:customerId/notification',
+    route: notificationRoutes,
   },
 ];
 

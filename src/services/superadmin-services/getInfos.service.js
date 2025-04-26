@@ -95,7 +95,7 @@ const getAllArtistService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['fcmTokens', 'deletedAt'] };
+  const userAttributes = { exclude: ['firebase_uid', 'deletedAt'] };
 
   let allArtists = await getPaginationDataFromModel(User, artistCondition, page, size, includeModel, userAttributes);
 
@@ -239,7 +239,7 @@ const getAllCustomersService = async (query) => {
     };
   }
 
-  const userAttributes = { exclude: ['role', 'fcmTokens', 'deletedAt'] };
+  const userAttributes = { exclude: ['role', 'firebase_uid', 'deletedAt'] };
 
   const allCustomers = await getPaginationDataFromModel(
     User,
@@ -260,7 +260,7 @@ const getAllCustomersService = async (query) => {
  * @returns {User}
  */
 const getCustomerInfoService = async (customerId) => {
-  const customerInfoAttrs = ['phone', 'fcmTokens', 'publicHash', 'reasonToDecline'];
+  const customerInfoAttrs = ['phone', 'firebase_uid', 'publicHash', 'reasonToDecline'];
 
   const customerInfo = await User.findOne({
     where: { id: customerId },

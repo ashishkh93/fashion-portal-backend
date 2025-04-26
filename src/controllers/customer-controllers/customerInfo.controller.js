@@ -5,7 +5,7 @@ const { customerServices } = require('../../services');
 const addCustomerInfo = catchAsync(async (req, res) => {
   const customerId = req.params.customerId;
   const customerInfo = await customerServices.customerInfoService.addCustomerInfoService(customerId, req.body);
-  res.status(httpStatus.CREATED).send({ status: true, message: 'Successfully created profile!', entity: customerInfo });
+  res.status(httpStatus.CREATED).send({ status: true, message: 'Profile created successfully!', entity: customerInfo });
 });
 
 const getCustomerInfo = catchAsync(async (req, res) => {

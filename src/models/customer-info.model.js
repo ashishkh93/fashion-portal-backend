@@ -41,19 +41,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      city: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-      },
-      state: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-      },
-      country: {
-        type: DataTypes.ENUM('india'),
-        allowNull: false,
-        defaultValue: 'india',
-      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

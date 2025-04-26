@@ -19,17 +19,15 @@ const verifyOtp = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ status: true, message: 'Otp verified', entity: { ...tokens } });
 });
 
-const updateFcmToken = catchAsync(async (req, res) => {
-  const userId = req.params.userId;
-  const fcmToken = req.body.fcmToken;
-  await commonServices.userService.updateFcmTokenService(fcmToken, userId);
+const addFcmToken = catchAsync(async (req, res) => {
+  await commonServices.userService.addFcmTokenService(req.body, req.user);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
 const logout = catchAsync(async (req, res) => {
   const { userId } = req.params;
   const { refreshToken, fcmToken } = req.body;
-  await commonServices.authService.logout(userId, refreshToken, fcmToken);
+  await commonServices.authService.logout(req.user, refreshToken, fcmToken);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
@@ -41,7 +39,7 @@ const refreshTokens = catchAsync(async (req, res) => {
 module.exports = {
   login,
   verifyOtp,
-  updateFcmToken,
+  addFcmToken,
   logout,
   refreshTokens,
 };

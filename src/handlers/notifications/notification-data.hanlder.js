@@ -1,8 +1,9 @@
-const { User, CustomerInfo } = require('../../models');
+const { CustomerInfo } = require('../../models');
 const moment = require('moment');
 const { getPlainData } = require('../../utils/common.util');
 const { NOTIFICATION_TYPE_CONSTANTS } = require('../../utils/notification.util');
 const { sendNotificationToUser } = require('./send-notification.handler');
+const { notificationService } = require('../../services/common-services');
 
 /**
  *
@@ -11,31 +12,22 @@ const { sendNotificationToUser } = require('./send-notification.handler');
  * @param {string} orderId
  * @param {string} orderDate
  */
-const sendNewOrderRequestNotification = async (customerId, artistId, orderId, orderDate) => {
+exports.sendNewOrderRequestNotification = async (customerId, artistId, orderId, orderDate) => {
   /**
    * Get required notification payload data from tables to send, fcmToken and other fields
    */
-  const fetchPromises = [];
 
-  fetchPromises.push(
-    User.findOne({
-      where: { id: artistId },
-      attributes: ['fcmTokens'],
-    })
-  );
-  fetchPromises.push(
+  let [tokens, customer] = await Promise.all([
+    notificationService.getFcmTokens(artistId),
     CustomerInfo.findOne({
       where: { customerId },
       attributes: ['fullName'],
-    })
-  );
+    }),
+  ]);
 
-  let [artist, customer] = await Promise.all(fetchPromises);
-
-  artist = getPlainData(artist);
   customer = getPlainData(customer);
 
-  const deviceTokens = artist?.fcmTokens || [];
+  const deviceTokens = tokens?.map((t) => t?.fcmToken) || [];
 
   let additionalData = {
     orderId,
@@ -55,5 +47,3 @@ const sendNewOrderRequestNotification = async (customerId, artistId, orderId, or
     'ARTIST'
   );
 };
-
-module.exports = { sendNewOrderRequestNotification };

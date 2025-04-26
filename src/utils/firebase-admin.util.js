@@ -7,14 +7,16 @@ class FirebaseAdminUtil {
   constructor() {
     this.fb_admin = FirebaseInstance.getAdmin();
   }
-  async createUser(phoneNumber) {
+  async createUser(phoneNumber, userPrefix) {
     /**
      * Create user anonymously in firebase
      */
     try {
-      let email = phoneNumber + '@gmail.com';
+      let email = phoneNumber + userPrefix + '@gmail.com';
       const newUser = await this.fb_admin.auth().createUser({ email, password: phoneNumber });
       if (newUser) {
+        const newUserBody = { uid: newUser.uid, phone: newUser.phoneNumber };
+        logger.info('New user created in firebase with ' + JSON.stringify(newUserBody));
         return newUser;
       }
     } catch (error) {
@@ -25,15 +27,15 @@ class FirebaseAdminUtil {
     }
   }
 
-  async getUsers(phoneNumber) {
+  async getFirebaseUser(phoneNumber, userPrefix) {
     /**
      * Create user anonymously in firebase
      */
     try {
-      let email = phoneNumber + '@gmail.com';
+      let email = phoneNumber + userPrefix + '@gmail.com';
       const allUsers = await this.fb_admin.auth().getUsers([{ email }]);
       if (allUsers) {
-        return allUsers;
+        return allUsers.users[0];
       }
     } catch (error) {
       throw new ApiError(
@@ -43,15 +45,19 @@ class FirebaseAdminUtil {
     }
   }
 
-  async checkUserAndCreate(phoneNumber) {
-    const firebaseUser = await this.getUsers(phoneNumber);
-
-    if (firebaseUser.users.length === 0) {
-      const newUser = await this.createUser(phoneNumber);
-      if (newUser) {
-        const newUserBody = { uid: newUser.uid, phone: newUser.phoneNumber };
-        logger.info('New user created in firebase with ' + JSON.stringify(newUserBody));
-      }
+  async deleteUser(uid) {
+    /**
+     * Delete user from Firebase
+     */
+    try {
+      const deletedUser = await this.fb_admin.auth().deleteUser(uid);
+      logger.info('User deleted in firebase with UID: ' + uid);
+      return deletedUser;
+    } catch (error) {
+      throw new ApiError(
+        error.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Something went wrong, Please try again'
+      );
     }
   }
 }

@@ -3,14 +3,14 @@ const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const tokenService = require('./token.service');
 const { FirebaseAdminUtil } = require('../../utils/firebase-admin.util');
-const { getPlainData, generateUserPublicId } = require('../../utils/common.util');
+const { getPlainData, generateUserPublicId, getFirstCharOfString } = require('../../utils/common.util');
 const { createOtpRequest } = require('./otp.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 
 // to remove path from cahche, when all imports are okay, and still you are getting an errpr
 // delete require.cache[require.resolve('./token.service')];
 
-const { User, OtpRequest, SuperAdminInfo } = db;
+const { User, FirebaseUser, OtpRequest, SuperAdminInfo } = db;
 
 /**
  * Create a user
@@ -69,6 +69,7 @@ const getUserById = async (id) => {
  */
 const getUserByPhoneAndRole = async (phone, role, userId) => {
   const promises = [];
+
   promises.push(User.findOne({ where: { phone, role } }));
   promises.push(OtpRequest.findOne({ where: { userId, isVerified: false, context: 'LOGIN' } }));
   const [user, existingOtpRequest] = await Promise.all(promises);
@@ -86,21 +87,21 @@ const getUserByPhoneAndRole = async (phone, role, userId) => {
 
 /**
  * Updated FCM Token in user table
- * @param {string} fcmToken
+ * @param {object} body
  * @param {string} userId
  */
-const updateFcmTokenService = async (fcmToken, userId) => {
-  const user = await getUserById(userId);
-  if (user) {
-    const {
-      dataValues: { fcmTokens },
-    } = user;
+const addFcmTokenService = async (body, user) => {
+  const currentFcmToken = await FirebaseUser.findOne({ where: { userId: user.id, fcmToken: body.fcmToken } });
 
-    if (!fcmTokens?.includes(fcmToken)) {
-      const newFcmTokens = [...fcmTokens, fcmToken];
-      await user.update({ fcmTokens: newFcmTokens });
-    }
-  } else throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+  if (currentFcmToken) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Token already exists');
+  }
+
+  return await FirebaseUser.create({
+    userId: user?.id,
+    fcmToken: body.fcmToken,
+    deviceInfo: body.deviceInfo,
+  });
 };
 
 /**
@@ -110,48 +111,68 @@ const updateFcmTokenService = async (fcmToken, userId) => {
  */
 const verifyUserOtp = async (body, role, userId) => {
   const { phone, otp } = body;
+  const transaction = getTransaction();
 
   const { user, existingOtpRequest } = await getUserByPhoneAndRole(phone, role, userId);
   const validOtpForDev = otp === '123456';
+  let isNewFbUserCreated = false;
+  let firebase_uid = user.firebase_uid;
 
-  if (otp === existingOtpRequest.otp || validOtpForDev) {
-    if (Date.now() < existingOtpRequest.otpExpiration || validOtpForDev) {
-      const updateBody = { isVerified: true };
-      const isSuperAdmin = role === 'superAdmin';
+  try {
+    if (otp === existingOtpRequest.otp || validOtpForDev) {
+      if (Date.now() < existingOtpRequest.otpExpiration || validOtpForDev) {
+        const updateBody = { isVerified: true };
+        const isSuperAdmin = role === 'superAdmin';
 
-      let adminInfo = {};
-      if (!isSuperAdmin) {
-        /**
-         * Check if user is exist in firebase, if not then create it with phoneNumber
-         */
-        const fb_admin = new FirebaseAdminUtil();
-        await fb_admin.checkUserAndCreate(phone);
+        let adminInfo = {};
+
+        if (!isSuperAdmin) {
+          /**
+           * Check if user is exist in firebase, if not then create it with phoneNumber
+           */
+          if (!firebase_uid) {
+            const roleFirstCharacter = getFirstCharOfString(role);
+            const fb_admin = new FirebaseAdminUtil();
+            const firebase_user = await fb_admin.createUser(phone, roleFirstCharacter);
+            isNewFbUserCreated = true;
+            firebase_uid = firebase_user?.uid;
+          }
+        } else {
+          adminInfo = await SuperAdminInfo.findOne(
+            { where: { superAdminId: user?.id }, raw: true },
+            { attributes: ['fullName', 'email'] }
+          );
+        }
+
+        const [tokens] = await Promise.all([
+          tokenService.generateAuthTokens(user, transaction),
+          user.firebase_uid !== firebase_uid
+            ? User.update({ firebase_uid }, { where: { id: userId }, transaction })
+            : Promise.resolve(),
+          !validOtpForDev ? existingOtpRequest.update(updateBody, { transaction }) : Promise.resolve(),
+        ]);
+
+        let { fullName, email } = adminInfo || {};
+
+        const resToSend = {
+          id: user.id,
+          phone: user.phone,
+          role: user.role,
+          ...(!isSuperAdmin ? { firebase_uid } : adminInfo && { fullName, email }),
+        };
+        return { ...resToSend, ...tokens };
       } else {
-        adminInfo = await SuperAdminInfo.findOne(
-          { where: { superAdminId: user?.id }, raw: true },
-          { attributes: ['fullName', 'email'] }
-        );
+        throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
       }
-
-      const updatePromises = [];
-      updatePromises.push(tokenService.generateAuthTokens(user));
-      if (!validOtpForDev) updatePromises.push(existingOtpRequest.update(updateBody));
-
-      const [tokens] = await Promise.all(updatePromises);
-
-      let { fullName, email } = adminInfo || {};
-
-      const resToSend = {
-        id: user.id,
-        phone: user.phone,
-        role: user.role,
-        ...(!isSuperAdmin ? { fcmTokens: user.fcmTokens } : adminInfo && { fullName, email }),
-      };
-      return { ...resToSend, ...tokens };
-    } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
+    } else throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid OTP');
+  } catch (error) {
+    if (isNewFbUserCreated && firebase_uid) {
+      const fb_admin = new FirebaseAdminUtil();
+      fb_admin.deleteUser(firebase_uid);
     }
-  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid OTP');
+
+    throw new ApiError(error?.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+  }
 };
 
 /**
@@ -220,5 +241,5 @@ module.exports = {
   getUserByPhoneAndRole,
   updateUserById,
   verifyUserOtp,
-  updateFcmTokenService,
+  addFcmTokenService,
 };

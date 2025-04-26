@@ -260,6 +260,16 @@ const getUniqueTempId = (artistId) => {
   return tempId;
 };
 
+/**
+ *
+ * @param {string} str
+ */
+const getFirstCharOfString = (str) => {
+  if (!str) return '';
+  return str?.charAt(0);
+  // return str?.charAt(0)?.toUpperCase();
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -274,4 +284,5 @@ module.exports = {
   getAverageRatingOfArtistRawQuery,
   artistIsOnVacation,
   getUniqueTempId,
+  getFirstCharOfString,
 };

@@ -15,6 +15,19 @@ const ApiError = require('./utils/ApiError');
 const db = require('./models');
 const { verifyUPIRateLimiter } = require('./handlers/rate-limits/upi-rate-limit.handler');
 
+// Catch unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+  // Recommended: close server & exit
+  process.exit(1);
+});
+
+// Catch uncaught exceptions (sync code errors)
+process.on('uncaughtException', (error) => {
+  console.error('💥 Uncaught Exception thrown:', error);
+  process.exit(1);
+});
+
 const app = express();
 
 if (config.env !== 'test') {

@@ -44,14 +44,15 @@ const getCustomerInfoService = async (customerId) => {
 
   const curCustomer = await User.findOne({ where: condition, include, attributes });
   if (curCustomer) {
-    if (curCustomer.isActive && curCustomer?.customerInfo?.status === 'APPROVED') {
-      return curCustomer;
-    } else {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        'Your account has been blocked, please contact support team as soon as possbile'
-      );
-    }
+    return curCustomer;
+    // if (curCustomer.isActive && curCustomer?.customerInfo?.status === 'APPROVED') {
+    //   return curCustomer;
+    // } else {
+    //   throw new ApiError(
+    //     httpStatus.FORBIDDEN,
+    //     'Your account has been blocked, please contact support team as soon as possbile'
+    //   );
+    // }
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Customer not found');
   }

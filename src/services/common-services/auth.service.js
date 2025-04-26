@@ -4,8 +4,9 @@ const userService = require('./user.service');
 const db = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
+const { getTransaction } = require('../../middlewares/asyncHooks');
 
-const { Token, User } = db;
+const { Token, FirebaseUser } = db;
 
 /**
  * Logout
@@ -13,10 +14,11 @@ const { Token, User } = db;
  * @param {string} refreshToken
  * @returns {Promise}
  */
-const logout = async (userId, refreshToken, fcmToken) => {
+const logout = async (user, refreshToken, fcmToken) => {
+  const transaction = getTransaction();
   const refreshTokenDoc = await Token.findOne({
     where: {
-      userId,
+      userId: user.id,
       token: refreshToken,
       type: tokenTypes.REFRESH,
       blacklisted: false,
@@ -27,15 +29,13 @@ const logout = async (userId, refreshToken, fcmToken) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Token Not found');
   }
 
-  const user = await User.findByPk(userId);
-  const updatedFcmTokensArr = user.dataValues.fcmTokens?.filter((ft) => ft !== fcmToken);
+  const userUpdateBody = { tokenVersion: user.tokenVersion + 1 };
 
-  const userUpdateBody = { fcmTokens: updatedFcmTokensArr || [], tokenVersion: user.tokenVersion + 1 };
-  const apiPromises = [];
-  apiPromises.push(refreshTokenDoc.destroy());
-  apiPromises.push(user.update(userUpdateBody));
-
-  await Promise.all(apiPromises);
+  await Promise.all([
+    FirebaseUser.destroy({ where: { fcmToken }, transaction }),
+    refreshTokenDoc.destroy({ transaction }),
+    user.update(userUpdateBody, { transaction }),
+  ]);
 };
 
 /**

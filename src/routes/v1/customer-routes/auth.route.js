@@ -28,8 +28,8 @@ router.patch(
   '/:userId/fcm-token',
   auth(),
   customerValidate((req) => req.params.userId),
-  validate(authValidation.updateFcmToken),
-  commonControllers.authController.updateFcmToken
+  validate(authValidation.addFcmToken),
+  commonControllers.authController.addFcmToken
 );
 
 router.post(

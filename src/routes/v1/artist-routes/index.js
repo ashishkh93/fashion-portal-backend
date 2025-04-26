@@ -7,6 +7,7 @@ const orderRoutes = require('./order.route');
 const vacationRoutes = require('./vacation.route');
 const verificationRoutes = require('./verification.route');
 const bankingRoutes = require('./banking.route');
+const notifiactionRoutes = require('./notification.route');
 
 const router = express.Router();
 
@@ -42,6 +43,10 @@ const defaultUserRoutes = [
   {
     path: '/:artistId/banking',
     route: bankingRoutes,
+  },
+  {
+    path: '/:artistId/notification',
+    route: notifiactionRoutes,
   },
 ];
 

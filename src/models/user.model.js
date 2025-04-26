@@ -17,14 +17,13 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
         allowNull: false,
       },
+      firebase_uid: {
+        type: DataTypes.STRING(256),
+        allowNull: true,
+      },
       phone: {
         type: DataTypes.STRING(10),
         allowNull: false,
-        // unique: true,
-      },
-      fcmTokens: {
-        type: DataTypes.ARRAY(DataTypes.STRING(256)),
-        defaultValue: [],
       },
       isActive: {
         type: DataTypes.BOOLEAN,
@@ -83,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.RefundRequest, { foreignKey: 'customerId' });
     User.hasMany(models.Token, { foreignKey: 'userId' });
     User.hasMany(models.Notification, { foreignKey: 'userId' });
+    User.hasMany(models.FirebaseUser, { foreignKey: 'userId' });
   };
 
   return User;

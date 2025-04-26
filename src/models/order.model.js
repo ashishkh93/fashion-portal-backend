@@ -65,6 +65,7 @@ module.exports = (sequelize, DataTypes) => {
           'COMPLETED'
         ),
         allowNull: false,
+        defaultValue: 'PENDING',
       },
       customerOrderNote: {
         type: DataTypes.TEXT,

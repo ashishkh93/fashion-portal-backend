@@ -141,12 +141,13 @@ const changeCustomerStatus = {
   }),
 };
 
-const updateFcmToken = {
+const addFcmToken = {
   params: Joi.object().keys({
     userId: validateUUID(),
   }),
   body: Joi.object().keys({
     fcmToken: Joi.string().required(),
+    deviceInfo: Joi.object().allow(null),
   }),
 };
 
@@ -166,5 +167,5 @@ module.exports = {
   resetPassword,
   changeArtistStatus,
   changeCustomerStatus,
-  updateFcmToken,
+  addFcmToken,
 };

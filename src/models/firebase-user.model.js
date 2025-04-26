@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const Notification = sequelize.define(
-    'Notification',
+  const FirebaseUser = sequelize.define(
+    'FirebaseUser',
     {
       id: {
         type: DataTypes.UUID,
@@ -15,35 +15,27 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
-      userType: {
-        type: DataTypes.ENUM('CUSTOMER', 'ARTIST', 'SUPER_ADMIN'),
+      fcmToken: {
+        type: DataTypes.STRING(256),
         allowNull: false,
+        unique: true,
       },
-      type: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      deviceInfo: {
+        type: DataTypes.JSONB, // or separate fields if preferred
+        allowNull: true,
+        comment: 'Includes device model, OS version, app version, etc.',
       },
-      title: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      message: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      additionalDetails: {
-        type: DataTypes.JSON,
-        allowNull: false,
-      },
-      isRead: {
+      isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
       },
-      sentStatus: {
-        type: DataTypes.ENUM('PENDING', 'SUCCESS', 'FAILED'),
-        allowNull: false,
-        defaultValue: 'PENDING',
-        comment: 'Tracks whether the notification was successfully sent or failed',
+      preferences: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          promotional: true,
+          appointmentUpdates: true,
+          reviews: true,
+        },
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -58,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'Notification',
+      tableName: 'FirebaseUser',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
@@ -70,12 +62,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Notification.associate = function (models) {
-    Notification.belongsTo(models.User, {
-      foreignKey: 'userId',
-      as: 'user',
-    });
+  /**
+   * Helper method for defining associations.
+   * This method is not a part of DataTypes lifecycle.
+   * The `models/index` file will call this method automatically.
+   */
+  FirebaseUser.associate = function (models) {
+    FirebaseUser.belongsTo(models.User, { foreignKey: 'userId' });
   };
 
-  return Notification;
+  return FirebaseUser;
 };
