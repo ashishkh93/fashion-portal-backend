@@ -200,6 +200,6 @@ module.exports = {
   perOrderRecentWorkImagesLimit: 3, // will increase in future as per requirements
 
   /** Cancellation time after order create OR approve (IN MINUTES) */
-  cancellationTimeFor3DaysThreshold: 72 * 60,
+  cancellationTimeFor3DaysThreshold: 24 * 60,
   cancellationTimeForWithin3DaysThreshold: 12 * 60,
 };
