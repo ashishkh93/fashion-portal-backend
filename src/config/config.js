@@ -198,4 +198,8 @@ module.exports = {
   /** Artist Recent work images limitation */
   defaultRecentWorkImagesLimit: 15, // will increase in future as per requirements
   perOrderRecentWorkImagesLimit: 3, // will increase in future as per requirements
+
+  /** Cancellation time after order create OR approve (IN MINUTES) */
+  cancellationTimeFor3DaysThreshold: 72 * 60,
+  cancellationTimeForWithin3DaysThreshold: 12 * 60,
 };

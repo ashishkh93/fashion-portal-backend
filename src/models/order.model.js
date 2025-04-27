@@ -125,6 +125,7 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'transferId',
     });
     Order.hasOne(models.Review, { foreignKey: 'orderId', as: 'orderReview' });
+    Order.hasMany(models.ScheduledJob, { foreignKey: 'orderId' });
     Order.belongsTo(models.CustomerAddress, { foreignKey: 'addressId', as: 'address' });
   };
 

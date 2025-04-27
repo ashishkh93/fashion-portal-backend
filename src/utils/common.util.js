@@ -25,26 +25,26 @@ const generateOtp = async () => {
   };
 };
 
-const getDiffInHours = (dateTime, order) => {
+const getDiffInMinutes = (dateTime, order) => {
   const orderCreationTime = moment(dateTime, 'YYYY-MM-DD hh:mm A');
   const combinedOrderDateAndTime = moment(`${order.date} ${order.time}`, 'YYYY-MM-DD hh:mm A');
 
   // calculate the difference in hours between orde creation or order approved and order date
-  const differenceInHours = combinedOrderDateAndTime.diff(orderCreationTime, 'hours');
-  return differenceInHours;
+  const diffInMinutes = combinedOrderDateAndTime.diff(orderCreationTime, 'minutes');
+  return diffInMinutes;
 };
 
 const getCancellationHoursForPendingOrder = (order, dateTime) => {
   // calculate the difference in hours between orde creation or order approved and order date
-  const differenceInHours = getDiffInHours(dateTime, order);
+  const differenceInMins = getDiffInMinutes(dateTime, order);
   const orderCreationTime = moment(dateTime, 'YYYY-MM-DD hh:mm A');
   const combinedOrderDateAndTime = moment(`${order.date} ${order.time}`, 'YYYY-MM-DD hh:mm A');
 
-  if (differenceInHours > 72) {
-    return 24;
-  } else if (differenceInHours > 24 && differenceInHours <= 72) {
-    return 12;
-  } else if (differenceInHours < 24) {
+  if (differenceInMins > 72 * 60) {
+    return config.cancellationTimeFor3DaysThreshold;
+  } else if (differenceInMins > 24 * 60 && differenceInMins <= 72 * 60) {
+    return config.cancellationTimeForWithin3DaysThreshold;
+  } else if (differenceInMins <= 24 * 60) {
     /**
      * If there is less than 24 hours between order creation and order date/time, then subtract 4 hours from order date/time, and add remaining hours to cancellation time.
      */
@@ -86,8 +86,8 @@ const checkIsRefundEligible = (order) => {
   /**
    * get difference in hours between order advance paid at date/time and order date/time
    */
-  const differenceInHours = getDiffInHours(order.advancePaidAt, order);
-  if (differenceInHours > 72) {
+  const differenceInMins = getDiffInMinutes(order.advancePaidAt, order);
+  if (differenceInMins > 72 * 60) {
     /**
      * Check if the customer is eligible for refund for an individual order
      */

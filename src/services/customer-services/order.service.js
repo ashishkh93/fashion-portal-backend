@@ -215,7 +215,9 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
       /**
        * Cancel the order if order status is still pending after 24 hours
        */
-      cancelPendingOrderSchedule(id, 'pendingOrder');
+      setTimeout(() => {
+        cancelPendingOrderSchedule(orderId, 'pendingOrder');
+      }, 100);
 
       return { id, customerId, artistId, status, createdAt };
     }

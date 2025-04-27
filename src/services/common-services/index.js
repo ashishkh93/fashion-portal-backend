@@ -5,3 +5,4 @@ module.exports.userService = require('./user.service');
 module.exports.uploadService = require('./upload.service');
 module.exports.otpService = require('./otp.service');
 module.exports.notificationService = require('./notification.service');
+module.exports.scheduleJobService = require('./scheduled-job.service');

@@ -187,7 +187,9 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
        * AND
        * send the notification to user that your order has been approved by artist, and you need to pay advance amount if it is, in timely manner.
        */
-      cancelPendingOrderSchedule(orderId, 'approvedOrder');
+      setTimeout(() => {
+        cancelPendingOrderSchedule(orderId, 'approvedOrder');
+      }, 100);
     } else if (body.status === 'REJECTED') {
       /**
        * send the notification to user that your order has been rejected by artist due to some reason
