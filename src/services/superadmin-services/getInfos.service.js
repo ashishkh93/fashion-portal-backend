@@ -476,7 +476,9 @@ const getAllArts = async (query, condition, include) => {
 
   const { orderByKey, orderBy } = getPriceOrdeConfig(sortKey);
 
-  const allArts = await getPaginationDataFromModel(Art, artCondition, page, size, include, {}, orderByKey, orderBy);
+  const ScopedArt = Art.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } });
+
+  const allArts = await getPaginationDataFromModel(ScopedArt, artCondition, page, size, include, {}, orderByKey, orderBy);
   return allArts;
 };
 
