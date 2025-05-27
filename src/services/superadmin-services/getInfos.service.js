@@ -11,6 +11,7 @@ const { GET_ALL_ARTS_SEARCH_QUERY, getPriceOrdeConfig } = require('../../search-
 const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all-customers-search-query');
 const logger = require('../../config/logger');
 const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
+const { updateFirebaseUserStatus } = require('../../helper/firebase/firebase');
 
 /**
  * Get artist information for admin to check artist's status
@@ -291,8 +292,13 @@ const updateArtistStatusService = async (body, artistId) => {
   if (currentArtist) {
     const artistUpdateBody = { ...body, reasonToDecline: !!body.isActive ? null : body.reasonToDecline };
     const artistInfoUpdateBody = { status: body.status };
-    await currentArtist.update(artistUpdateBody, { transaction });
-    await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
+
+    await Promise.all([
+      currentArtist.update(artistUpdateBody, { transaction }),
+      ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction }),
+    ]);
+
+    updateFirebaseUserStatus(currentArtist.firebase_uid || '', body.status);
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
   }

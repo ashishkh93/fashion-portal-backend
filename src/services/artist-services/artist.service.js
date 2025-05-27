@@ -9,6 +9,7 @@ const { getNumberOfImagesArtistCanUpload } = require('../../utils/order.util');
 const cacheUtil = require('../../cache/cache-util');
 const { CACHE_KEYS } = require('../../cache/cache-keys');
 const logger = require('../../config/logger');
+const { updateFirebaseUserStatus } = require('../../helper/firebase/firebase');
 
 const checkArtistStatus = async (artist, mode) => {
   if (artist.status === 'REJECTED' || artist.status === 'BLOCKED' || artist.status === 'SUSPENDED') {
@@ -66,7 +67,7 @@ const getApprovedArtist = async (artistId) => {
  * @param {object} body
  * @returns {object}
  */
-const addArtistInfoService = async (artistId, body) => {
+const addArtistInfoService = async (artistId, body, user) => {
   const transaction = getTransaction();
   const artist = await ArtistInfo.findOne({ where: { artistId } });
 
@@ -74,6 +75,20 @@ const addArtistInfoService = async (artistId, body) => {
     // await checkArtistStatus(artist, 'add');
     throw new ApiError(httpStatus.FORBIDDEN, 'You have already added your info!');
   } else {
+    const allServices = await Service.findAll({
+      where: {
+        id: {
+          [Op.in]: body?.services,
+        },
+        isActive: true,
+      },
+      raw: true,
+    });
+
+    if (!allServices || allServices?.length === 0) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'The services you have selected are not available');
+    }
+
     const artistInfoEntry = { ...body, artistId, status: 'PENDING' };
     let tmpArtistInfo = await ArtistInfo.create(artistInfoEntry, { transaction });
 
@@ -84,6 +99,8 @@ const addArtistInfoService = async (artistId, body) => {
     }));
 
     await ArtistInfoService.bulkCreate(artistInfoServiceEntries, { transaction });
+
+    updateFirebaseUserStatus(user?.firebase_uid || '', 'PENDING');
 
     const { status, createdAt } = tmpArtistInfo.dataValues;
     return { artistId, status, createdAt };
@@ -96,13 +113,13 @@ const addArtistInfoService = async (artistId, body) => {
  * @returns {Promise<ArtistInfo>}
  */
 const getArtistInfoService = async (artistId) => {
-  const cacheKey = CACHE_KEYS.ARTIST.ARTIST_DETAILS;
+  // const cacheKey = CACHE_KEYS.ARTIST.ARTIST_DETAILS;
 
-  const cachedArtistDetails = cacheUtil.getFromCache(cacheKey);
-  if (cachedArtistDetails) {
-    logger.info(`Cache Hit for ${cacheKey}`);
-    return cachedArtistDetails;
-  }
+  // const cachedArtistDetails = cacheUtil.getFromCache(cacheKey);
+  // if (cachedArtistDetails) {
+  //   logger.info(`Cache Hit for ${cacheKey}`);
+  //   return cachedArtistDetails;
+  // }
 
   const artistCondoition = { artistId };
   const includeModel = [
@@ -131,7 +148,7 @@ const getArtistInfoService = async (artistId) => {
 
   if (artist) {
     const plainDataArtist = getPlainData(artist);
-    cacheUtil.setInCache(cacheKey, plainDataArtist);
+    // cacheUtil.setInCache(cacheKey, plainDataArtist);
     return plainDataArtist;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
@@ -142,55 +159,155 @@ const getArtistInfoService = async (artistId) => {
  * Edit artist info
  * @param {string} artistId
  * @param {object} body
+ * @param {object} artistInfo
+ * @param {object} user
  * @returns {Promise}
  */
-const editArtistInfoService = async (artistId, body, artistInfo) => {
+const editArtistInfoService = async (artistId, body, artistInfo, user) => {
   const transaction = getTransaction();
 
-  // Deleting services if any are marked for deletion
-  if (body.deletedServices?.length) {
-    await ArtistInfoService.destroy({
-      where: {
-        serviceId: {
-          [Op.in]: body.deletedServices,
+  try {
+    // Validate services if provided
+    if (body.newServices?.length) {
+      const existingServices = await Service.findAll({
+        where: {
+          id: {
+            [Op.in]: body.newServices,
+          },
+          isActive: true,
         },
-        artistId,
-      },
-      transaction,
-    });
+        attributes: ['id'],
+      });
+
+      if (existingServices.length !== body.newServices.length) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'One or more services are invalid or inactive');
+      }
+    }
+
+    // Prepare all database operations
+    const operations = [];
+
+    // Handle services updates
+    if (body.deletedServices?.length || body.newServices?.length) {
+      // Delete services if any are marked for deletion
+      if (body.deletedServices?.length) {
+        operations.push(
+          ArtistInfoService.destroy({
+            where: {
+              serviceId: {
+                [Op.in]: body.deletedServices,
+              },
+              artistId,
+            },
+            transaction,
+          })
+        );
+      }
+
+      // Add new services if any are provided
+      if (body.newServices?.length) {
+        const newServiceEntries = body.newServices.map((serviceId) => ({
+          artistInfoId: artistInfo.id,
+          serviceId,
+          artistId,
+        }));
+        operations.push(ArtistInfoService.bulkCreate(newServiceEntries, { transaction }));
+      }
+
+      // Update services array more efficiently
+      const updatedServicesArray = [
+        ...(artistInfo.services || []).filter((id) => !body.deletedServices?.includes(id)),
+        ...(body.newServices || []),
+      ].filter((value, index, self) => self.indexOf(value) === index);
+
+      // Add artist info update to operations
+      operations.push(
+        ArtistInfo.update(
+          {
+            ...body,
+            services: updatedServicesArray,
+            status: 'UNDER_REVIEW',
+          },
+          {
+            where: { artistId },
+            transaction,
+          }
+        )
+      );
+    } else {
+      // If no service changes, just update other fields
+      operations.push(
+        ArtistInfo.update(
+          {
+            ...body,
+            status: 'UNDER_REVIEW',
+          },
+          {
+            where: { artistId },
+            transaction,
+          }
+        )
+      );
+    }
+
+    // Execute all operations in parallel
+    await Promise.all(operations);
+    updateFirebaseUserStatus(user?.firebase_uid || '', 'UNDER_REVIEW');
+  } catch (error) {
+    throw new ApiError(
+      error?.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
+      error?.message || 'Failed to uodated artist info'
+    );
   }
-
-  // Adding new services if any are provided
-  if (body.newServices?.length) {
-    const newServiceEntries = body.newServices.map((serviceId) => ({
-      artistInfoId: artistInfo.id,
-      serviceId,
-      artistId,
-    }));
-    await ArtistInfoService.bulkCreate(newServiceEntries, { transaction });
-  }
-
-  // Updating the services array
-  let updatedServicesArray = [...artistInfo.services];
-
-  if (body.deletedServices?.length) {
-    updatedServicesArray = updatedServicesArray.filter((id) => !body.deletedServices.includes(id));
-  }
-
-  if (body.newServices?.length) {
-    updatedServicesArray = [...new Set([...updatedServicesArray, ...body.newServices])];
-  }
-
-  // Preparing update payload
-  const artistInfoUpdateBody = {
-    ...body,
-    services: updatedServicesArray,
-    status: 'UNDER_REVIEW', // Doing this, because if artist try to change something, then ADMIN needs to verify those details, after verifying it, approve her/him again.
-  };
-
-  // Updating the artist info
-  await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
 };
+
+// const editArtistInfoService = async (artistId, body, artistInfo) => {
+//   const transaction = getTransaction();
+
+//   // Deleting services if any are marked for deletion
+//   if (body.deletedServices?.length) {
+//     await ArtistInfoService.destroy({
+//       where: {
+//         serviceId: {
+//           [Op.in]: body.deletedServices,
+//         },
+//         artistId,
+//       },
+//       transaction,
+//     });
+//   }
+
+//   // Adding new services if any are provided
+//   if (body.newServices?.length) {
+//     const newServiceEntries = body.newServices.map((serviceId) => ({
+//       artistInfoId: artistInfo.id,
+//       serviceId,
+//       artistId,
+//     }));
+//     await ArtistInfoService.bulkCreate(newServiceEntries, { transaction });
+//   }
+
+//   // Updating the services array
+//   let updatedServicesArray = [...artistInfo.services];
+
+//   if (body.deletedServices?.length) {
+//     updatedServicesArray = updatedServicesArray.filter((id) => !body.deletedServices.includes(id));
+//   }
+
+//   if (body.newServices?.length) {
+//     updatedServicesArray = [...new Set([...updatedServicesArray, ...body.newServices])];
+//   }
+
+//   // Preparing update payload
+//   const artistInfoUpdateBody = {
+//     ...body,
+//     services: updatedServicesArray,
+//     status: 'UNDER_REVIEW', // Doing this, because if artist try to change something, then ADMIN needs to verify those details, after verifying it, approve her/him again.
+//   };
+
+//   // Updating the artist info
+//   await ArtistInfo.update(artistInfoUpdateBody, { where: { artistId }, transaction });
+// };
 
 /**
  * Edit artist upi id

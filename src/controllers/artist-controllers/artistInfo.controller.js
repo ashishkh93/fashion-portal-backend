@@ -4,7 +4,7 @@ const { artistServices } = require('../../services');
 
 const addArtistInfo = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
-  const artistInfo = await artistServices.artistInfoService.addArtistInfoService(artistId, req.body);
+  const artistInfo = await artistServices.artistInfoService.addArtistInfoService(artistId, req.body, req.user);
   res.status(httpStatus.CREATED).send({ status: true, message: 'Profile information added!', entity: artistInfo });
 });
 
@@ -16,7 +16,7 @@ const getArtistInfo = catchAsync(async (req, res) => {
 
 const editArtistInfo = catchAsync(async (req, res) => {
   const artistId = req.params.artistId;
-  await artistServices.artistInfoService.editArtistInfoService(artistId, req.body, req.artist);
+  await artistServices.artistInfoService.editArtistInfoService(artistId, req.body, req.artist, req.user);
   res.status(httpStatus.OK).send({ status: true, message: 'Profile information edited!', entity: req.body });
 });
 
