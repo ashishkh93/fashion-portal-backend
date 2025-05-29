@@ -60,6 +60,25 @@ class FirebaseAdminUtil {
       );
     }
   }
+
+  async upsertUserByUID(uid, userData) {
+    if (!uid || typeof userData !== 'object') {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid UID or userData');
+    }
+
+    const db = this.fb_admin.firestore();
+
+    try {
+      const userRef = db.collection('Users').doc(uid);
+      await userRef.set(userData, { merge: true }); // create or update
+      return { success: true, message: 'User document upserted successfully in Firebase.' };
+    } catch (err) {
+      throw new ApiError(
+        err.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
+        err.message || 'Something went wrong, Please try again'
+      );
+    }
+  }
 }
 
 module.exports = { FirebaseAdminUtil };
