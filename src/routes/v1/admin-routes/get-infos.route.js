@@ -2,7 +2,7 @@ const express = require('express');
 const serviceValidation = require('../../../validations/services.validation');
 const { superAdminControllers } = require('../../../controllers');
 const auth = require('../../../middlewares/auth');
-const { adminValidate, artistValidate } = require('../../../middlewares/userValidate');
+const { adminValidate } = require('../../../middlewares/userValidate');
 const validate = require('../../../middlewares/validate');
 const { artistValidation } = require('../../../validations');
 

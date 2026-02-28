@@ -28,7 +28,7 @@ const addArt = {
         return value;
       })
       .messages({
-        'any.custom': 'advanceAmount cannot be more than {{#limit}}',
+        'any.custom': 'Advance amount cannot be more than {{#limit}}',
       }),
 
     searchKeywords: Joi.array().items(Joi.string()),

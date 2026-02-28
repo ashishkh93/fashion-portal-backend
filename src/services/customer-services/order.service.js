@@ -36,9 +36,8 @@ const getAverageRatingForArtistInOrderQuery = () => {
 /**
  * Get single order by id
  * @param {string} orderId
- * @param {string} customerId
  */
-const getOrderById = async (orderCondition) => {
+const getOrderById = async (orderId) => {
   const orderAttributes = [
     'id',
     'artistId',
@@ -110,8 +109,7 @@ const getOrderById = async (orderCondition) => {
     },
   ];
 
-  const order = await Order.findOne({
-    where: orderCondition,
+  const order = await Order.findByPk(orderId, {
     attributes: orderAttributes,
     include: includeForSingleOrder,
   });
@@ -311,12 +309,11 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
 
 /**
  * Fetch order for user
- * @param {string} customerId
  * @param {string} orderId
  * @returns {Promise<Order>}
  */
-const fetchOrderService = async (orderId, customerId) => {
-  const order = await getOrderById({ id: orderId, customerId });
+exports.fetchOrderService = async (orderId) => {
+  const order = await getOrderById(orderId);
   return {
     ...order,
     createdAt: convertDateBasedOnTZ(order.createdAt),
@@ -456,7 +453,6 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
 
 module.exports = {
   orderInitiateService,
-  fetchOrderService,
   fetchOrdersService,
   cancelOrderByUserService,
 };

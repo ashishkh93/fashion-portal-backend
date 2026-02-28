@@ -7,8 +7,6 @@ const {
   Transaction,
   PayoutTransaction,
   RefundTransaction,
-  Payout,
-  Transfer,
   Order,
   OrderFinancialInfo,
 } = require('../../models');
@@ -173,25 +171,22 @@ const payoutWebhookTransaction = catchAsync(async (req, res) => {
         details: payoutWebhookData,
       };
 
-      const payoutTransaction = await PayoutTransaction.create(payoutTransactionBody);
+      const [payoutTransaction, transfer] = await Promise.all([
+        PayoutTransaction.create(payoutTransactionBody),
+        ArtistTransfer.findOne({
+          where: { payoutTransferId: payoutWebhookData.transferId },
+          attributes: ['payoutId', 'artistId', 'payoutTransferId', 'orderIds'],
+        }),
+      ]);
+
       if (payoutTransaction) {
-        await Transfer.update(
-          { status: payoutWebhookData.event, transactionId: payoutTransaction.id },
-          { where: { payoutTransferId: payoutWebhookData.transferId } }
-        );
+        if (transfer) {
+          await transfer.update({ status: payoutWebhookData.event, transactionId: payoutTransaction.id });
+        }
 
         if (payoutWebhookData.event === 'TRANSFER_SUCCESS') {
-          const transfer = await Transfer.findOne({
-            where: { payoutTransferId: payoutWebhookData.transferId },
-            attributes: ['payoutId', 'artistId', 'payoutTransferId'],
-            include: [{ model: Payout, as: 'payout', attributes: ['id', 'orderDetail'] }],
-          });
-
-          const transferData = getPlainData(transfer);
-          const artistId = transferData?.artistId;
-          const orderDetails = transferData.payout.orderDetail;
-
-          const ordersIdsToUpdate = orderDetails?.[artistId] || [];
+          const plainTransferData = getPlainData(transfer);
+          const ordersIdsToUpdate = plainTransferData.orderIds || [];
 
           if (ordersIdsToUpdate?.length > 0) {
             await Promise.all(

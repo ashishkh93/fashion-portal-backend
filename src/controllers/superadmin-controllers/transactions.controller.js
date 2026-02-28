@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { superAdminServices } = require('../../services');
 
-const getAllTransactionForAllCustomers = catchAsync(async (req, res) => {
+exports.getAllTransactionForAllCustomers = catchAsync(async (req, res) => {
   const allTxnForCustomer = await superAdminServices.transactionsService.getAllTransactionsForAllCustomersService(req.query);
 
   res
@@ -10,7 +10,7 @@ const getAllTransactionForAllCustomers = catchAsync(async (req, res) => {
     .send({ status: true, message: 'All Transactions fetched for customer!', entity: allTxnForCustomer });
 });
 
-const getAllTransactionForCustomer = catchAsync(async (req, res) => {
+exports.getAllTransactionForCustomer = catchAsync(async (req, res) => {
   const { customerId } = req.params;
   const allTxnForCustomer = await superAdminServices.transactionsService.getAllTransactionsForCustomerService(
     customerId,
@@ -22,7 +22,7 @@ const getAllTransactionForCustomer = catchAsync(async (req, res) => {
     .send({ status: true, message: 'All Transactions fetched for customer!', entity: allTxnForCustomer });
 });
 
-const getAllTransactionForArtist = catchAsync(async (req, res) => {
+exports.getAllTransactionForArtist = catchAsync(async (req, res) => {
   const { page, size } = req.query;
   const { artistId } = req.params;
   const allTxnForArtist = await superAdminServices.transactionsService.getAllTransactionsForArtistService(
@@ -32,9 +32,3 @@ const getAllTransactionForArtist = catchAsync(async (req, res) => {
   );
   res.status(httpStatus.OK).send({ status: true, message: 'All Transactions fetched for artist!', entity: allTxnForArtist });
 });
-
-module.exports = {
-  getAllTransactionForAllCustomers,
-  getAllTransactionForCustomer,
-  getAllTransactionForArtist,
-};

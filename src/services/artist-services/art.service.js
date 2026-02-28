@@ -42,18 +42,15 @@ const getArtist = async (artistId) => {
  * @returns {Art}
  */
 const addArtService = async (artistId, body, artistInfo) => {
-  const promises = [];
-  promises.push(Category.findOne({ where: { id: body.categoryId, isActive: true } }));
-  promises.push(Service.findOne({ where: { id: body.serviceId, isActive: true } }));
+  const catSer = await Promise.all([
+    Category.findOne({ where: { id: body.categoryId, isActive: true } }),
+    Service.findOne({ where: { id: body.serviceId, isActive: true } }),
+    Art.findOne({ where: { artistId, name: { [Op.iLike]: body.name } } }),
+  ]);
 
-  const catSer = await Promise.all(promises);
-  if (catSer.some((res) => !res)) {
+  if (catSer.slice(0, 2).some((res) => !res)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Category or Service is not valid, please provide valid Id');
-  }
-
-  const sameArtNameExistForArtist = await Art.findOne({ where: { artistId, name: { [Op.iLike]: body.name } } });
-
-  if (sameArtNameExistForArtist) {
+  } else if (catSer[2]) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Art with same name exists in your current records');
   }
 

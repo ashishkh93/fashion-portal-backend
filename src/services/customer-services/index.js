@@ -5,3 +5,4 @@ module.exports.reviewService = require('./review.service');
 module.exports.getArtistsService = require('./get-artists.service');
 module.exports.favoriteService = require('./favorite.service');
 module.exports.addressService = require('./address.service');
+module.exports.analyticsService = require('./analytics.service');

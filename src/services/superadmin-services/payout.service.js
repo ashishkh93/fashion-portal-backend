@@ -5,7 +5,7 @@ const _ = require('lodash');
 const ApiError = require('../../utils/ApiError');
 const {
   Payout,
-  Transfer,
+  ArtistTransfer,
   Order,
   OrderFinancialInfo,
   User,
@@ -206,7 +206,7 @@ const payoutToArtistsService = async (body) => {
           batchTransferId: batch_transfer_id,
           fromDate: body.fromDate,
           toDate: body.toDate,
-          status: data.status || 'initiated',
+          status: data.status || 'INITIATED',
           totalBatchPayoutAmount,
         };
 
@@ -226,7 +226,7 @@ const payoutToArtistsService = async (body) => {
             return acc;
           }, []);
 
-          const bulkTransfers = await Transfer.bulkCreate(reducedTransfers);
+          const bulkTransfers = await ArtistTransfer.bulkCreate(reducedTransfers);
           if (bulkTransfers) {
             const orderTransferEntries = bulkTransfers.reduce((acc, transfer) => {
               const { orderIds, id } = transfer;
@@ -306,7 +306,7 @@ const batchPayoutVerifyService = async (batchTransferId) => {
 const getAllPayoutsService = async (page, size) => {
   const includeModel = [
     {
-      model: Transfer,
+      model: ArtistTransfer,
       as: 'payoutTransfers',
       attributes: ['transferAmount', 'payoutTransferId', 'status'],
     },
@@ -337,7 +337,7 @@ const getAllPayoutsService = async (page, size) => {
 const getPayoutById = async (payoutId) => {
   const includeModel = [
     {
-      model: Transfer,
+      model: ArtistTransfer,
       as: 'payoutTransfers',
       attributes: ['transferAmount', 'payoutTransferId', 'status'],
       include: [

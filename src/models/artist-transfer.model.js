@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const Transfer = sequelize.define(
-    'Transfer',
+  const ArtistTransfer = sequelize.define(
+    'ArtistTransfer',
     {
       id: {
         type: DataTypes.UUID,
@@ -63,7 +63,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'Transfer',
+      tableName: 'ArtistTransfer',
       // Define default scope to exclude createdAt and updatedAt globally
       defaultScope: {
         attributes: {
@@ -75,30 +75,30 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Transfer.associate = function (models) {
-    Transfer.belongsTo(models.Payout, {
+  ArtistTransfer.associate = function (models) {
+    ArtistTransfer.belongsTo(models.Payout, {
       foreignKey: 'payoutId',
       as: 'payout',
     });
-    Transfer.belongsToMany(models.Order, {
+    ArtistTransfer.belongsToMany(models.Order, {
       through: models.ArtistTransferOrder,
       foreignKey: 'transferId',
       otherKey: 'orderId',
       as: 'orders',
     });
-    Transfer.belongsTo(models.ArtistInfo, {
+    ArtistTransfer.belongsTo(models.ArtistInfo, {
       foreignKey: 'artistId',
       as: 'payoutArtistInfo',
       targetKey: 'artistId',
     });
-    Transfer.hasMany(models.PayoutTransaction, {
+    ArtistTransfer.hasMany(models.PayoutTransaction, {
       foreignKey: 'payoutTransferId',
       sourceKey: 'payoutTransferId',
     });
-    // Transfer.belongsTo(models.PayoutTransaction, {
+    // ArtistTransfer.belongsTo(models.PayoutTransaction, {
     //   foreignKey: 'transactionId',
     // });
   };
 
-  return Transfer;
+  return ArtistTransfer;
 };

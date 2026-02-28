@@ -147,9 +147,14 @@ module.exports = (sequelize, DataTypes) => {
       as: 'arts',
     });
     ArtistInfo.hasMany(models.Order, { foreignKey: 'artistId', sourceKey: 'artistId' });
-    ArtistInfo.hasMany(models.Transfer, { foreignKey: 'artistId', sourceKey: 'artistId' });
+    ArtistInfo.hasMany(models.ArtistTransfer, { foreignKey: 'artistId', sourceKey: 'artistId' });
     ArtistInfo.hasMany(models.ArtistVacation, { foreignKey: 'artistId', sourceKey: 'artistId', as: 'vacations' });
     ArtistInfo.hasMany(models.FavoriteArtist, { foreignKey: 'artistId', sourceKey: 'artistId' });
+    ArtistInfo.hasMany(models.ArtistProfileVisitLog, {
+      foreignKey: 'artistId',
+      sourceKey: 'artistId',
+      as: 'artistProfileVisitLogs',
+    });
   };
 
   return ArtistInfo;

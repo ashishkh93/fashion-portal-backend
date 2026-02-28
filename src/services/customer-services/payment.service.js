@@ -141,13 +141,13 @@ const paymentVerifyService = async (cfOrderId) => {
           ? 'Payment failed'
           : 'Internal server error';
 
-        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, msg);
+        throw new ApiError(payment?.status || httpStatus.INTERNAL_SERVER_ERROR, msg);
       }
     } else {
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'No payment found for this order');
     }
   } catch (error) {
-    // logger.error(error);
+    logger.error('Failed to verify the payment due to: ' + error.message);
     throw new ApiError(
       error.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
       error?.response?.data?.message || error.message || 'Internal server error'

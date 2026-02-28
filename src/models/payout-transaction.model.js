@@ -64,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   PayoutTransaction.associate = function (models) {
-    PayoutTransaction.belongsTo(models.Transfer, {
+    PayoutTransaction.belongsTo(models.ArtistTransfer, {
       foreignKey: 'payoutTransferId',
       targetKey: 'payoutTransferId',
       as: 'payoutTransfer',

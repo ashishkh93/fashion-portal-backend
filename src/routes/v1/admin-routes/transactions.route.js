@@ -24,7 +24,6 @@ router.get(
   superAdminControllers.transactionsController.getAllTransactionForCustomer
 );
 
-
 router.get(
   '/artist/:artistId',
   auth(),

@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User, Transaction, Order, CustomerInfo, Transfer, ArtistInfo, PayoutTransaction } = require('../../models');
+const { User, Transaction, Order, CustomerInfo, ArtistTransfer, ArtistInfo, PayoutTransaction } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 const {
@@ -72,7 +72,7 @@ const getTransactions = async (txnCondition, query) => {
  * @param {object} query
  * @returns {Promise<Transaction>}
  */
-const getAllTransactionsForAllCustomersService = async (query) => {
+exports.getAllTransactionsForAllCustomersService = async (query) => {
   const allTxns = await getTransactions({}, query);
   return allTxns;
 };
@@ -81,9 +81,9 @@ const getAllTransactionsForAllCustomersService = async (query) => {
  * Get all transactions for customer
  * @param {string} customerId
  * @param {object} query
- * @returns {Promise<Transaction>}
+ * @returns {Promise<PayoutTransaction>}
  */
-const getAllTransactionsForCustomerService = async (customerId, query) => {
+exports.getAllTransactionsForCustomerService = async (customerId, query) => {
   const customer = await User.findByPk(customerId);
   if (!customer) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not exists');
@@ -103,7 +103,7 @@ const getAllTransactionsForCustomerService = async (customerId, query) => {
  * @param {number} size
  * @returns {Promise<Transaction>}
  */
-const getAllTransactionsForArtistService = async (artistId, page, size) => {
+exports.getAllTransactionsForArtistService = async (artistId, page, size) => {
   const artist = await User.findByPk(artistId);
 
   if (!artist) {
@@ -115,7 +115,7 @@ const getAllTransactionsForArtistService = async (artistId, page, size) => {
 
   const include = [
     {
-      model: Transfer,
+      model: ArtistTransfer,
       as: 'payoutTransfer',
       where: { artistId },
       required: true,
@@ -126,6 +126,21 @@ const getAllTransactionsForArtistService = async (artistId, page, size) => {
           as: 'payoutArtistInfo',
           attributes: ['status', 'fullName', 'businessName', 'email', 'profilePic'],
         },
+        {
+          model: Order,
+          as: 'orders',
+          attributes: ['orderIdentity', 'status'],
+          through: {
+            attributes: [],
+          },
+          include: [
+            {
+              model: Transaction,
+              as: 'orderTxn',
+              attributes: ['id', 'cfPaymentId', 'paymentStatus', 'paymentAmount', 'paymentType'],
+            },
+          ],
+        },
       ],
     },
   ];
@@ -133,10 +148,4 @@ const getAllTransactionsForArtistService = async (artistId, page, size) => {
   const allTxnForArtist = await getPaginationDataFromModel(PayoutTransaction, {}, page, size, include);
 
   return allTxnForArtist;
-};
-
-module.exports = {
-  getAllTransactionsForAllCustomersService,
-  getAllTransactionsForCustomerService,
-  getAllTransactionsForArtistService,
 };

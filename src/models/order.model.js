@@ -111,15 +111,14 @@ module.exports = (sequelize, DataTypes) => {
     Order.belongsTo(models.CustomerInfo, { foreignKey: 'customerId', as: 'orderCustomer', targetKey: 'customerId' });
     Order.belongsTo(models.ArtistInfo, { foreignKey: 'artistId', as: 'orderArtist', targetKey: 'artistId' });
     Order.hasOne(models.OrderFinancialInfo, { foreignKey: 'orderId', as: 'orderFinancialInfo' });
-    Order.hasMany(models.Transaction, { foreignKey: 'cfOrderId' });
-    // Order.belongsTo(models.Transaction, { foreignKey: 'transactionId' });
+    Order.hasMany(models.Transaction, { foreignKey: 'cfOrderId', as: 'orderTxn' });
     Order.belongsToMany(models.Art, {
       through: 'ArtOrder',
       foreignKey: 'artOrderId', // Reference from ArtOrder to Order
       otherKey: 'artId', // Reference from ArtOrder to Art
       as: 'arts',
     });
-    Order.belongsToMany(models.Transfer, {
+    Order.belongsToMany(models.ArtistTransfer, {
       through: models.ArtistTransferOrder,
       foreignKey: 'orderId',
       otherKey: 'transferId',

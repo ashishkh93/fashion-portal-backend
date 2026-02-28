@@ -140,6 +140,18 @@ const getReviewsForSingleCustomer = {
   }),
 };
 
+const artistProfileVisitLog = {
+  params: Joi.object().keys({
+    customerId: validateUUID(),
+  }),
+  body: Joi.object().keys({
+    artistId: validateUUID(),
+    source: Joi.string().valid('home_feed', 'search', 'artist_profile').messages({
+      'any.only': 'Invalid source',
+    }),
+  }),
+};
+
 module.exports = {
   addCustomerInfo,
   editCustomerInfo,
@@ -152,4 +164,5 @@ module.exports = {
   addFavArtistService,
   getAllFavArtistService,
   getReviewsForSingleCustomer,
+  artistProfileVisitLog,
 };

@@ -19,8 +19,8 @@ const addArtistInfo = {
         'any.required': `"DOB" is a required`,
       }),
     gender: Joi.string().required().valid('male', 'female'),
-    profilePic: Joi.string(),
-    businessProfilePic: Joi.string(),
+    profilePic: Joi.string().allow(''),
+    businessProfilePic: Joi.string().allow(''),
     aboutInfo: Joi.string().required(),
     workingTime: Joi.string().required(),
     services: Joi.array().required(),
@@ -37,7 +37,7 @@ const editArtistInfo = {
   }),
   body: Joi.object().keys({
     fullName: Joi.string(),
-    businessName: Joi.string(),
+    businessName: Joi.string().allow(''),
     email: Joi.string().email(),
     dob: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
@@ -46,8 +46,8 @@ const editArtistInfo = {
         'string.pattern.name': `"DOB" must be in YYYY-MM-DD format`,
       }),
     gender: Joi.string().valid('male', 'female'),
-    profilePic: Joi.string(),
-    businessProfilePic: Joi.string(),
+    profilePic: Joi.string().allow(''),
+    businessProfilePic: Joi.string().allow(''),
     aboutInfo: Joi.string(),
     workingTime: Joi.string(),
     services: Joi.array(),

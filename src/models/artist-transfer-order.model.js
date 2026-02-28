@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       transferId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references: { model: 'Transfer', key: 'id' },
+        references: { model: 'ArtistTransfer', key: 'id' },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },

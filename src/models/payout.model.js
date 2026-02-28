@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Payout.associate = function (models) {
-    Payout.hasMany(models.Transfer, {
+    Payout.hasMany(models.ArtistTransfer, {
       foreignKey: 'payoutId',
       as: 'payoutTransfers',
     });
