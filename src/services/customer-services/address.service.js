@@ -4,7 +4,7 @@ const ApiError = require('../../utils/ApiError');
 const { generateAddressSignature } = require('../../utils/address.util');
 
 const fetchAllAddresses = async (customerId) => {
-  return await CustomerAddress.findAll({ where: { customerId } });
+  return CustomerAddress.findAll({ where: { customerId } });
 };
 
 /**
@@ -44,7 +44,7 @@ const addAddressService = async (customerId, body) => {
  * @returns {object}
  */
 const getAllAddressService = async (customerId) => {
-  const addresses = await await fetchAllAddresses(customerId);
+  const addresses = await fetchAllAddresses(customerId);
   return addresses;
 };
 
@@ -56,26 +56,35 @@ const getAllAddressService = async (customerId) => {
  * @returns {Promise}
  */
 const editAddressService = async (customerId, addressId, body) => {
-  const allAddrs = await await fetchAllAddresses(customerId);
-  if (allAddrs) {
-    const newEditAddressSignature = generateAddressSignature(body);
+  const allAddrs = await fetchAllAddresses(customerId);
 
-    const isAddressExist = allAddrs?.some((a) => {
-      if (a.dataValues?.id === addressId) return false;
-
-      const existingAddressSignature = generateAddressSignature(a);
-      return existingAddressSignature === newEditAddressSignature;
-    });
-
-    if (isAddressExist) {
-      throw new ApiError(httpStatus.FORBIDDEN, 'This address already exists in your address book.');
-    }
-
-    const adrs = allAddrs?.find((a) => a.dataValues?.id === addressId);
-    await adrs.update(body);
-  } else {
+  if (!allAddrs || !allAddrs.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Address not found');
   }
+
+  // Find address to edit
+  const adrs = allAddrs.find((a) => a.id === addressId);
+
+  if (!adrs) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+  }
+
+  const newEditAddressSignature = generateAddressSignature(body);
+
+  const isAddressExist = allAddrs.some((a) => {
+    if (a.id === addressId) return false;
+
+    const existingAddressSignature = generateAddressSignature(a);
+    return existingAddressSignature === newEditAddressSignature;
+  });
+
+  if (isAddressExist) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'This address already exists in your address book.');
+  }
+
+  await adrs.update(body);
+
+  return adrs;
 };
 
 module.exports = {
