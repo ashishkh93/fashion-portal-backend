@@ -312,7 +312,7 @@ const orderInitiateService = async (customerId, artistId, body, customer) => {
  * @param {string} orderId
  * @returns {Promise<Order>}
  */
-exports.fetchOrderService = async (orderId) => {
+const fetchOrderService = async (orderId) => {
   const order = await getOrderById(orderId);
   return {
     ...order,
@@ -453,6 +453,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
 
 module.exports = {
   orderInitiateService,
+  fetchOrderService,
   fetchOrdersService,
   cancelOrderByUserService,
 };
