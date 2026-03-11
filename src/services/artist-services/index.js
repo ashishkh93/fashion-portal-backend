@@ -5,3 +5,4 @@ module.exports.vacationService = require('./vacation.service');
 module.exports.verificationService = require('./verification.service');
 module.exports.bankingService = require('./banking.service');
 module.exports.analyticsService = require('./analytics.service');
+module.exports.paymentService = require('./payment.service');

@@ -13,3 +13,4 @@ module.exports.vacationValidation = require('./vacation.validation');
 module.exports.bankingValidation = require('./banking.validation');
 module.exports.addressValidation = require('./address.validation');
 module.exports.notificationValidation = require('./notification.validation');
+module.exports.artistPaymentValidation = require('./artist-payment.validation');

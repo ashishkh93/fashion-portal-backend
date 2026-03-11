@@ -270,6 +270,14 @@ const getFirstCharOfString = (str) => {
   // return str?.charAt(0)?.toUpperCase();
 };
 
+const isMockUpi = (upi) => {
+  const splitUpi = upi.split('@');
+  if (splitUpi[1] === 'apupi') {
+    return true;
+  }
+  return false;
+};
+
 module.exports = {
   generateOtp,
   getCancellationHoursForPendingOrder,
@@ -285,4 +293,5 @@ module.exports = {
   artistIsOnVacation,
   getUniqueTempId,
   getFirstCharOfString,
+  isMockUpi,
 };

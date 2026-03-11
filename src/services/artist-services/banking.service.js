@@ -5,6 +5,7 @@ const config = require('../../config/config');
 const { createOtpRequest } = require('../common-services/otp.service');
 const { handleVerificationByCF } = require('./verification.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
+const { isMockUpi } = require('../../utils/common.util');
 
 const MAX_BANKING_OTP_ATTEMPTS = config.maxBankingOTPAttempts;
 const upiVerificationTimeLimit = config.upiVerificationTimeLimit;
@@ -22,7 +23,13 @@ const addArtistBankingInfoService = async (artistId, body) => {
     /**
      *  FIRST VERIFY THE UPI BY CASHFREE VERIFICATION API, THEN ADD IT TO DB
      */
-    const verifiactionRes = await handleVerificationByCF(artistId, body.upi);
+
+    let verifiactionRes = {};
+    if (isMockUpi(body.upi)) {
+      verifiactionRes = { name_at_bank: 'Mock Name' };
+    } else {
+      verifiactionRes = await handleVerificationByCF(artistId, body.upi);
+    }
     if (verifiactionRes) {
       const bankingBody = { ...body, artistId, accountHolderName: verifiactionRes.name_at_bank, upiVerified: true };
       await ArtistBankingInfo.create(bankingBody);
