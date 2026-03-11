@@ -8,3 +8,4 @@ module.exports.refundService = require('./refund.service');
 module.exports.reviewService = require('./review.service');
 module.exports.orderService = require('./order.service');
 module.exports.transactionsService = require('./transactions.service');
+module.exports.commonService = require('./common.service');

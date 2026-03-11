@@ -23,4 +23,12 @@ router.patch(
   commonControllers.notificationController.updateNotifiacation
 );
 
+router.patch(
+  '/read/all',
+  auth(),
+  validate(notificationValidation.readAllNotificationsForArtist),
+  artistValidate((req) => ({ artistId: req.params.artistId, route: 'notification' })),
+  commonControllers.notificationController.readAllNotifications
+);
+
 module.exports = router;

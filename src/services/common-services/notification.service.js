@@ -3,7 +3,7 @@ const { FirebaseUser, User, ArtistInfo, CustomerInfo, Notification } = require('
 const ApiError = require('../../utils/ApiError');
 const { getPaginationDataFromModel } = require('../../utils/paginate');
 
-exports.getFcmTokens = (userId) => {
+const getFcmTokens = (userId) => {
   return FirebaseUser.findAll({
     where: { userId },
     attributes: ['fcmToken'],
@@ -17,7 +17,7 @@ exports.getFcmTokens = (userId) => {
  * @param {object} req
  * @returns {Promise<Notification>}
  */
-exports.getAllNotificationsService = async (req) => {
+const getAllNotificationsService = async (req) => {
   const { page, size } = req.query;
   const user = req.user;
 
@@ -50,7 +50,7 @@ exports.getAllNotificationsService = async (req) => {
  * @param {object} req
  * @returns {Promise<Notification>}
  */
-exports.updateNotificationService = async (req) => {
+const updateNotificationService = async (req) => {
   const user = req.user;
   const notificationId = req.params.notificationId;
   const notification = await Notification.findOne({ where: { id: notificationId, userId: user.id } });
@@ -60,4 +60,21 @@ exports.updateNotificationService = async (req) => {
   }
 
   await notification.update(req.body);
+};
+
+/**
+ * Mark all notifications as read for the authenticated user
+ * @param {object} req
+ * @returns {Promise<void>}
+ */
+const readAllNotificationsService = async (req) => {
+  const user = req.user;
+  await Notification.update({ isRead: true }, { where: { userId: user.id, isRead: false } });
+};
+
+module.exports = {
+  getFcmTokens,
+  getAllNotificationsService,
+  updateNotificationService,
+  readAllNotificationsService,
 };

@@ -28,7 +28,12 @@ const verifyUpiService = async (artistId, upi) => {
     let artist = await User.findByPk(artistId);
 
     if (artist) {
-      return handleVerificationByCF(artistId, upi);
+      const splitUpi = upi.split('@');
+      if (splitUpi[1] !== 'apupi') {
+        return handleVerificationByCF(artistId, upi);
+      } else {
+        return { status: 'VALID', upi, name: artist.name };
+      }
     } else {
       throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
     }

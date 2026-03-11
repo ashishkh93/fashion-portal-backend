@@ -40,9 +40,23 @@ const updateNotificationForCustomer = {
   }),
 };
 
+const readAllNotificationsForArtist = {
+  params: Joi.object().keys({
+    artistId: validateUUID(),
+  }),
+};
+
+const readAllNotificationsForCustomer = {
+  params: Joi.object().keys({
+    customerId: validateUUID(),
+  }),
+};
+
 module.exports = {
   getNotificationsForArtist,
   getNotificationsForCustomer,
   updateNotificationForArtist,
   updateNotificationForCustomer,
+  readAllNotificationsForArtist,
+  readAllNotificationsForCustomer,
 };

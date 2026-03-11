@@ -23,4 +23,12 @@ router.patch(
   commonControllers.notificationController.updateNotifiacation
 );
 
+router.patch(
+  '/read/all',
+  auth(),
+  validate(notificationValidation.readAllNotificationsForCustomer),
+  customerValidate((req) => req.params.customerId),
+  commonControllers.notificationController.readAllNotifications
+);
+
 module.exports = router;
