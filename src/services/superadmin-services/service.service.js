@@ -28,7 +28,7 @@ const addService = async (body) => {
 const getServices = async (query) => {
   // To override the default scope to include excluded fields
   // Service.scope('defaultScope', { attributes: { include: ['createdAt', 'updatedAt'] } }).findAll();
-  const { isActive } = query;
+  const { isActive } = query || {};
   const whereClause = {};
 
   if (isActive === 'true' || isActive === 'false') {
