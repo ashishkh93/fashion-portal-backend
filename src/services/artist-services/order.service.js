@@ -16,6 +16,11 @@ const { getPaginationDataFromModel } = require('../../utils/paginate');
 const { convertDateBasedOnTZ } = require('../../utils/moment.util');
 const { cancelPendingOrderSchedule } = require('../../schedules/pending-order-cancel-schedule');
 const { getPlainData } = require('../../utils/common.util');
+const {
+  sendOrderAcceptedNotification,
+  sendOrderRejectedNotification,
+  sendOrderCancelledByArtistNotification,
+} = require('../../handlers/notifications/notification-data.hanlder');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
 
@@ -181,19 +186,19 @@ const updateOrderStatusService = async (artistId, orderId, body) => {
        */
 
       await createRefunRequestForOrderService(curOrder, 'Order Cancelled by Artist', transaction);
+      sendOrderCancelledByArtistNotification(curOrder.customerId, artistId, orderId);
+    } else if (body.status === 'CANCELLED_BY_ARTIST') {
+      sendOrderCancelledByArtistNotification(curOrder.customerId, artistId, orderId);
     } else if (body.status === 'APPROVED') {
       /**
        * Initiate the auto order cancel schedule if the advance amount is not paid by user within timely manner
-       * AND
-       * send the notification to user that your order has been approved by artist, and you need to pay advance amount if it is, in timely manner.
        */
       setTimeout(() => {
         cancelPendingOrderSchedule(orderId, 'approvedOrder');
       }, 100);
+      sendOrderAcceptedNotification(curOrder.customerId, artistId, orderId);
     } else if (body.status === 'REJECTED') {
-      /**
-       * send the notification to user that your order has been rejected by artist due to some reason
-       */
+      sendOrderRejectedNotification(curOrder.customerId, artistId, orderId);
     }
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Order status already updated!');

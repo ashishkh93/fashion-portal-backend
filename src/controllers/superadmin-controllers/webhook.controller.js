@@ -12,6 +12,13 @@ const {
 } = require('../../models');
 const logger = require('../../config/logger');
 const { getPlainData } = require('../../utils/common.util');
+const {
+  sendAdvancePaymentReceivedNotification,
+  sendAdvancePaymentFailedNotification,
+  sendFinalPaymentReceivedNotification,
+  sendFinalPaymentFailedNotification,
+  sendOrderCompletedNotification,
+} = require('../../handlers/notifications/notification-data.hanlder');
 
 const pgWebhookTransaction = async (req, res) => {
   try {
@@ -63,6 +70,23 @@ const pgWebhookTransaction = async (req, res) => {
             advancePaidAt: moment(),
           };
           await OrderFinancialInfo.update(orderFinancialInfoUpdateBody, { where: { orderId: actualOrderId } });
+
+          if (advancedPaid) {
+            sendAdvancePaymentReceivedNotification(createTransactionBody.customerId, actualOrderId);
+          } else {
+            sendAdvancePaymentFailedNotification(createTransactionBody.customerId, actualOrderId);
+          }
+        } else if (isFinalPayment) {
+          const paymentSucceeded = webhookReqBody.payment.payment_status === 'SUCCESS';
+          if (paymentSucceeded) {
+            sendFinalPaymentReceivedNotification(createTransactionBody.customerId, actualOrderId);
+            const orderForNotif = await Order.findOne({ where: { id: actualOrderId }, attributes: ['artistId'] });
+            if (orderForNotif?.artistId) {
+              sendOrderCompletedNotification(orderForNotif.artistId, actualOrderId);
+            }
+          } else {
+            sendFinalPaymentFailedNotification(createTransactionBody.customerId, actualOrderId);
+          }
         }
       }
 

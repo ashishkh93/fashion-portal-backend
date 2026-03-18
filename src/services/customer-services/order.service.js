@@ -22,7 +22,10 @@ const { checkIsRefundEligible, getPlainData, getOrderIdentity, artistIsOnVacatio
 const { getOrderWithFinancialInfoService } = require('../artist-services/order.service');
 const { createRefunRequestForOrderService } = require('../superadmin-services/refund.service');
 const { getTransaction } = require('../../middlewares/asyncHooks');
-const { sendNewOrderRequestNotification } = require('../../handlers/notifications/notification-data.hanlder');
+const {
+  sendNewOrderRequestNotification,
+  sendOrderCancelledByCustomerNotification,
+} = require('../../handlers/notifications/notification-data.hanlder');
 const { getTotalReviewsForArtistInOrderQuery } = require('../../utils/raw-sql.util');
 
 const getAverageRatingForArtistInOrderQuery = () => {
@@ -97,7 +100,7 @@ const getOrderById = async (orderId) => {
           model: Review,
           as: 'artistReview',
           attributes: [],
-          required: true,
+          required: false,
         },
       ],
     },
@@ -439,6 +442,7 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
     };
     await Order.update(cancelOrderBody, { where: { id: orderId, customerId }, transaction });
 
+    let artistGetsAdvance = false;
     if (advancedPaid) {
       const isRefundEligible = checkIsRefundEligible(orderFinancialInfo);
       if (isRefundEligible) {
@@ -446,8 +450,11 @@ const cancelOrderByUserService = async (customerId, orderId, body) => {
          * Refund the order advance amount to customer based on the cancel policy
          */
         await createRefunRequestForOrderService(order, 'Order Cancelled by User', transaction);
+      } else {
+        artistGetsAdvance = true;
       }
     }
+    sendOrderCancelledByCustomerNotification(order.artistId, orderId, order.date, artistGetsAdvance);
   }
 };
 

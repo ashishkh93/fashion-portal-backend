@@ -6,6 +6,10 @@ const { getCancellationHoursForPendingOrder, getPlainData } = require('../utils/
 const { scheduleJobService } = require('../services/common-services');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const {
+  sendAutoOrderCancelledNotRespondedNotification,
+  sendAutoOrderCancelledUnpaidAdvanceNotification,
+} = require('../handlers/notifications/notification-data.hanlder');
 
 /**
  * Schedule job for the orders, which has still the pending status after 24 hours of order creation
@@ -19,6 +23,7 @@ const cancelPendingOrder = async (order, scheduledJobId) => {
       const orderUpdateBody = { status: 'NOT_RESPONDED' };
       await Order.update(orderUpdateBody, { where: { id: orderId } });
       await scheduleJobService.updateSchedule({ status: 'COMPLETED' }, { where: { id: scheduledJobId } });
+      sendAutoOrderCancelledNotRespondedNotification(order.customerId, orderId);
     } else {
       logger.info(`Order already updated for orderId: ${orderId}, current status: ${order.status}`);
       await scheduleJobService.updateSchedule({ status: 'SKIPPED' }, { where: { id: scheduledJobId } });
@@ -44,6 +49,7 @@ const cancelApprovedOrder = async (order, scheduledJobId) => {
       const orderUpdateBody = { status: 'AUTO_CANCELLED_DUE_TO_UNPAID_ADVANCE_AMOUNT' };
       await Order.update(orderUpdateBody, { where: { id: orderId } });
       await scheduleJobService.updateSchedule({ status: 'COMPLETED' }, { where: { id: scheduledJobId } });
+      sendAutoOrderCancelledUnpaidAdvanceNotification(order.artistId, orderId);
     } else {
       logger.info(`Order already updated for orderId: ${orderId}, current status: ${order.status}`);
       await ScheduledJob.update({ status: 'SKIPPED' }, { where: { id: scheduledJobId } });
