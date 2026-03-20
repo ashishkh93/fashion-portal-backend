@@ -10,6 +10,7 @@ const addressRoutes = require('./address.route');
 const favoriteRoutes = require('./favorite.route');
 const notificationRoutes = require('./notification.route');
 const analyticsRoutes = require('./analytics.route');
+const uploadRoutes = require('./upload.route');
 
 const router = express.Router();
 
@@ -57,6 +58,10 @@ const defaultUserRoutes = [
   {
     path: '/:customerId/analytics',
     route: analyticsRoutes,
+  },
+  {
+    path: '/:customerId/upload',
+    route: uploadRoutes,
   },
 ];
 
