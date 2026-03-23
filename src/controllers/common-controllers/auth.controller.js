@@ -20,8 +20,8 @@ const verifyOtp = catchAsync(async (req, res) => {
 });
 
 const addFcmToken = catchAsync(async (req, res) => {
-  await commonServices.userService.addFcmTokenService(req.body, req.user);
-  res.status(httpStatus.NO_CONTENT).send();
+  const fcmToken = await commonServices.userService.addFcmTokenService(req.body, req.user);
+  res.status(httpStatus.CREATED).send({ status: true, message: 'FCM token added successfully', entity: fcmToken });
 });
 
 const logout = catchAsync(async (req, res) => {
