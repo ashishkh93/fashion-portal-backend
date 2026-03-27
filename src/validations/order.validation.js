@@ -132,12 +132,11 @@ const updateOrderStatusForArtist = {
   body: Joi.object().keys({
     status: Joi.string()
       .required()
-      .valid('APPROVED', 'REJECTED', 'CANCELLED_BY_ARTIST')
+      .valid('APPROVED', 'REJECTED', 'CANCELLED_BY_ARTIST', 'COMPLETED')
       .messages({ 'any.only': `Invalid status` }),
     artistOrderNote: Joi.string().when('status', {
       is: Joi.valid('CANCELLED_BY_ARTIST', 'REJECTED'),
       then: Joi.required(),
-      // otherwise: Joi.forbidden(),
     }),
   }),
 };

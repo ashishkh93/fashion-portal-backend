@@ -144,6 +144,9 @@ const paymentVerifyService = async (customerId, cfOrderId) => {
             { advanceAmountPaid: true, advancePaidAt: new Date() },
             { where: { orderId } }
           );
+        } else {
+          // Final payment received — auto-complete the order
+          await Order.update({ status: 'COMPLETED' }, { where: { id: orderId } });
         }
 
         // 2. Create Transaction record (skip if already exists for this cfPaymentId)
