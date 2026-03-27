@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const uuid = require('uuid');
-const { User, Order, OrderFinancialInfo } = require('../../models');
+const { User, Order, OrderFinancialInfo, Transaction } = require('../../models');
 const ApiError = require('../../utils/ApiError');
 const { CashfreeUtil } = require('../../utils/cashfree.util');
 const logger = require('../../config/logger');
@@ -116,12 +116,13 @@ const paymentInitiateService = async (customerId, orderId, body, customer) => {
 };
 
 /**
- * Verify Payment with Cashree SDK
- * To check the payment if it succeed or failed or cancelled and return the response based on it
- * @param {string} cfOrderId
+ * Verify Payment with Cashfree SDK
+ * Checks payment status, then writes Transaction + updates OrderFinancialInfo on success.
+ * @param {string} customerId
+ * @param {string} cfOrderId  — e.g. "ADVANCE_<orderId>" or "FINAL_<orderId>"
  * @returns {object}
  */
-const paymentVerifyService = async (cfOrderId) => {
+const paymentVerifyService = async (customerId, cfOrderId) => {
   try {
     const payment = await CashfreeUtil.PGOrderFetchPayments(xAPiVersion, cfOrderId);
 
@@ -131,7 +132,35 @@ const paymentVerifyService = async (cfOrderId) => {
       const failedPayment = payment?.data?.find((p) => p.payment_status === 'FAILED');
 
       if (!!succeedPayment) {
-        const { order_id, payment_amount, payment_currency, payment_method, payment_status } = succeedPayment;
+        const { order_id, cf_payment_id, payment_amount, payment_currency, payment_method, payment_status } = succeedPayment;
+
+        // Derive orderId and payment type from cfOrderId
+        const isAdvance = cfOrderId.startsWith('ADVANCE_');
+        const orderId = cfOrderId.replace(/^(ADVANCE_|FINAL_)/, '');
+
+        // 1. Update OrderFinancialInfo — mark advance as paid
+        if (isAdvance) {
+          await OrderFinancialInfo.update(
+            { advanceAmountPaid: true, advancePaidAt: new Date() },
+            { where: { orderId } }
+          );
+        }
+
+        // 2. Create Transaction record (skip if already exists for this cfPaymentId)
+        const existing = await Transaction.findOne({ where: { cfPaymentId: String(cf_payment_id) } });
+        if (!existing) {
+          await Transaction.create({
+            cfOrderId: orderId,
+            cfPaymentId: String(cf_payment_id),
+            customerId,
+            paymentStatus: 'SUCCESS',
+            paymentAmount: payment_amount,
+            paymentCurrency: payment_currency || 'INR',
+            paymentMethod: payment_method || {},
+            paymentType: isAdvance ? 'advance' : 'final',
+            details: succeedPayment,
+          });
+        }
 
         return { order_id, payment_amount, payment_currency, payment_method, payment_status };
       } else if (!!cancelledPayment || !!failedPayment) {
@@ -141,10 +170,10 @@ const paymentVerifyService = async (cfOrderId) => {
           ? 'Payment failed'
           : 'Internal server error';
 
-        throw new ApiError(payment?.status || httpStatus.INTERNAL_SERVER_ERROR, msg);
+        throw new ApiError(httpStatus.BAD_REQUEST, msg);
       }
     } else {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'No payment found for this order');
+      throw new ApiError(httpStatus.NOT_FOUND, 'No payment found for this order');
     }
   } catch (error) {
     logger.error('Failed to verify the payment due to: ' + error.message);
@@ -153,6 +182,29 @@ const paymentVerifyService = async (cfOrderId) => {
       error?.response?.data?.message || error.message || 'Internal server error'
     );
   }
+};
+
+/**
+ * Get all payment info for an order from DB (transactions + financial info)
+ * @param {string} orderId
+ * @returns {object}
+ */
+const getOrderPaymentInfoService = async (orderId) => {
+  const financialInfo = await OrderFinancialInfo.findOne({ where: { orderId } });
+
+  if (!financialInfo) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Payment info not found for this order');
+  }
+
+  const transactions = await Transaction.findAll({
+    where: { cfOrderId: orderId },
+    order: [['createdAt', 'DESC']],
+  });
+
+  return {
+    financialInfo: getPlainData(financialInfo),
+    transactions: transactions.map((t) => getPlainData(t)),
+  };
 };
 
 /**
@@ -196,4 +248,5 @@ module.exports = {
   paymentVerifyService,
   fetchPaymentOrderService,
   getSinglePaymentRefByCFOrderIdService,
+  getOrderPaymentInfoService,
 };

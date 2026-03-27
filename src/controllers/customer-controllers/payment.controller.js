@@ -17,9 +17,15 @@ const getPaymentOrder = catchAsync(async (req, res) => {
 });
 
 const paymentVerify = catchAsync(async (req, res) => {
-  const { cfOrderId } = req.params;
-  const payment = await customerServices.paymentService.paymentVerifyService(cfOrderId);
+  const { customerId, cfOrderId } = req.params;
+  const payment = await customerServices.paymentService.paymentVerifyService(customerId, cfOrderId);
   res.status(httpStatus.OK).send({ status: true, message: 'Payment succeed', entity: payment || null });
+});
+
+const getOrderPaymentInfo = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const data = await customerServices.paymentService.getOrderPaymentInfoService(orderId);
+  res.status(httpStatus.OK).send({ status: true, message: 'Payment info fetched', entity: data || null });
 });
 
 const getSinglePaymentFromCFOrderId = catchAsync(async (req, res) => {
@@ -33,4 +39,5 @@ module.exports = {
   getPaymentOrder,
   paymentVerify,
   getSinglePaymentFromCFOrderId,
+  getOrderPaymentInfo,
 };

@@ -6,7 +6,8 @@ const paymentInitate = {
     orderId: Joi.string().required(),
   }),
   body: Joi.object().keys({
-    isAdvance: Joi.boolean().required().messages({ 'any.required': 'isAdvance required' }),
+    // For advance payment pass isAdvance: true; for final payment omit the field entirely
+    isAdvance: Joi.boolean().optional(),
   }),
 };
 
@@ -32,9 +33,17 @@ const getPayment = {
   }),
 };
 
+const getOrderPaymentInfo = {
+  params: Joi.object().keys({
+    customerId: Joi.string().required().uuid(),
+    orderId: Joi.string().required().uuid(),
+  }),
+};
+
 module.exports = {
   paymentInitate,
   paymentVerify,
   getPayment,
   getPaymentOrder,
+  getOrderPaymentInfo,
 };

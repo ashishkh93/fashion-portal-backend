@@ -38,4 +38,12 @@ router.get(
   customerController.paymentController.getSinglePaymentFromCFOrderId
 );
 
+router.get(
+  '/info/:orderId',
+  auth(),
+  customerValidate((req) => req.params.customerId),
+  validate(paymentValidation.getOrderPaymentInfo),
+  customerController.paymentController.getOrderPaymentInfo
+);
+
 module.exports = router;
