@@ -6,6 +6,7 @@ const { CashfreeUtil } = require('../../utils/cashfree.util');
 const logger = require('../../config/logger');
 const config = require('../../config/config');
 const { getPlainData } = require('../../utils/common.util');
+const { CASHFREE_ERROR_CODES } = require('../../utils/constants');
 
 const xAPiVersion = config.cashfree.apiVersion;
 
@@ -108,10 +109,23 @@ const paymentInitiateService = async (customerId, orderId, body, customer) => {
     const createOrder = await CashfreeUtil.PGCreateOrder(xAPiVersion, requestInitBody);
     return createOrder.data;
   } catch (error) {
-    throw new ApiError(
-      error.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-      error.response.data.message || 'Internal Server Error'
-    );
+    const cfMessage = error?.response?.data?.message || '';
+    const cfCode = error?.response?.data?.code || '';
+
+    // If Cashfree already has an order with this id, fetch and return it so the user can retry payment
+    if (cfCode === CASHFREE_ERROR_CODES.ORDER_ALREADY_EXISTS) {
+      try {
+        const existingOrder = await CashfreeUtil.PGFetchOrder(xAPiVersion, pgOrderId);
+        return existingOrder.data;
+      } catch (fetchError) {
+        throw new ApiError(
+          fetchError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
+          fetchError?.response?.data?.message || 'Failed to fetch existing payment order'
+        );
+      }
+    }
+
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, cfMessage || 'Internal Server Error');
   }
 };
 
@@ -140,10 +154,7 @@ const paymentVerifyService = async (customerId, cfOrderId) => {
 
         // 1. Update OrderFinancialInfo — mark advance as paid
         if (isAdvance) {
-          await OrderFinancialInfo.update(
-            { advanceAmountPaid: true, advancePaidAt: new Date() },
-            { where: { orderId } }
-          );
+          await OrderFinancialInfo.update({ advanceAmountPaid: true, advancePaidAt: new Date() }, { where: { orderId } });
         } else {
           // Final payment received — auto-complete the order
           await Order.update({ status: 'COMPLETED' }, { where: { id: orderId } });
