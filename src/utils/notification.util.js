@@ -13,6 +13,7 @@ const NOTIFICATION_TYPE_CONSTANTS = {
   FINAL_PAYMENT_FAILED: 'final_amount_payment_failed',
   ORDER_COMPLETED: 'order_completed',
   CUSTOM_FROM_ADMIN: 'custom_from_admin',
+  ARTIST_STATUS_UPDATED: 'artist_status_updated',
 };
 
 module.exports = { NOTIFICATION_TYPE_CONSTANTS };

@@ -146,3 +146,25 @@ exports.sendFinalPaymentFailedNotification = (customerId, orderId) => {
 exports.sendOrderCompletedNotification = (artistId, orderId) => {
   _sendToArtist(NOTIFICATION_TYPE_CONSTANTS.ORDER_COMPLETED, artistId, orderId);
 };
+
+/** Sent to ARTIST when admin updates the artist's account status */
+exports.sendArtistStatusUpdatedNotification = async (artistId, status) => {
+  const [tokens, artist] = await Promise.all([
+    notificationService.getFcmTokens(artistId),
+    ArtistInfo.findOne({ where: { artistId }, attributes: ['fullName'] }),
+  ]);
+
+  const deviceTokens = tokens?.map((t) => t?.fcmToken) || [];
+  const notificationPayload = {
+    artist: getPlainData(artist)?.fullName,
+    status,
+  };
+
+  sendNotificationToUser(
+    NOTIFICATION_TYPE_CONSTANTS.ARTIST_STATUS_UPDATED,
+    deviceTokens,
+    notificationPayload,
+    { userId: artistId },
+    'ARTIST'
+  );
+};

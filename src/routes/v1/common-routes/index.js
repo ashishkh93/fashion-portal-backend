@@ -1,6 +1,7 @@
 const express = require('express');
 const serviceRoutes = require('./services.route');
 const catRoutes = require('./cat.route');
+const testNotificationRoutes = require('./test-notification.route');
 
 const router = express.Router();
 
@@ -12,6 +13,10 @@ const defaultCommonRoutes = [
   {
     path: '/categories/:serviceId',
     route: catRoutes,
+  },
+  {
+    path: '/test-notification',
+    route: testNotificationRoutes,
   },
 ];
 

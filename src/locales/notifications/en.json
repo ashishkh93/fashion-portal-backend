@@ -120,5 +120,14 @@
         "body": "<body>"
       }
     }
+  },
+  "artist_status_updated": {
+    "messages": {
+      "fcm": {
+        "title": "Account Status Updated",
+        "body": "Dear <artist>, your account status has been updated to <status>. Please open the app for more details.",
+        "screen": "profile_screen"
+      }
+    }
   }
 }

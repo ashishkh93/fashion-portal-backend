@@ -3,3 +3,4 @@ module.exports.uploadController = require('./upload.controller');
 module.exports.servicesController = require('./services.controller');
 module.exports.notificationController = require('./notification.controller');
 module.exports.catController = require('./cat.controller');
+module.exports.testNotificationController = require('./test-notification.controller');

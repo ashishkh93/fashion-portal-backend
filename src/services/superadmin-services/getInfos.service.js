@@ -12,6 +12,7 @@ const { GET_ALL_CUSTOMERS_SEARCH_QUERY } = require('../../search-queries/get-all
 const logger = require('../../config/logger');
 const { GET_ALL_ARTISTS_SEARCH_QUERY } = require('../../search-queries/get-all-artists-search-query');
 const { updateFirebaseUserStatus } = require('../../helper/firebase/firebase');
+const { sendArtistStatusUpdatedNotification } = require('../../handlers/notifications/notification-data.hanlder');
 
 /**
  * Get artist information for admin to check artist's status
@@ -299,6 +300,7 @@ const updateArtistStatusService = async (body, artistId) => {
     ]);
 
     updateFirebaseUserStatus(currentArtist.firebase_uid || '', body.status);
+    sendArtistStatusUpdatedNotification(artistId, body.status);
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Artist not found');
   }
