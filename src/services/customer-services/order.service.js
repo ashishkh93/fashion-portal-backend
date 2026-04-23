@@ -325,15 +325,18 @@ const fetchOrderService = async (orderId) => {
 };
 
 /**
- * Fetch all orders for user
+ * Fetch all orders for user with optional status filter, plus per-status counts
  * @param {string} customerId
  * @param {number} page
- * @param {size} page
- * @returns {Promise<Order>}
+ * @param {number} size
+ * @param {string} [status]
+ * @returns {Promise<Object>}
  */
-const fetchOrdersService = async (customerId, page, size) => {
+const fetchOrdersService = async (customerId, page, size, status) => {
   const orderCondition = { customerId };
-  // const mainModelAttributes = { exclude: ['artIds'] };
+  if (status && status !== 'ALL') {
+    orderCondition.status = status;
+  }
 
   const mainModelAttributes = [
     'id',
@@ -392,14 +395,20 @@ const fetchOrdersService = async (customerId, page, size) => {
     },
   ];
 
-  const allOrders = await getPaginationDataFromModel(
-    Order,
-    orderCondition,
-    page,
-    size,
-    includeForAllOrders,
-    mainModelAttributes
-  );
+  const [allOrders, statusCountsRaw] = await Promise.all([
+    getPaginationDataFromModel(Order, orderCondition, page, size, includeForAllOrders, mainModelAttributes),
+    Order.findAll({
+      where: { customerId },
+      attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['status'],
+      raw: true,
+    }),
+  ]);
+
+  const statusCounts = statusCountsRaw.reduce((acc, row) => {
+    acc[row.status] = parseInt(row.count, 10);
+    return acc;
+  }, {});
 
   const updatedOrderItemsWithCurTZ = allOrders?.items?.map((order) => {
     return {
@@ -409,7 +418,7 @@ const fetchOrdersService = async (customerId, page, size) => {
     };
   });
 
-  return { ...allOrders, items: updatedOrderItemsWithCurTZ };
+  return { ...allOrders, items: updatedOrderItemsWithCurTZ, statusCounts };
 };
 
 /**

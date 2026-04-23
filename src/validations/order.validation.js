@@ -111,6 +111,7 @@ const getOrdersForUser = {
   query: Joi.object().keys({
     page: Joi.number(),
     size: Joi.number(),
+    status: Joi.string().optional(),
   }),
   params: Joi.object().keys({
     customerId: Joi.string().required(),
